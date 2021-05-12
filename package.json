@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "scripts": {
+    "start": "nodemon start.js",
+    "test": "npx mocha test/",
+    "cloc": "cloc --exclude-dir=.idea,node_modules --not-match-f='(package.json|package-lock.json)' ."
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv-defaults": "^2.0.1",
+    "fastify": "^3.15.1",
+    "fastify-jwt": "^2.4.0",
+    "fastify-plugin": "^3.0.0",
+    "mongoose": "^5.12.8"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^8.4.0",
+    "nodemon": "^2.0.7",
+    "pino-pretty": "^4.7.1"
+  }
+}
