@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const models = require('./models')
 const fingerprints = require('./data/fingerprints.json')
 
-const {User, Team} = models
+const {User, Team, Browser, Proxy} = models
 
 function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -73,17 +73,31 @@ module.exports = {
   },
 
   async randomFingerprint (req, rep) {
-    return {
+    return rep.done({
       win: randomFingerprint('win'),
       mac: randomFingerprint('mac'),
-    }
+    })
   },
 
   async fingerprintVariants (req, rep) {
-    return fingerprints
+    return rep.done(fingerprints)
   },
 
   async createBrowser (req, rep) {
+    const {name, fingerprint} = req.body
 
+    // const team = await Team.findById(req.user.team)
+    const browser = await Browser.create({
+      name, team: req.user.team, fingerprint,
+    })
+
+    // log(req.user)
+    // console.log(req.body)
+    return rep.done({browser})
+  },
+
+  async browsersList (req, rep) {
+    const browsers = await Browser.find({team: req.user.team})
+    return rep.done({browsers})
   },
 }

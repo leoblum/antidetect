@@ -1,4 +1,5 @@
-const {Schema, model, ObjectId} = require('mongoose')
+const {Schema, model} = require('mongoose')
+const {ObjectId} = Schema.Types
 
 const userSchema = new Schema({
   email: {type: String, required: true, unique: true, lowercase: true, trim: true},
@@ -13,10 +14,10 @@ const teamSchema = new Schema({
 })
 
 const browserSchema = new Schema({
-  name: String,
-  team: {type: ObjectId, ref: 'Team'},
+  name: {type: String, required: true},
+  team: {type: ObjectId, ref: 'Team', required: true},
   proxy: {type: ObjectId, ref: 'Proxy'},
-  createdAt: {type: Date, default: Date.now},
+  createdAt: {type: Date, default: Date.now, required: true},
   lastActiveAt: Date,
   isActive: {type: Boolean, default: false},
   currentUser: {type: ObjectId, ref: 'User'},
@@ -42,7 +43,6 @@ const proxySchema = new Schema({
 })
 
 module.exports = {
-  ObjectId,
   User: model('User', userSchema),
   Team: model('Team', teamSchema),
   Browser: model('Browser', browserSchema),

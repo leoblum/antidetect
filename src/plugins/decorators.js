@@ -26,7 +26,7 @@ module.exports = fp(async function (fastify, tops) {
     return pub(method, url, handler, schema, opts)
   }
 
-  const methods = ['get', 'post', 'put', 'options', 'delete']
+  const methods = ['get', 'post', 'put', 'options', 'delete', 'head', 'patch', 'all']
   for (const method of methods) {
     pub[method] = (...args) => pub(method, ...args)
     pvt[method] = (...args) => pvt(method, ...args)

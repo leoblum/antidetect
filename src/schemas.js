@@ -16,7 +16,7 @@ const baseAuthSchema = {
   },
 }
 
-const registerSchema = {
+const UserCreateSchema = {
   body: baseAuthSchema,
   response: {
     201: baseResponseSchema,
@@ -24,7 +24,7 @@ const registerSchema = {
   },
 }
 
-const authSchema = {
+const UserAuthSchema = {
   body: baseAuthSchema,
   response: {
     200: {
@@ -62,7 +62,7 @@ const BrowserCreateSchema = {
 }
 
 module.exports = {
-  registerSchema,
-  authSchema,
+  UserCreateSchema,
+  UserAuthSchema,
   BrowserCreateSchema,
 }

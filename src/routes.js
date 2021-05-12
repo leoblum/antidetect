@@ -3,15 +3,22 @@ const schemas = require('./schemas')
 
 module.exports = async function (fastify, opts) {
   const {pub, pvt} = fastify
+  // todo: add custom error handler to have same api for all reps: .success, .message
+
+  // @Public
 
   pub.post('/users/checkEmail', handlers.checkEmail)
   pub.post('/users/confirmEmail', handlers.confirmEmail)
 
-  pub.post('/users/create', handlers.createUser, schemas.registerSchema)
-  pub.post('/users/auth', handlers.auth, schemas.authSchema)
+  pub.post('/users/create', handlers.createUser, schemas.UserCreateSchema)
+  pub.post('/users/auth', handlers.auth, schemas.UserAuthSchema)
 
-  pub.get('/fingerprints', handlers.randomFingerprint)
-  pub.get('/fingerprints/variants', handlers.fingerprintVariants)
+  // @Private
 
-  pvt.post('/protected', handlers.protected)
+  pvt.get('/protected', handlers.protected)
+  pvt.get('/fingerprint', handlers.randomFingerprint)
+  pvt.get('/fingerprint/options', handlers.fingerprintVariants)
+
+  pvt.post('/browsers/create', handlers.createBrowser)
+  pvt.get('/browsers', handlers.browsersList)
 }

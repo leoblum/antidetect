@@ -1,12 +1,18 @@
-module.exports = function createClient (app) {
-  return {
+module.exports = function createClient (mochaContext) {
+  if (mochaContext.api) return mochaContext.api
+
+  const app = mochaContext.app
+  const api = {
     headers: {},
 
     async request (method, url, opts = {}) {
       opts.method = method
       opts.url = url
       opts.headers = Object.assign({}, this.headers, opts.headers || {})
-      return await app.inject(opts)
+
+      let rep = await app.inject(opts)
+      Object.defineProperty(rep, 'data', {get: () => rep.json()})
+      return rep
     },
 
     async get (url, opts = {}) {
@@ -39,7 +45,26 @@ module.exports = function createClient (app) {
     },
 
     async protected () {
-      return await this.post('/protected', {})
+      return await this.get('/protected')
+    },
+
+    async getFingerprint () {
+      return await this.get('/fingerprint')
+    },
+
+    async getFingerprintOptions () {
+      return await this.get('/fingerprint/options')
+    },
+
+    async createBrowser (name, fingerprint, proxy) {
+      return await this.post('/browsers/create', {name, fingerprint, proxy})
+    },
+
+    async browsersList () {
+      return await this.get('/browsers')
     },
   }
+
+  mochaContext.api = api
+  return api
 }
