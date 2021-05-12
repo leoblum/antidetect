@@ -5,13 +5,13 @@ async function build () {
     logger: {level: 'error', prettyPrint: true},
   })
 
-  fastify.decorateRequest('fastify', fastify)
-
   fastify.register(require('fastify-jwt'), {
     secret: config.JWT_SECRET,
   })
 
   fastify.register(require('./plugins/db'))
+  fastify.register(require('./plugins/decorators'))
+
   fastify.register(require('./routes'))
 
   await fastify.ready()

@@ -1,5 +1,5 @@
-const handlers = require('./../handlers')
-const schemas = require('./../schemas')
+const handlers = require('./handlers')
+const schemas = require('./schemas')
 
 module.exports = async function (fastify, opts) {
   function r (method, url, handler, schema = null, opts = null) {
@@ -12,8 +12,12 @@ module.exports = async function (fastify, opts) {
   }
 
   r('post', '/users/checkEmail', handlers.checkEmail)
-  r('post', '/users/register', handlers.register, schemas.registerSchema)
+  r('post', '/users/confirmEmail', handlers.confirmEmail)
+
+  r('post', '/users/create', handlers.createUser, schemas.registerSchema)
   r('post', '/users/auth', handlers.auth, schemas.authSchema)
+
+  r('post', '/protected', handlers.protected)
 
   r('get', '/fingerprints', handlers.randomFingerprint)
   r('get', '/fingerprints/variants', handlers.fingerprintVariants)

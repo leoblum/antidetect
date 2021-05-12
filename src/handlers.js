@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const models = require('./models')
 const fingerprints = require('./data/fingerprints.json')
 
-const {User} = models
+const {User, Team} = models
 
 function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -21,40 +21,54 @@ function randomFingerprint (os = null) {
   }
 }
 
-async function compareUserCredentials (email, password) {
-  const user = await User.findOne({email})
-  if (user === null) return false
-
-  return await bcrypt.compare(password, user.password)
-}
-
 module.exports = {
   async checkEmail (req, rep) {
     const user = await User.findOne({email: req.body.email})
     const exists = user !== null
 
-    return rep.code(200).send({success: true, exists})
+    return rep.done({exists})
   },
 
-  async register (req, rep) {
+  async createUser (req, rep) {
     const email = req.body.email
     const password = await bcrypt.hash(req.body.password, 10)
 
-    if (await User.findOne({email})) {
-      return rep.code(412).send({success: false, message: 'email_already_used'})
-    }
+    if (await User.findOne({email})) return rep.fail(412, 'email_already_used')
 
-    await User.create({email, password})
-    return rep.code(201).send({success: true})
+    const team = await Team.create({name: email})
+    const user = await User.create({email, password, team})
+    return rep.done(201)
   },
 
   async auth (req, rep) {
     const {email, password} = req.body
-    const passed = await compareUserCredentials(email, password)
-    if (!passed) return rep.code(401).send({success: false})
 
-    const token = await req.fastify.jwt.sign({})
-    return rep.code(200).send({success: true, token})
+    const user = await User.findOne({email})
+    const pass = user !== null ? await bcrypt.compare(password, user.password) : false
+    if (!pass) return rep.fail(401, 'wrong_password')
+    if (!user.emailConfirmed) return rep.fail(401, 'email_not_confirmed')
+
+    const token = await req.fastify.jwt.sign({
+      user: user._id,
+      team: user.team,
+    })
+
+    return rep.done({token})
+  },
+
+  async confirmEmail (req, rep) {
+    const email = req.body.email
+
+    const user = await User.findOne({email})
+    if (user.emailConfirmed) return rep.fail(409, 'email_already_confirmed')
+
+    user.emailConfirmed = true
+    await user.save()
+    return rep.done()
+  },
+
+  async protected (req, rep) {
+    return {}
   },
 
   async randomFingerprint (req, rep) {
@@ -66,5 +80,9 @@ module.exports = {
 
   async fingerprintVariants (req, rep) {
     return fingerprints
+  },
+
+  async createBrowser (req, rep) {
+
   },
 }

@@ -1,23 +1,22 @@
-const mongoose = require('mongoose')
-const ObjectId = mongoose.ObjectId
+const {Schema, model, ObjectId} = require('mongoose')
 
-const User = mongoose.model('User', {
-  email: {type: 'String', required: true, unique: true, lowercase: true, trim: true},
-  password: {type: 'String', required: true},
-  createdAt: {type: 'Date', required: true, default: Date.now},
-  emailConfirmed: {type: 'Boolean', required: true, default: false},
-  teamId: {type: ObjectId, ref: 'Team'},
+const userSchema = new Schema({
+  email: {type: String, required: true, unique: true, lowercase: true, trim: true},
+  password: {type: String, required: true},
+  createdAt: {type: Date, required: true, default: Date.now},
+  emailConfirmed: {type: Boolean, required: true, default: false},
+  team: {type: ObjectId, ref: 'Team', required: true},
 })
 
-const Team = mongoose.model('Team', {
-  name: String,
+const teamSchema = new Schema({
+  name: {type: String, required: true},
 })
 
-const Browser = mongoose.model('Browser', {
+const browserSchema = new Schema({
   name: String,
-  teamId: {type: ObjectId, ref: 'Team'},
-  proxyId: {type: ObjectId, ref: 'Proxy'},
-  createdAt: Date,
+  team: {type: ObjectId, ref: 'Team'},
+  proxy: {type: ObjectId, ref: 'Proxy'},
+  createdAt: {type: Date, default: Date.now},
   lastActiveAt: Date,
   isActive: {type: Boolean, default: false},
   currentUser: {type: ObjectId, ref: 'User'},
@@ -31,9 +30,9 @@ const Browser = mongoose.model('Browser', {
   },
 })
 
-const Proxy = mongoose.model('Proxy', {
+const proxySchema = new Schema({
   name: String,
-  teamId: {type: ObjectId, ref: 'Team'},
+  team: {type: ObjectId, ref: 'Team'},
   type: {type: String, enum: ['socks5', 'https']},
   host: String,
   port: String,
@@ -42,4 +41,10 @@ const Proxy = mongoose.model('Proxy', {
   country: String,
 })
 
-module.exports = {ObjectId, User, Team, Browser, Proxy}
+module.exports = {
+  ObjectId,
+  User: model('User', userSchema),
+  Team: model('Team', teamSchema),
+  Browser: model('Browser', browserSchema),
+  Proxy: model('Proxy', proxySchema),
+}

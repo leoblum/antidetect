@@ -39,7 +39,30 @@ const authSchema = {
   },
 }
 
+const BrowserCreateSchema = {
+  body: {
+    type: 'object',
+    required: ['name', 'fingerprint'],
+    properties: {
+      name: {type: 'string'},
+      fingerprint: {
+        type: 'object',
+        // required: ['name', 'fingerprint'],
+        properties: {
+          os: {type: 'string'},
+          userAgent: {type: 'string'},
+          screen: {type: 'string'},
+          renderer: {type: 'string'},
+          cpu: {type: 'number'},
+          ram: {type: 'number'},
+        },
+      },
+    },
+  },
+}
+
 module.exports = {
   registerSchema,
   authSchema,
+  BrowserCreateSchema,
 }
