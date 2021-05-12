@@ -6,6 +6,7 @@ module.exports = fp(async function (fastify, opts) {
   const instance = await mongoose.connect(config.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
     serverSelectionTimeoutMS: 3000,
   })
 

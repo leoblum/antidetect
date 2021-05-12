@@ -14,8 +14,7 @@ async function build () {
 
   fastify.register(require('./routes'))
 
-  await fastify.ready()
-  return fastify
+  return fastify.ready()
 }
 
 async function start () {

@@ -48,7 +48,7 @@ module.exports = {
     if (!pass) return rep.fail(401, 'wrong_password')
     if (!user.emailConfirmed) return rep.fail(401, 'email_not_confirmed')
 
-    const token = await req.fastify.jwt.sign({
+    const token = await rep.jwtSign({
       user: user._id,
       team: user.team,
     })
@@ -57,6 +57,7 @@ module.exports = {
   },
 
   async confirmEmail (req, rep) {
+    // todo: make it works by tokens
     const email = req.body.email
 
     const user = await User.findOne({email})
@@ -68,7 +69,7 @@ module.exports = {
   },
 
   async protected (req, rep) {
-    return {}
+    return rep.done()
   },
 
   async randomFingerprint (req, rep) {

@@ -1,34 +1,45 @@
 module.exports = function createClient (app) {
-  async function request (method, url, opts = {}) {
-    opts.method = method
-    opts.url = url
-    return await app.inject(opts)
-  }
-
-  async function get (url, opts = {}) {
-    return await request('get', url, opts)
-  }
-
-  async function post (url, payload, opts = {}) {
-    opts.payload = payload
-    return await request('post', url, opts)
-  }
-
   return {
+    headers: {},
+
+    async request (method, url, opts = {}) {
+      opts.method = method
+      opts.url = url
+      opts.headers = Object.assign({}, this.headers, opts.headers || {})
+      return await app.inject(opts)
+    },
+
+    async get (url, opts = {}) {
+      return await this.request('get', url, opts)
+    },
+
+    async post (url, payload, opts = {}) {
+      opts.payload = payload
+      return await this.request('post', url, opts)
+    },
+
     async checkEmailExists (email) {
-      return await post('/users/checkEmail', {email})
+      return await this.post('/users/checkEmail', {email})
     },
 
     async createUser (email, password) {
-      return await post('/users/create', {email, password})
+      return await this.post('/users/create', {email, password})
     },
 
     async confirmEmail (email) {
-      return await post('/users/confirmEmail', {email})
+      return await this.post('/users/confirmEmail', {email})
     },
 
-    async auth (email, password) {
-      return await post('/users/auth', {email, password})
+    async auth (email, password, keepToken = false) {
+      let rep = await this.post('/users/auth', {email, password})
+      if (keepToken && rep.json().success) {
+        this.headers['Authorization'] = `Bearer ${rep.json().token}`
+      }
+      return rep
+    },
+
+    async protected () {
+      return await this.post('/protected', {})
     },
   }
 }

@@ -1,7 +1,41 @@
 const fp = require('fastify-plugin')
 
 module.exports = fp(async function (fastify, tops) {
-  fastify.decorateRequest('fastify', fastify)
+  /* @ decorate fastify */
+
+  // fastify.decorateRequest('fastify', {
+  //   getter: () => fastify,
+  // })
+
+  async function auth (req, rep) {
+    try {
+      await req.jwtVerify()
+    } catch (e) {
+      console.log(e.toString())
+      return rep.fail(401, 'invalid_auth_header')
+    }
+  }
+
+  function pub (method, url, handler, schema = null, opts = {}) {
+    opts = Object.assign({method: method.toUpperCase(), url, handler, schema}, opts)
+    return fastify.route(opts)
+  }
+
+  function pvt (method, url, handler, schema = null, opts = {}) {
+    opts.preValidation = opts.preValidation || [auth]
+    return pub(method, url, handler, schema, opts)
+  }
+
+  const methods = ['get', 'post', 'put', 'options', 'delete']
+  for (const method of methods) {
+    pub[method] = (...args) => pub(method, ...args)
+    pvt[method] = (...args) => pvt(method, ...args)
+  }
+
+  fastify.decorate('pub', pub)  // To define public routes
+  fastify.decorate('pvt', pvt)  // To define private routes
+
+  /* @ decorate reply */
 
   fastify.decorateReply('done', function (...args) {
     let code = 200
@@ -19,4 +53,5 @@ module.exports = fp(async function (fastify, tops) {
   fastify.decorateReply('fail', function (code, message) {
     return this.code(code).send({success: false, message})
   })
+
 })

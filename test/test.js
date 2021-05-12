@@ -16,6 +16,21 @@ afterEach(async () => {
   await this.app.close()
 })
 
+describe('check tests setup', () => {
+  it('should exists this.app & this.api', async () => {
+    expect(this).to.have.property('app')
+    expect(this).to.have.property('api')
+
+    expect(this.app).not.to.be.undefined
+    expect(this.api).not.to.be.undefined
+  })
+
+  it('should connect to test db', async () => {
+    const name = this.app.db.name
+    expect(name.split('-').reverse()[0]).to.be.equal('test')
+  })
+})
+
 describe('users creation', () => {
   const email = 'user@example.com'
   const password = '1234'
@@ -78,6 +93,15 @@ describe('users authentication', () => {
     expect(rep.json()).to.have.property('token')
   })
 
+  it('should not authenticate when email not confirmed', async () => {
+    let [api, rep] = [createClient(this.app), null]
+
+    rep = await api.auth(email, password)
+    expect(rep.statusCode, rep.body).to.equal(401)
+    expect(rep.json().success).to.be.false
+    expect(rep.json().message).to.be.equal('email_not_confirmed')
+  })
+
   it('should not authenticate with wrong password', async () => {
     let [api, rep] = [createClient(this.app), null]
 
@@ -88,12 +112,39 @@ describe('users authentication', () => {
     expect(rep.json().message).to.be.equal('wrong_password')
   })
 
-  it('should not authenticate when email not confirmed', async () => {
+  it('should access to protected api after authentication', async () => {
     let [api, rep] = [createClient(this.app), null]
 
-    rep = await api.auth(email, password)
+    rep = await api.confirmEmail(email)
+    rep = await api.auth(email, password, true)
+
+    rep = await api.protected()
+    expect(rep.statusCode, rep.body).to.equal(200)
+    expect(rep.json().success).to.be.true
+  })
+
+  it('should not access to protected api when not authenticated', async () => {
+    let [api, rep] = [createClient(this.app), null]
+
+    rep = await api.confirmEmail(email)
+    rep = await api.protected()
     expect(rep.statusCode, rep.body).to.equal(401)
     expect(rep.json().success).to.be.false
-    expect(rep.json().message).to.be.equal('email_not_confirmed')
+    expect(rep.json().message).to.be.equal('invalid_auth_header')
+  })
+
+  it('should not access to protected api with bad auth header', async () => {
+    let [api, rep] = [createClient(this.app), null]
+
+    rep = await api.confirmEmail(email)
+    rep = await api.auth(email, password, true)
+
+    const token = api.headers['Authorization'].split(' ')[1].split('.').reverse()
+    api.headers['Authorization'] = `Bearer ${token}` // modify token to bad one
+
+    rep = await api.protected()
+    expect(rep.statusCode, rep.body).to.equal(401)
+    expect(rep.json().success).to.be.false
+    expect(rep.json().message).to.be.equal('invalid_auth_header')
   })
 })
