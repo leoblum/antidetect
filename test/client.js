@@ -63,6 +63,14 @@ module.exports = function createClient (mochaContext) {
     async browsersList () {
       return await this.get('/browsers')
     },
+
+    async createProxy (data) {
+      return this.post('/proxies/create', data)
+    },
+
+    async proxiesList () {
+      return await this.get('/proxies')
+    },
   }
 
   mochaContext.api = api

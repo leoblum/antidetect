@@ -8,7 +8,7 @@ function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-function randomFingerprint (os = null) {
+function randomFingerprint (os) {
   const values = fingerprints[os]
 
   return {
@@ -85,19 +85,38 @@ module.exports = {
 
   async createBrowser (req, rep) {
     const {name, fingerprint} = req.body
+    const {team} = req.user
 
-    // const team = await Team.findById(req.user.team)
+    let proxy = req.body.proxy || null
+    if (proxy) {
+      proxy = Object.assign(proxy, {team})
+      proxy = await Proxy.create(proxy)
+    }
+
     const browser = await Browser.create({
-      name, team: req.user.team, fingerprint,
+      name, team, fingerprint, proxy,
     })
 
-    // log(req.user)
-    // console.log(req.body)
     return rep.done({browser})
   },
 
   async browsersList (req, rep) {
     const browsers = await Browser.find({team: req.user.team})
     return rep.done({browsers})
+  },
+
+  async proxiesList (req, rep) {
+    const proxies = await Proxy.find({team: req.user.team})
+    return rep.done({proxies})
+  },
+
+  async createProxy (req, rep) {
+    const {name, type, host, port, username, password} = req.body
+    const {team} = req.user
+    const proxy = await Proxy.create({
+      name, team, type, host, port, username, password,
+    })
+
+    return rep.done({proxy})
   },
 }

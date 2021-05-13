@@ -16,7 +16,7 @@ const teamSchema = new Schema({
 const browserSchema = new Schema({
   name: {type: String, required: true},
   team: {type: ObjectId, ref: 'Team', required: true},
-  proxy: {type: ObjectId, ref: 'Proxy'},
+  proxy: {type: ObjectId, ref: 'Proxy', default: null},
   createdAt: {type: Date, default: Date.now, required: true},
   lastActiveAt: Date,
   isActive: {type: Boolean, default: false},
@@ -33,10 +33,10 @@ const browserSchema = new Schema({
 
 const proxySchema = new Schema({
   name: String,
-  team: {type: ObjectId, ref: 'Team'},
-  type: {type: String, enum: ['socks5', 'https']},
-  host: String,
-  port: String,
+  team: {type: ObjectId, ref: 'Team', required: true},
+  type: {type: String, enum: ['socks5', 'https'], required: true},
+  host: {type: String, required: true},
+  port: {type: String, required: true},
   username: String,
   password: String,
   country: String,

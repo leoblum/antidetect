@@ -19,6 +19,16 @@ afterEach(async () => {
   delete this.api
 })
 
+async function createUserAndSession () {
+  const email = 'user@example.com'
+  const password = '1234'
+
+  let [api, rep] = [getClient(this), null]
+  await api.createUser(email, password)
+  await api.confirmEmail(email)
+  await api.auth(email, password, true)
+}
+
 describe('check tests setup', () => {
   it('should exists this.app & this.api', async () => {
     expect(this).to.have.property('app')
@@ -152,16 +162,8 @@ describe('users authentication', () => {
   })
 })
 
-describe('browsers creation', () => {
-  const email = 'user@example.com'
-  const password = '1234'
-
-  beforeEach(async () => {
-    let [api, rep] = [getClient(this), null]
-    await api.createUser(email, password)
-    await api.confirmEmail(email)
-    await api.auth(email, password, true)
-  })
+describe('fingerprints api', () => {
+  beforeEach(createUserAndSession.bind(this))
 
   it('should return random fingerprint for win & mac', async () => {
     let [api, rep] = [getClient(this), null]
@@ -188,8 +190,43 @@ describe('browsers creation', () => {
       }
     }
   })
+})
 
-  it('should create browser for current user', async () => {
+describe('proxies creation', () => {
+  beforeEach(createUserAndSession.bind(this))
+
+  it('should create proxy for current user and be in proxies list', async () => {
+    let [api, rep] = [getClient(this), null]
+
+    rep = await api.proxiesList()
+    expect(rep.statusCode).to.equal(200)
+    expect(rep.data.success).to.be.true
+    expect(rep.data.proxies).to.be.an('array')
+    expect(rep.data.proxies).to.have.lengthOf(0)
+
+    rep = await api.createProxy({
+      name: 'proxy-1',
+      type: 'https',
+      host: '127.0.0.1',
+      port: 8080,
+      username: 'user',
+      password: 'pass',
+    })
+    expect(rep.statusCode).to.equal(200)
+    expect(rep.data.success).to.be.true
+    expect(rep.data).to.have.property('proxy')
+    expect(rep.data.proxy).to.be.an('object')
+
+    rep = await api.proxiesList()
+    expect(rep.statusCode).to.equal(200)
+    expect(rep.data.proxies).to.have.lengthOf(1)
+  })
+})
+
+describe('browsers creation', () => {
+  beforeEach(createUserAndSession.bind(this))
+
+  it('should create browser for current user and be in browsers list', async () => {
     let [api, rep] = [getClient(this), null]
 
     rep = await api.browsersList()
@@ -213,5 +250,38 @@ describe('browsers creation', () => {
 
     rep = await api.browsersList()
     expect(rep.data.browsers).to.have.lengthOf(2)
+  })
+
+  it('should create browser without proxy', async () => {
+    let [api, rep] = [getClient(this), null]
+
+    let fingerprint = (await api.getFingerprint()).data
+    rep = await api.createBrowser('profile-mac', fingerprint.mac, null)
+    expect(rep.statusCode).to.equal(200)
+    expect(rep.data.success).to.be.true
+    expect(rep.data.browser).to.have.property('proxy')
+    expect(rep.data.browser.proxy).to.be.null
+  })
+
+  it('should create browser with new proxy', async () => {
+    let [api, rep] = [getClient(this), null]
+
+    let proxy = {
+      name: 'proxy-1',
+      type: 'socks5',
+      host: 'localhost',
+      port: 8080,
+      username: 'user',
+      password: 'pass',
+    }
+
+    let fingerprint = (await api.getFingerprint()).data
+    rep = await api.createBrowser('profile-mac', fingerprint.mac, proxy)
+    expect(rep.statusCode).to.equal(200)
+    expect(rep.data.success).to.be.true
+    expect(rep.data.browser).to.have.property('proxy')
+    expect(rep.data.browser.proxy).to.be.an('object')
+
+    console.log(rep.data.browser)
   })
 })
