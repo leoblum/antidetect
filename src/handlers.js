@@ -1,11 +1,17 @@
 const bcrypt = require('bcrypt')
 const models = require('./models')
+const mailer = require('./mailer')
 const fingerprints = require('./data/fingerprints.json')
 
-const {User, Team, Browser, Proxy} = models
+const {User, Team, Browser, Proxy, LinkToken} = models
 
 function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
+}
+
+async function sendConfirmationLink (user) {
+  const token = await LinkToken.create({user, action: 'create'})
+  await mailer.confirmEmail({email: user.email, token: token._id})
 }
 
 function randomFingerprint (os) {
@@ -37,10 +43,11 @@ module.exports = {
 
     const team = await Team.create({name: email})
     const user = await User.create({email, password, team})
-    return rep.done(201)
+    await sendConfirmationLink(user)
+    return rep.done(201, {message: 'confirmation_link_sent'})
   },
 
-  async auth (req, rep) {
+  async login (req, rep) {
     const {email, password} = req.body
 
     const user = await User.findOne({email})
@@ -54,6 +61,11 @@ module.exports = {
     })
 
     return rep.done({token})
+  },
+
+  async resetPassword (req, rep) {
+    const email = req.body.email
+    return rep.done({message: 'reset_link_sent'})
   },
 
   async confirmEmail (req, rep) {

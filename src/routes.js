@@ -11,7 +11,9 @@ module.exports = async function (fastify, opts) {
   pub.post('/users/confirmEmail', handlers.confirmEmail)
 
   pub.post('/users/create', handlers.createUser, schemas.UserCreateSchema)
-  pub.post('/users/auth', handlers.auth, schemas.UserAuthSchema)
+  pub.post('/users/login', handlers.login, schemas.UserAuthSchema)
+
+  pub.post('/users/reset-password', handlers.resetPassword)
 
   // @Private
 

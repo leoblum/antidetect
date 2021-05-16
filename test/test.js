@@ -280,7 +280,7 @@ describe('browsers creation', () => {
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
     expect(rep.data.browser).to.have.property('proxy')
-    expect(rep.data.browser.proxy).to.be.an('object')
+    expect(rep.data.browser.proxy).to.be.an('string')
 
     console.log(rep.data.browser)
   })

@@ -37,7 +37,7 @@ module.exports = function createClient (mochaContext) {
     },
 
     async auth (email, password, keepToken = false) {
-      let rep = await this.post('/users/auth', {email, password})
+      let rep = await this.post('/users/login', {email, password})
       if (keepToken && rep.json().success) {
         this.headers['Authorization'] = `Bearer ${rep.json().token}`
       }

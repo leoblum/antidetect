@@ -1,10 +1,12 @@
 const config = require('./config')
+const mailer = require('./mailer')
 
 async function build () {
   const fastify = require('fastify')({
     logger: {level: 'error', prettyPrint: true},
   })
 
+  fastify.register(require('fastify-cors'), {})
   fastify.register(require('fastify-jwt'), {
     secret: config.JWT_SECRET,
   })
@@ -14,6 +16,7 @@ async function build () {
 
   fastify.register(require('./routes'))
 
+  await mailer.init()
   return fastify.ready()
 }
 

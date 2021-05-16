@@ -42,9 +42,16 @@ const proxySchema = new Schema({
   country: String,
 })
 
+const linkTokenSchema = new Schema({
+  user: {type: ObjectId, ref: 'User', required: true},
+  action: {type: String, enum: ['create', 'reset'], required: true},
+  createdAt: {type: Date, default: Date.now, required: true},
+})
+
 module.exports = {
   User: model('User', userSchema),
   Team: model('Team', teamSchema),
   Browser: model('Browser', browserSchema),
   Proxy: model('Proxy', proxySchema),
+  LinkToken: model('LinkToken', linkTokenSchema),
 }
