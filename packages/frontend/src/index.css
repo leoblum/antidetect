@@ -1,0 +1,10 @@
+@import '~antd/dist/antd.css';
+
+.ant-tabs-tab-btn {
+    min-width: 64px;
+    text-align: center;
+}
+
+.ant-form-item-explain {
+    font-size: 12px;
+}
