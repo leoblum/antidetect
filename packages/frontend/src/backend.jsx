@@ -30,6 +30,11 @@ class ServerApi {
     }
   }
 
+  async get (url) {
+    const rep = await this.http.get(url)
+    return rep.data
+  }
+
   async post (url, data) {
     const rep = await this.http.post(url, data)
     return rep.data
@@ -41,6 +46,10 @@ class ServerApi {
     return rep
   }
 
+  async logout () {
+    this.setAuthToken(null)
+  }
+
   async createUser ({email, password}) {
     return await this.post('/users/create', {email, password})
   }
@@ -49,9 +58,12 @@ class ServerApi {
     return await this.post('/users/reset-password', {email})
   }
 
-  async logout () {
-    delete this.http.defaults.headers['Authorization']
-    this.onAuthStateChanged.fire(false)
+  async browsers () {
+    return await this.get('/browsers')
+  }
+
+  async proxies () {
+    return await this.get('/proxies')
   }
 }
 

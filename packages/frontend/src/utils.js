@@ -1,3 +1,7 @@
+import NatSort from 'natsort'
+
+export const natSorter = NatSort()
+
 export function createEmitter () {
   const followers = []
 

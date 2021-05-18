@@ -17,3 +17,5 @@ function useProvideAuth () {
   useEffect(() => backend.onAuthStateChanged(setAuth))
   return auth
 }
+
+export default useAuth

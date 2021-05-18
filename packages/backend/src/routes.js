@@ -23,6 +23,7 @@ module.exports = async function (fastify, opts) {
 
   pvt.get('/browsers', handlers.browsersList)
   pvt.get('/proxies', handlers.proxiesList)
+  // pvt.get('/userdata', handlers.proxiesList)
 
   pvt.post('/browsers/create', handlers.createBrowser)
   pvt.post('/proxies/create', handlers.createProxy)

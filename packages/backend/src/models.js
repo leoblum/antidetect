@@ -5,7 +5,7 @@ const userSchema = new Schema({
   email: {type: String, required: true, unique: true, lowercase: true, trim: true},
   password: {type: String, required: true},
   createdAt: {type: Date, required: true, default: Date.now},
-  emailConfirmed: {type: Boolean, required: true, default: false},
+  emailConfirmed: {type: Boolean, required: true, default: true}, // todo: false
   team: {type: ObjectId, ref: 'Team', required: true},
 })
 
@@ -18,7 +18,7 @@ const browserSchema = new Schema({
   team: {type: ObjectId, ref: 'Team', required: true},
   proxy: {type: ObjectId, ref: 'Proxy', default: null},
   createdAt: {type: Date, default: Date.now, required: true},
-  lastActiveAt: Date,
+  lastActiveAt: {type: Date, default: null},
   isActive: {type: Boolean, default: false},
   currentUser: {type: ObjectId, ref: 'User'},
   fingerprint: {
@@ -39,7 +39,7 @@ const proxySchema = new Schema({
   port: {type: String, required: true},
   username: String,
   password: String,
-  country: String,
+  country: {type: String, default: null},
 })
 
 const linkTokenSchema = new Schema({

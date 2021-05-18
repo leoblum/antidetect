@@ -1,146 +1,191 @@
-import React, {Component} from 'react'
-import {Button, Col, Input, Layout, Row, Table} from 'antd'
-import {ImportOutlined, PlusCircleOutlined, SearchOutlined} from '@ant-design/icons'
-import Sort from 'natsort'
+import React, {useEffect, useState} from 'react'
+import {Layout, Table, Button, Space, Card} from 'antd'
+import {CaretRightOutlined, ReloadOutlined} from '@ant-design/icons'
+import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
-// import EnterForm from './components/EnterForm.jsx'
+import backend from '../backend'
+import {natSorter} from '../utils'
+import TimeAgo from './time-ago'
+import {Link} from './router'
 
-export function generateProfile (index = 0) {
-  return {
-    _id: index.toString() + index.toString(),
-    name: index === 0 ? 'New Profile' : `New Profile ${index + 1}`,
-    os: navigator.appVersion.includes('Mac') ? 'mac' : 'win',
-    proxyType: 'none',
-    proxySettings: null,
-    timezoneFillFromIP: true,
-    timezoneName: null,
-    timezoneOffset: null,
-    webrtcMode: 'altered',
-    webrtcFillFromIP: true,
-    webrtcPublicIP: '',
-    geolocationMode: 'prompt',
-    geolocationFillFromIP: true,
-    geolocationLatitude: null,
-    geolocationLongitude: null,
-    navigatorUserAgent: navigator.userAgent,
-    navigatorLanguages: navigator.languages,
-    navigatorPlatform: 'MacIntel',
-    navigatorHardwareConcurrency: 4,
-    navigatorDeviceMemory: 8,
-    doNotTrack: 'unset',
-    fontsMasking: true,
-    fontsList: ['Arial', 'Tahoma'],
-    mediaDevicesMasking: true,
-    mediaDevicesVideoInputs: 1,
-    mediaDevicesAudioInputs: 1,
-    mediaDevicesAudioOutputs: 1,
-    mediaDevices: [],
-    webglParametersMasking: true,
-    webglVendor: 'Best Video Card',
-    webglRendererName: 'Best Video Card XXX',
-    webglRendererNoise: false,
-    webglParams: {},
-    webglParams2: {},
-    canvasNoise: false,
-    audioNoise: false,
+function Box ({children, childStyle, ...props}) {
+  const fn = child => {
+    const props = {style: Object.assign({}, childStyle, child.props.style)}
+    return React.cloneElement(child, props)
   }
+  return (
+    <div {...props}>
+      {React.Children.map(children, fn)}
+    </div>
+  )
 }
 
-const profiles = Array.from(new Array(10)).map((_, idx) => generateProfile(idx))
-
-const {Sider, Content, Header} = Layout
-const {Search} = Input
-
-const HeaderHeight = '52px'
-const ContentPadding = '16px'
-const sorter = Sort()
-
-export default class App extends Component {
-  constructor (props) {
-    super(props)
+function BaseLayout ({children}) {
+  const headerStyle = {
+    height: '52px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // flexDirection: 'row-reverse',
+    padding: '0 12px',
   }
 
-  render () {
-    return <EnterForm></EnterForm>
-    // return <AppAuth></AppAuth>
+  const contentStyle = {
+    padding: '12px',
+    // marginTop: '2px',
+    height: '100%',
   }
+
+  return (
+    <Layout style={{minHeight: '100vh'}}>
+      <Layout.Header style={headerStyle}>
+        <Space style={{textTransform: 'uppercase'}}>
+          <div style={{fontSize: '32px', padding: '0 16px'}}>🔅</div>
+          <Link to="/browsers">Browsers</Link>
+          <Link to="/proxies">Proxies</Link>
+          <Link to="/profiles">Old</Link>
+        </Space>
+        <Button onClick={() => backend.logout()}>Logout</Button>
+      </Layout.Header>
+      <Layout.Content style={contentStyle}>
+        {children}
+      </Layout.Content>
+    </Layout>
+  )
 }
 
-class AppAuth extends Component {
-  constructor (props) {
-    super(props)
+async function getBrowsersAndProxies () {
+  let browsers = await backend.browsers()
+  let proxies = await backend.proxies()
 
-    this.state = {
-      selectedRowKeys: [],
-      dataSource: profiles,
-      count: profiles.length,
-    }
-
-    this.columns = [
-      {
-        title: 'Name',
-        dataIndex: 'name',
-        sorter: (a, b) => sorter(a.name, b.name),
-      }, {
-        title: 'Proxy',
-        dataIndex: 'proxyType',
-        // render: x => x.proxyType === 'none' ? 'none' : x.proxySettings.ip,
-      }, {
-        title: 'Last Launch',
-        // dataIndex: 'lastLaunch',
-        // sorter: (a, b) => sorter(a.lastLaunch, b.lastLaunch),
-      }, {
-        width: 100,
-        align: 'right',
-        render: () => <Button type="primary" onClick={console.log(12)}>Run</Button>,
-      }, {
-        align: 'left',
-        width: 42,
-        // render: item => this.settingsMenuIcon(item),
-      }]
+  if (!browsers.success || !proxies.success) {
+    console.error('data not loaded', browsers, proxies)
+    return null
   }
 
-  render () {
-    const {selectedRowKeys, dataSource} = this.state
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: selectedRowKeys => this.setState({selectedRowKeys}),
-    }
+  browsers = browsers.browsers
+  proxies = proxies.proxies
+  return {browsers, proxies}
+}
 
-    const tableProps = {
-      rowKey: '_id',
-      rowSelection,
-      dataSource,
-      columns: this.columns,
-      pagination: {
-        defaultPageSize: 25,
-        size: 'default',
-      },
-      size: 'small',
-      showSorterTooltip: false,
-    }
-
-    return (
-      <Layout style={{height: '100vh'}}>
-        <Header style={{
-          position: 'fixed', zIndex: 1, width: '100%',
-          height: HeaderHeight, lineHeight: 'inherit', color: 'white',
-          paddingLeft: ContentPadding, paddingRight: ContentPadding,
-        }}>
-          <Row align="middle" justify="center" style={{height: '100%'}}>
-            <Col style={{marginRight: 8}}>
-              <Button.Group>
-                <Button icon={<ImportOutlined/>}>Import</Button>
-                <Button icon={<PlusCircleOutlined/>}>Create New</Button>
-              </Button.Group>
-            </Col>
-            <Col flex={2}><Input prefix={<SearchOutlined/>} allowClear={true}/></Col>
-          </Row>
-        </Header>
-        <Content style={{marginTop: HeaderHeight, padding: ContentPadding, height: '100%'}}>
-          <Table {...tableProps}></Table>
-        </Content>
-      </Layout>
-    )
+function selectById (items, id, key = '_id') {
+  for (let item of items) {
+    if (item[key] === id) return item
   }
+  return null
+}
+
+function TableProxyBlock ({proxy}) {
+  const name = proxy.name
+  const addr = `${proxy.host}:${proxy.port}`
+  const flag = getUnicodeFlagIcon(proxy.country)
+
+  // todo: do not forget change color of text when change theme
+  return (
+    <Box style={{display: 'flex', alignItems: 'center'}} childStyle={{paddingLeft: '8px'}}>
+      <div style={{fontSize: '18px'}}>{flag}</div>
+      <div>
+        <div>{name}</div>
+        <div style={{fontSize: '10px', color: '#8c8c8c'}}>{addr}</div>
+      </div>
+    </Box>
+  )
+}
+
+function TableHeader () {
+  const style = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    backgroundColor: 'white',
+    padding: '8px',
+    marginBottom: '8px',
+  }
+
+  return (
+    <Space style={style}>
+      <Button>Create Profile</Button>
+      <Space>
+        <Button type="primary">Create Profile</Button>
+        <Button type="default" icon={<ReloadOutlined/>}/>
+      </Space>
+    </Space>
+  )
+}
+
+export function Proxies () {
+  return (
+    <BaseLayout>
+      <div style={{fontSize: '32px', textAlign: 'center'}}>
+        Привет, Оля! Я тебя люблю! ❤️
+      </div>
+    </BaseLayout>
+  )
+}
+
+export default function Browsers () {
+  const [data, setData] = useState(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  useEffect(async () => setData(await getBrowsersAndProxies()), [])
+
+  if (!data) return (
+    <BaseLayout>
+      <Table loading/>
+    </BaseLayout>
+  )
+
+  const {browsers, proxies} = data
+
+  const NameColumn = {
+    title: 'Name',
+    dataIndex: 'name',
+    sorter: (a, b) => natSorter(a.name, b.name),
+  }
+
+  const ProxyColumn = {
+    title: 'Proxy',
+    dataIndex: 'proxy',
+    render: x => <TableProxyBlock proxy={selectById(proxies, x)}/>,
+  }
+
+  const LastActiveColumn = {
+    title: 'Last Active',
+    dataIndex: 'createdAt', // todo:
+    render: x => <TimeAgo date={x}/>,
+  }
+
+  const ActionColumn = {
+    title: 'Action',
+    width: 100,
+    align: 'center',
+    render: () => <Button type="primary" icon={<CaretRightOutlined/>}>Run</Button>,
+  }
+
+  const tableProps = {
+    rowKey: '_id',
+    rowSelection: {
+      selectedRowKeys: selectedRowKeys,
+      onChange: data => setSelectedRowKeys(data),
+    },
+    dataSource: browsers,
+    columns: [
+      NameColumn,
+      LastActiveColumn,
+      ProxyColumn,
+      ActionColumn,
+    ],
+    pagination: {
+      defaultPageSize: 25,
+      size: 'default',
+    },
+    size: 'small',
+    showSorterTooltip: false,
+    // title: () => <TableHeader/>,
+  }
+
+  return (
+    <BaseLayout>
+      <TableHeader/>
+      <Table {...tableProps}></Table>
+    </BaseLayout>
+  )
 }

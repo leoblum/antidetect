@@ -1,18 +1,30 @@
-import React, {useState} from 'react'
+import React from 'react'
+import {Router, Switch, Route, PrivateRoute, Redirect} from './components/router'
 import Auth from './components/auth-page'
-import {Router, Switch, Route, Redirect, PrivateRoute, Link} from './components/router'
-import backend from './backend'
+import Browsers, {Proxies} from './components/browsers-page'
 
-export default function App () {
+import PageProfilesList from './old/components/PageProfilesList'
+import PageProfileEditor from './old/components/PageProfileEditor'
+
+function Routes () {
   return (
     <Router>
       <Switch>
         <Route path="/auth/*" component={Auth}/>
-        <PrivateRoute path="/">
-          Hi!
-          <button onClick={() => backend.setAuthToken()}>Logout</button>
-        </PrivateRoute>
+        <PrivateRoute path="/browsers" component={Browsers}/>
+        <PrivateRoute path="/proxies" component={Proxies}/>
+
+        <Route path="/profile/:id" component={PageProfileEditor}/>
+        <Route path="/profiles" component={PageProfilesList}/>
+
+        <Route path={'*'}><Redirect to={'/browsers'}/></Route>
       </Switch>
     </Router>
+  )
+}
+
+export default function App () {
+  return (
+    <Routes/>
   )
 }

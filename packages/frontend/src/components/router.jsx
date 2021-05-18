@@ -21,8 +21,13 @@ export function Router ({children}) {
 
 export function PrivateRoute ({children, ...props}) {
   const auth = useAuth()
+  if (children === undefined && props.component) {
+    children = React.createElement(props.component)
+    delete props.component
+  }
+
   const render = ({location}) => auth ? children : <Redirect to={{pathname: '/auth/login', state: {from: location}}}/>
   return (
-    <Route {...props} render={render}/>
+    <Route {...props} render={render}></Route>
   )
 }
