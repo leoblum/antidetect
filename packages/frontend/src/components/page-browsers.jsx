@@ -124,7 +124,7 @@ function Proxies () {
 
 function Browsers () {
   const [data, setData] = useState(null)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   useEffect(async () => setData(await getBrowsersAndProxies()), [])
 
   if (!data) return (

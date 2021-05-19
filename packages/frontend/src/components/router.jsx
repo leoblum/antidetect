@@ -20,8 +20,29 @@ function ProvideAuth ({children}) {
 
 function useProvideAuth () {
   const [auth, setAuth] = useState(backend.isAuth)
-  useEffect(() => backend.onAuthStateChanged(setAuth))
+  useEffect(() => backend.onAuthStateChanged(setAuth), [])
   return auth
+}
+
+function Router ({children}) {
+  return (
+    <ProvideAuth>
+      <RouterBase>{children}</RouterBase>
+    </ProvideAuth>
+  )
+}
+
+function Route ({children, publicOnly, authOnly, redirect, ...props}) {
+  const auth = useAuth()
+  // console.info(props.path, {publicOnly, authOnly, redirect})
+  if (publicOnly && auth) return <Redirect to={'/'}/>
+  if (authOnly && !auth) return <Redirect to={'/auth/login'}/>
+  if (redirect) return <Redirect to={redirect}/>
+  return <RouteBase {...props}>{children}</RouteBase>
+}
+
+function Link ({children, ...props}) {
+  return <LinkBase component={Typography.Link} {...props}>{children}</LinkBase>
 }
 
 // https://usehooks.com/useRouter/
@@ -41,27 +62,6 @@ function useRouter () {
       history,
     }
   }, [params, match, location, history])
-}
-
-function Router ({children}) {
-  return (
-    <ProvideAuth>
-      <RouterBase>{children}</RouterBase>
-    </ProvideAuth>
-  )
-}
-
-function Route ({children, publicOnly, authOnly, redirect, ...props}) {
-  const auth = useAuth()
-  console.info(props.path, {publicOnly, authOnly, redirect})
-  if (publicOnly && auth) return <Redirect to={'/'}/>
-  if (authOnly && !auth) return <Redirect to={'/auth/login'}/>
-  if (redirect) return <Redirect to={redirect}/>
-  return <RouteBase {...props}>{children}</RouteBase>
-}
-
-function Link ({children, ...props}) {
-  return <LinkBase component={Typography.Link} {...props}>{children}</LinkBase>
 }
 
 export {Router, Route, Switch, Redirect, Link}

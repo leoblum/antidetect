@@ -3,6 +3,7 @@ import {Row, Col, Card, Layout, Typography, Form, Input, Button, Divider, notifi
 import {UserOutlined, LockOutlined} from '@ant-design/icons'
 
 import {Link, useRouter} from './router'
+import {notifyByApiCode} from './notify'
 import backend from './../backend'
 
 const emailItemProps = {
@@ -20,28 +21,12 @@ const passwordItemProps = {
   ],
 }
 
-function showNotificationByResponse ({success, message = null, ...props}) {
-  let handler = notification[success ? 'success' : 'error']
-  let tokens = {
-    email_already_used: 'Email already used.',
-    email_not_confirmed: 'Email not confirmed.',
-    wrong_password: 'Invalid email or password.',
-    reset_link_sent: 'Password reset link sent to email.',
-    confirmation_link_sent: 'Confirmation link sent to email.',
-  }
-
-  if (!success && !tokens[message]) console.warn('unknown message', message, props)
-
-  message = tokens[message]
-  return message ? handler({message}) : null
-}
-
 function SingInForm () {
   const router = useRouter()
 
   async function onFinish (values) {
     const response = await backend.login(values)
-    showNotificationByResponse(response)
+    notifyByApiCode(response)
     return response.success ? router.replace('/') : null
   }
 
@@ -78,7 +63,7 @@ function SingUpForm () {
 
   async function onFinish (values) {
     const response = await backend.createUser(values)
-    showNotificationByResponse(response)
+    notifyByApiCode(response)
     return response.success ? router.push('/auth/login') : null
   }
 
@@ -115,7 +100,7 @@ function ResetForm () {
 
   async function onFinish (values) {
     const response = await backend.resetPassword(values)
-    showNotificationByResponse(response)
+    notifyByApiCode(response)
     router.push('/auth/login')
   }
 
