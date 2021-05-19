@@ -1,7 +1,7 @@
 import React from 'react'
-import {Router, Switch, Route, PrivateRoute, Redirect} from './components/router'
-import Auth from './components/auth-page'
-import Browsers, {Proxies} from './components/browsers-page'
+import {Router, Switch, Route} from './components/router'
+import {SingIn, SingUp, ResetPassword} from './components/page-auth'
+import {Browsers, Proxies} from './components/page-browsers'
 
 import PageProfilesList from './old/components/PageProfilesList'
 import PageProfileEditor from './old/components/PageProfileEditor'
@@ -10,14 +10,17 @@ function Routes () {
   return (
     <Router>
       <Switch>
-        <Route path="/auth/*" component={Auth}/>
-        <PrivateRoute path="/browsers" component={Browsers}/>
-        <PrivateRoute path="/proxies" component={Proxies}/>
+        <Route path={'/auth/login'} component={SingIn} publicOnly/>
+        <Route path={'/auth/create'} component={SingUp} publicOnly/>
+        <Route path={'/auth/reset'} component={ResetPassword} publicOnly/>
 
-        <Route path="/profile/:id" component={PageProfileEditor}/>
-        <Route path="/profiles" component={PageProfilesList}/>
+        <Route path={'/browsers'} component={Browsers} authOnly/>
+        <Route path={'/proxies'} component={Proxies} authOnly/>
 
-        <Route path={'*'}><Redirect to={'/browsers'}/></Route>
+        <Route path={'/profiles'} component={PageProfilesList} authOnly/>
+        <Route path={'/profile/:id'} component={PageProfileEditor} authOnly/>
+
+        <Route path={'*'} redirect={'/browsers'}/>
       </Switch>
     </Router>
   )

@@ -112,7 +112,7 @@ function TableHeader () {
   )
 }
 
-export function Proxies () {
+function Proxies () {
   return (
     <BaseLayout>
       <div style={{fontSize: '32px', textAlign: 'center'}}>
@@ -122,7 +122,7 @@ export function Proxies () {
   )
 }
 
-export default function Browsers () {
+function Browsers () {
   const [data, setData] = useState(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   useEffect(async () => setData(await getBrowsersAndProxies()), [])
@@ -189,3 +189,5 @@ export default function Browsers () {
     </BaseLayout>
   )
 }
+
+export {Browsers, Proxies}

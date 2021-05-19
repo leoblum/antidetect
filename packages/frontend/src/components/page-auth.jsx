@@ -1,9 +1,9 @@
 import React from 'react'
 import {Row, Col, Card, Layout, Typography, Form, Input, Button, Divider, notification} from 'antd'
 import {UserOutlined, LockOutlined} from '@ant-design/icons'
-import {Link, Switch, Route, Redirect, useHistory} from './router'
+
+import {Link, useRouter} from './router'
 import backend from './../backend'
-import {useAuth} from '../hooks/use-auth'
 
 const emailItemProps = {
   name: 'email',
@@ -37,12 +37,12 @@ function showNotificationByResponse ({success, message = null, ...props}) {
 }
 
 function SingInForm () {
-  const history = useHistory()
+  const router = useRouter()
 
   async function onFinish (values) {
     const response = await backend.login(values)
     showNotificationByResponse(response)
-    return response.success ? history.replace('/') : null
+    return response.success ? router.replace('/') : null
   }
 
   return (
@@ -74,12 +74,12 @@ function SingInForm () {
 }
 
 function SingUpForm () {
-  const history = useHistory()
+  const router = useRouter()
 
   async function onFinish (values) {
     const response = await backend.createUser(values)
     showNotificationByResponse(response)
-    return response.success ? history.push('/auth/login') : null
+    return response.success ? router.push('/auth/login') : null
   }
 
   return (
@@ -111,12 +111,12 @@ function SingUpForm () {
 }
 
 function ResetForm () {
-  const history = useHistory()
+  const router = useRouter()
 
   async function onFinish (values) {
     const response = await backend.resetPassword(values)
     showNotificationByResponse(response)
-    history.push('/auth/login')
+    router.push('/auth/login')
   }
 
   return (
@@ -143,24 +143,14 @@ function ResetForm () {
   )
 }
 
-export default function AuthPage () {
-  const auth = useAuth()
-  if (auth) return <Redirect to="/"/>
-
+function PageLayout ({content}) {
   return (
     <Layout style={{minHeight: '100vh'}}>
       <Layout.Content>
         <Row type="flex" justify="center" align="middle" style={{minHeight: '100vh'}}>
           <Col style={{width: '350px'}}>
             <Card>
-              <Switch>
-                <Route path="/auth/login" component={SingInForm}/>
-                <Route path="/auth/create" component={SingUpForm}/>
-                <Route path="/auth/reset" component={ResetForm}/>
-                <Route path="/auth/*">
-                  <Redirect to="/auth/login"/>
-                </Route>
-              </Switch>
+              {content}
             </Card>
           </Col>
         </Row>
@@ -168,3 +158,7 @@ export default function AuthPage () {
     </Layout>
   )
 }
+
+export const SingIn = () => <PageLayout content={<SingInForm/>}/>
+export const SingUp = () => <PageLayout content={<SingUpForm/>}/>
+export const ResetPassword = () => <PageLayout content={<ResetForm/>}/>
