@@ -4,7 +4,7 @@ import {Menu} from 'antd'
 
 const links = [
   {path: '/profiles', name: 'All Profiles'},
-  {path: '/profile/new', name: 'New Profile'},
+  {path: '/profiles/new', name: 'New Profile'},
 ]
 
 class AppMenu extends Component {

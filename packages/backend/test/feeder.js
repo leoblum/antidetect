@@ -9,8 +9,6 @@ async function main () {
   const app = await buildApp()
   const api = getClient({app})
 
-  const rep = await api.auth(email, password, true)
-
   console.log(await app.db.dropCollection('browsers'))
   console.log(await app.db.dropCollection('proxies'))
 

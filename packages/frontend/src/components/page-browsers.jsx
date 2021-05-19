@@ -1,58 +1,17 @@
 import React, {useEffect, useState} from 'react'
-import {Layout, Table, Button, Space, Card} from 'antd'
+import {Table, Button, Space, Form, Input} from 'antd'
 import {CaretRightOutlined, ReloadOutlined} from '@ant-design/icons'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 import backend from '../backend'
 import {natSorter} from '../utils'
 import TimeAgo from './time-ago'
-import {Link} from './router'
+import {useRouter} from './router'
+import {BaseLayout, StyleForEach} from './base-layout'
 
-function Box ({children, childStyle, ...props}) {
-  const fn = child => {
-    const props = {style: Object.assign({}, childStyle, child.props.style)}
-    return React.cloneElement(child, props)
-  }
-  return (
-    <div {...props}>
-      {React.Children.map(children, fn)}
-    </div>
-  )
-}
+import {AddBrowser} from './page-browsers-add'
 
-function BaseLayout ({children}) {
-  const headerStyle = {
-    height: '52px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // flexDirection: 'row-reverse',
-    padding: '0 12px',
-  }
-
-  const contentStyle = {
-    padding: '12px',
-    // marginTop: '2px',
-    height: '100%',
-  }
-
-  return (
-    <Layout style={{minHeight: '100vh'}}>
-      <Layout.Header style={headerStyle}>
-        <Space style={{textTransform: 'uppercase'}}>
-          <div style={{fontSize: '32px', padding: '0 16px'}}>🔅</div>
-          <Link to="/browsers">Browsers</Link>
-          <Link to="/proxies">Proxies</Link>
-          <Link to="/profiles">Old</Link>
-        </Space>
-        <Button onClick={() => backend.logout()}>Logout</Button>
-      </Layout.Header>
-      <Layout.Content style={contentStyle}>
-        {children}
-      </Layout.Content>
-    </Layout>
-  )
-}
+export {AddBrowser}
 
 async function getBrowsersAndProxies () {
   let browsers = await backend.browsers()
@@ -82,17 +41,20 @@ function TableProxyBlock ({proxy}) {
 
   // todo: do not forget change color of text when change theme
   return (
-    <Box style={{display: 'flex', alignItems: 'center'}} childStyle={{paddingLeft: '8px'}}>
-      <div style={{fontSize: '18px'}}>{flag}</div>
-      <div>
-        <div>{name}</div>
-        <div style={{fontSize: '10px', color: '#8c8c8c'}}>{addr}</div>
-      </div>
-    </Box>
+    <div style={{display: 'flex', alignItems: 'center'}}>
+      <StyleForEach style={{paddingLeft: '8px'}}>
+        <div style={{fontSize: '18px'}}>{flag}</div>
+        <div>
+          <div>{name}</div>
+          <div style={{fontSize: '10px', color: '#8c8c8c'}}>{addr}</div>
+        </div>
+      </StyleForEach>
+    </div>
   )
 }
 
 function TableHeader () {
+  const router = useRouter()
   const style = {
     display: 'flex',
     justifyContent: 'space-between',
@@ -105,7 +67,7 @@ function TableHeader () {
     <Space style={style}>
       <Button>Create Profile</Button>
       <Space>
-        <Button type="primary">Create Profile</Button>
+        <Button type="primary" onClick={() => router.replace('/browsers/add')}>Create Profile</Button>
         <Button type="default" icon={<ReloadOutlined/>}/>
       </Space>
     </Space>
@@ -113,10 +75,28 @@ function TableHeader () {
 }
 
 function Proxies () {
+  const [data, setData] = useState({number: 100})
+  const [form] = Form.useForm()
+
+  function onClick () {
+    const number = ~~(Math.random() * 1000)
+    setData({number})
+    // form.resetFields()
+    form.setFieldsValue({number})
+  }
+
   return (
     <BaseLayout>
       <div style={{fontSize: '32px', textAlign: 'center'}}>
         Привет, Оля! Я тебя люблю! ❤️
+        <br/>
+        <Button onClick={onClick}>{data.number}</Button>
+
+        <Form initialValues={data} form={form} style={{width: '500px'}}>
+          <Form.Item name="number" shouldUpdate>
+            <Input.TextArea rows="2" style={{resize: 'none'}}/>
+          </Form.Item>
+        </Form>
       </div>
     </BaseLayout>
   )

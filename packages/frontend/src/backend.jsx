@@ -65,6 +65,14 @@ class ServerApi {
   async proxies () {
     return await this.get('/proxies')
   }
+
+  async fingerprintRandom () {
+    return await this.get('/fingerprint')
+  }
+
+  async fingerprintOptions () {
+    return await this.get('/fingerprint/options')
+  }
 }
 
 export default new ServerApi()
