@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react'
-import {Table, Button, Space, Form, Input} from 'antd'
+import {Table, Button, Space, Form, Input, Card} from 'antd'
 import {CaretRightOutlined, ReloadOutlined} from '@ant-design/icons'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
@@ -53,24 +53,22 @@ function TableProxyBlock ({proxy}) {
   )
 }
 
+function Block ({children, style}) {
+  return (
+    <div className={'app-content-block'} style={{style}}>{children}</div>
+  )
+}
+
 function TableHeader () {
   const router = useRouter()
-  const style = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    backgroundColor: 'white',
-    padding: '8px',
-    marginBottom: '8px',
-  }
-
   return (
-    <Space style={style}>
+    <Block>
       <Button>Create Profile</Button>
       <Space>
         <Button type="primary" onClick={() => router.replace('/browsers/add')}>Create Profile</Button>
         <Button type="default" icon={<ReloadOutlined/>}/>
       </Space>
-    </Space>
+    </Block>
   )
 }
 

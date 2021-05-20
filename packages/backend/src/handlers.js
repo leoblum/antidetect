@@ -24,6 +24,14 @@ function randomFingerprint (os) {
     cpu: randomChoice(values.cpu),
     ram: randomChoice(values.ram),
     renderer: randomChoice(values.renderer),
+
+    noiseWebGl: true,
+    noiseCanvas: false,
+    noiseAudio: true,
+
+    deviceCameras: 1,
+    deviceMicrophones: 1,
+    deviceSpeakers: 1,
   }
 }
 

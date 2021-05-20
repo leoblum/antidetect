@@ -1,0 +1,36 @@
+//@import '~antd/dist/antd.less';
+@import '~antd/dist/antd.dark.less';
+
+// override
+
+.ant-tabs-tab-btn {
+  min-width: 64px;
+  text-align: center;
+}
+
+.ant-form-item-explain {
+  font-size: 12px;
+}
+
+// own
+
+.app-content-block {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  margin-bottom: 8px;
+  background-color: @component-background;
+}
+
+.child-margin-8 > * {
+  margin-left: 4px;
+  margin-right: 4px;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
