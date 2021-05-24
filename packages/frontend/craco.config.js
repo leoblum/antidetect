@@ -9,7 +9,6 @@ module.exports = {
           lessOptions: {
             // modifyVars: getThemeVariables({
             //   dark: true,
-            //   compact: true,
             // }),
             javascriptEnabled: true,
           },

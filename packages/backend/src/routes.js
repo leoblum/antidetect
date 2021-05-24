@@ -21,11 +21,11 @@ module.exports = async function (fastify, opts) {
   pvt.get('/fingerprint', handlers.randomFingerprint)
   pvt.get('/fingerprint/options', handlers.fingerprintVariants)
 
-  pvt.get('/browsers', handlers.browsersList)
+  pvt.get('/profiles', handlers.profilesList)
   pvt.get('/proxies', handlers.proxiesList)
   // pvt.get('/userdata', handlers.proxiesList)
 
-  pvt.post('/browsers/create', handlers.createBrowser)
+  pvt.post('/profiles/create', handlers.createProfile)
   pvt.post('/proxies/create', handlers.createProxy)
 
 }

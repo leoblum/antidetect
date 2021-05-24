@@ -8,6 +8,14 @@ const messages = {
   confirmation_link_sent: 'Confirmation link sent to email.',
 }
 
+function success (message) {
+  return Notify.success(message)
+}
+
+function error (message) {
+  return Notify.error(message)
+}
+
 function notifyByApiCode ({success, message: code, ...props}) {
   let handler = Notify[success ? 'success' : 'error']
   let message = messages[code]
@@ -15,4 +23,7 @@ function notifyByApiCode ({success, message: code, ...props}) {
   return message ? handler(message) : null
 }
 
-export {notifyByApiCode}
+const notify = {notifyByApiCode, success, error}
+
+export {notifyByApiCode, success, error}
+export default notify

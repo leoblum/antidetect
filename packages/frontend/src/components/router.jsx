@@ -35,9 +35,9 @@ function Router ({children}) {
 function Route ({children, publicOnly, authOnly, redirect, ...props}) {
   const auth = useAuth()
   // console.info(props.path, {publicOnly, authOnly, redirect})
-  if (publicOnly && auth) return <Redirect to={'/'}/>
-  if (authOnly && !auth) return <Redirect to={'/auth/login'}/>
-  if (redirect) return <Redirect to={redirect}/>
+  if (publicOnly && auth) return <Redirect to={'/'} />
+  if (authOnly && !auth) return <Redirect to={'/auth/login'} />
+  if (redirect) return <Redirect to={redirect} />
   return <RouteBase {...props}>{children}</RouteBase>
 }
 

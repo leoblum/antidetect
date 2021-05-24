@@ -25,8 +25,8 @@ class AppLayout extends Component {
     return (
       <Layout style={{height: '100vh'}}>
         <Layout.Sider>
-          <AppLogo/>
-          <AppMenu/>
+          <AppLogo />
+          <AppMenu />
         </Layout.Sider>
         <Layout.Content>
           <Layout style={{marginLeft: 14, marginRight: 14}}>

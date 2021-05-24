@@ -150,7 +150,7 @@ describe('users authentication', () => {
     let [api, rep] = [getClient(this), null]
 
     rep = await api.confirmEmail(email)
-    rep = await api.auth(email, password, true)
+    rep = await api.auth(email, password)
 
     const token = api.headers['Authorization'].split(' ')[1].split('.').reverse()
     api.headers['Authorization'] = `Bearer ${token}` // modify token to bad one
@@ -223,65 +223,69 @@ describe('proxies creation', () => {
   })
 })
 
-describe('browsers creation', () => {
+describe('profiles creation', () => {
   beforeEach(createUserAndSession.bind(this))
 
-  it('should create browser for current user and be in browsers list', async () => {
+  it('should create profile for current user and be in profiles list', async () => {
     let [api, rep] = [getClient(this), null]
 
-    rep = await api.browsersList()
+    rep = await api.profilesList()
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
-    expect(rep.data.browsers).to.be.an('array')
-    expect(rep.data.browsers).to.have.lengthOf(0)
+    expect(rep.data.profiles).to.be.an('array')
+    expect(rep.data.profiles).to.have.lengthOf(0)
 
     let fingerprint = (await api.getFingerprint()).data
 
-    rep = await api.createBrowser('profile-mac', fingerprint.mac, null)
+    rep = await api.createProfile('profile-mac', fingerprint.mac, null)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
 
-    rep = await api.browsersList()
-    expect(rep.data.browsers).to.have.lengthOf(1)
+    rep = await api.profilesList()
+    expect(rep.data.profiles).to.have.lengthOf(1)
 
-    rep = await api.createBrowser('profile-win', fingerprint.win, null)
+    rep = await api.createProfile('profile-win', fingerprint.win, null)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
 
-    rep = await api.browsersList()
-    expect(rep.data.browsers).to.have.lengthOf(2)
+    rep = await api.profilesList()
+    expect(rep.data.profiles).to.have.lengthOf(2)
   })
 
-  it('should create browser without proxy', async () => {
+  it('should create profile without proxy', async () => {
     let [api, rep] = [getClient(this), null]
 
     let fingerprint = (await api.getFingerprint()).data
-    rep = await api.createBrowser('profile-mac', fingerprint.mac, null)
+    rep = await api.createProfile('profile-mac', fingerprint.mac, null)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
-    expect(rep.data.browser).to.have.property('proxy')
-    expect(rep.data.browser.proxy).to.be.null
+    expect(rep.data.profile).to.have.property('proxy')
+    expect(rep.data.profile.proxy).to.be.null
   })
 
-  it('should create browser with new proxy', async () => {
-    let [api, rep] = [getClient(this), null]
-
-    let proxy = {
-      name: 'proxy-1',
-      type: 'socks5',
-      host: 'localhost',
-      port: 8080,
-      username: 'user',
-      password: 'pass',
-    }
-
-    let fingerprint = (await api.getFingerprint()).data
-    rep = await api.createBrowser('profile-mac', fingerprint.mac, proxy)
-    expect(rep.statusCode).to.equal(200)
-    expect(rep.data.success).to.be.true
-    expect(rep.data.browser).to.have.property('proxy')
-    expect(rep.data.browser.proxy).to.be.an('string')
-
-    console.log(rep.data.browser)
+  it('should not create profile without fingerprint', async () => {
+    expect(false).to.be.true
   })
+
+  // it('should create profile with new proxy', async () => {
+  //   let [api, rep] = [getClient(this), null]
+
+  //   let proxy = {
+  //     name: 'proxy-1',
+  //     type: 'socks5',
+  //     host: 'localhost',
+  //     port: 8080,
+  //     username: 'user',
+  //     password: 'pass',
+  //   }
+
+  //   let fingerprint = (await api.getFingerprint()).data
+  //   rep = await api.createProfile('profile-mac', fingerprint.mac, proxy)
+  //   expect(rep.statusCode).to.equal(200)
+  //   expect(rep.data.success).to.be.true
+  //   expect(rep.data.profile).to.have.property('proxy')
+  //   expect(rep.data.profile.proxy).to.be.an('string')
+
+  //   console.log(rep.data.profile)
+  // })
 })

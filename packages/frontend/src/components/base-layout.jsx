@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {Button, Layout, Space} from 'antd'
 import {Link} from './router'
 import backend from '../backend'
@@ -6,6 +6,23 @@ import backend from '../backend'
 export function StyleForEach ({children, style}) {
   return (
     <>{React.Children.map(children, child => React.cloneElement(child, {style: {...style, ...child.props.style}}))}</>
+  )
+}
+
+function DayNight ({size = 16}) {
+  const [dark, setDark] = useState(true)
+  const onClick = () => {
+    setDark(!dark)
+    console.log(window.less)
+  }
+  const style = {
+    fontSize: `${size}px`,
+    margin: `0 ${size / 2}px`,
+    cursor: 'pointer',
+    userSelect: 'none',
+  }
+  return (
+    <div style={style} onClick={onClick}>{dark ? '☀️' : '🌙'}</div>
   )
 }
 
@@ -23,8 +40,8 @@ function BaseHeader ({style}) {
   return (
     <div style={style}>
       <Space style={{textTransform: 'uppercase'}}>
-        <div style={{fontSize: '32px', padding: '0 16px'}}>🔅</div>
-        <Link to="/browsers">Browsers</Link>
+        <DayNight size={32} />
+        <Link to="/profiles">Profiles</Link>
         <Link to="/proxies">Proxies</Link>
         <Link to="/profiles">Old</Link>
       </Space>
@@ -54,13 +71,15 @@ export function BaseLayout ({children}) {
     width: '100%',
     height: '100%',
     maxWidth,
-    marginTop: '8px',
+    // marginTop: '8px',
+    // margin: '8px',
+    padding: '8px',
   }
 
   return (
     <Layout style={layoutStyle}>
       <Layout.Header style={headerStyle}>
-        <BaseHeader style={{maxWidth}}/>
+        <BaseHeader style={{maxWidth}} />
       </Layout.Header>
       <Layout.Content style={contentStyle}>
         {children}

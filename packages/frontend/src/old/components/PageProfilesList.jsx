@@ -9,7 +9,7 @@ import appModel from './AppModel'
 const sorter = natsort()
 
 class PageProfilesList extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     this.state = {
@@ -45,7 +45,7 @@ class PageProfilesList extends Component {
   settingsMenuIcon (item) {
     return (
       <Dropdown overlay={() => this.settingsMenu(item)} trigger={['click']}>
-        <SettingOutlined style={{fontSize: 18, marginTop: 4, cursor: 'pointer'}}/>
+        <SettingOutlined style={{fontSize: 18, marginTop: 4, cursor: 'pointer'}} />
       </Dropdown>
     )
   }
@@ -58,7 +58,7 @@ class PageProfilesList extends Component {
         <Menu.Item><Link to={`/profiles/${profileId}`}>Edit</Link></Menu.Item>
         <Menu.Item onClick={() => this.cloneProfile(profileId)}>Clone</Menu.Item>
         {/*<Menu.Item>Share</Menu.Item>*/}
-        <Menu.Divider/>
+        <Menu.Divider />
         <Menu.Item onClick={() => this.deleteProfile(profileId)}>Delete</Menu.Item>
       </Menu>
     )
@@ -99,7 +99,7 @@ class PageProfilesList extends Component {
         </AppLayout.Head>
         <AppLayout.Body>
           <Card bodyStyle={{padding: 0}}>
-            <Table {...tableProps}/>
+            <Table {...tableProps} />
           </Card>
         </AppLayout.Body>
       </AppLayout>

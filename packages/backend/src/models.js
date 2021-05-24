@@ -13,7 +13,7 @@ const teamSchema = new Schema({
   name: {type: String, required: true},
 })
 
-const browserSchema = new Schema({
+const profileSchema = new Schema({
   name: {type: String, required: true},
   team: {type: ObjectId, ref: 'Team', required: true},
   proxy: {type: ObjectId, ref: 'Proxy', default: null},
@@ -51,7 +51,7 @@ const linkTokenSchema = new Schema({
 module.exports = {
   User: model('User', userSchema),
   Team: model('Team', teamSchema),
-  Browser: model('Browser', browserSchema),
+  Profile: model('Profile', profileSchema),
   Proxy: model('Proxy', proxySchema),
   LinkToken: model('LinkToken', linkTokenSchema),
 }

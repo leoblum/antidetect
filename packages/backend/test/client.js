@@ -36,11 +36,9 @@ module.exports = function createClient (mochaContext) {
       return await this.post('/users/confirmEmail', {email})
     },
 
-    async auth (email, password, keepToken = false) {
+    async auth (email, password) {
       let rep = await this.post('/users/login', {email, password})
-      if (keepToken && rep.json().success) {
-        this.headers['Authorization'] = `Bearer ${rep.json().token}`
-      }
+      if (rep.data.success) this.headers['Authorization'] = `Bearer ${rep.data.token}`
       return rep
     },
 
@@ -56,12 +54,12 @@ module.exports = function createClient (mochaContext) {
       return await this.get('/fingerprint/options')
     },
 
-    async createBrowser (name, fingerprint, proxy) {
-      return await this.post('/browsers/create', {name, fingerprint, proxy})
+    async createProfile (name, fingerprint, proxy) {
+      return await this.post('/profiles/create', {name, fingerprint, proxy})
     },
 
-    async browsersList () {
-      return await this.get('/browsers')
+    async profilesList () {
+      return await this.get('/profiles')
     },
 
     async createProxy (data) {

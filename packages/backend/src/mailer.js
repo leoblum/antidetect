@@ -19,7 +19,7 @@ module.exports = {
   },
 
   async confirmEmail ({email, token}) {
-    console.log(email, token)
+    // console.log(email, token)
 
     return await this.transporter.sendMail({
       from: '"Fred Foo 👻" <foo@example.com>',

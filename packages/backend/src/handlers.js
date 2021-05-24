@@ -3,7 +3,7 @@ const models = require('./models')
 const mailer = require('./mailer')
 const fingerprints = require('./data/fingerprints.json')
 
-const {User, Team, Browser, Proxy, LinkToken} = models
+const {User, Team, Profile, Proxy, LinkToken} = models
 
 function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -78,6 +78,8 @@ module.exports = {
 
   async confirmEmail (req, rep) {
     // todo: make it works by tokens
+    return rep.done()
+
     const email = req.body.email
 
     const user = await User.findOne({email})
@@ -103,7 +105,7 @@ module.exports = {
     return rep.done(fingerprints)
   },
 
-  async createBrowser (req, rep) {
+  async createProfile (req, rep) {
     const {name, fingerprint} = req.body
     const {team} = req.user
 
@@ -113,16 +115,16 @@ module.exports = {
       proxy = await Proxy.create(proxy)
     }
 
-    const browser = await Browser.create({
+    const profile = await Profile.create({
       name, team, fingerprint, proxy,
     })
 
-    return rep.done({browser})
+    return rep.done({profile})
   },
 
-  async browsersList (req, rep) {
-    const browsers = await Browser.find({team: req.user.team})
-    return rep.done({browsers})
+  async profilesList (req, rep) {
+    const profiles = await Profile.find({team: req.user.team})
+    return rep.done({profiles})
   },
 
   async proxiesList (req, rep) {

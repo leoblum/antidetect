@@ -41,7 +41,7 @@ function generateProfile (index = 0) {
 }
 
 class AppModel {
-  constructor () {
+  constructor() {
     this.profiles = Array.from(new Array(10)).map((_, idx) => Object.assign({
       _id: uuid4(),
     }, generateProfile(idx * 2)))

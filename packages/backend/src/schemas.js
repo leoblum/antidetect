@@ -39,7 +39,7 @@ const UserAuthSchema = {
   },
 }
 
-const BrowserCreateSchema = {
+const ProfileCreateSchema = {
   body: {
     type: 'object',
     required: ['name', 'fingerprint'],
@@ -64,5 +64,5 @@ const BrowserCreateSchema = {
 module.exports = {
   UserCreateSchema,
   UserAuthSchema,
-  BrowserCreateSchema,
+  ProfileCreateSchema,
 }

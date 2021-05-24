@@ -9,7 +9,7 @@ async function main () {
   const app = await buildApp()
   const api = getClient({app})
 
-  console.log(await app.db.dropCollection('browsers'))
+  console.log(await app.db.dropCollection('profiles'))
   console.log(await app.db.dropCollection('proxies'))
 
   function randomChoice (arr) {
@@ -32,7 +32,7 @@ async function main () {
       proxy.country = randomChoice(['ru', 'ua', 'pl', 'au'])
 
       let fingerprint = (await api.getFingerprint()).data
-      let rep = await api.createBrowser('profile ' + (i + 1), fingerprint.mac, proxy)
+      let rep = await api.createProfile('profile ' + (i + 1), fingerprint.mac, proxy)
       console.log(rep.statusCode)
     }
   }

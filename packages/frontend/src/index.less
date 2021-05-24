@@ -1,7 +1,5 @@
-//@import '~antd/dist/antd.less';
-@import '~antd/dist/antd.dark.less';
-
-// override
+@import '~antd/dist/antd.less';
+//@import '~antd/dist/antd.dark.less';
 
 .ant-tabs-tab-btn {
   min-width: 64px;
@@ -10,6 +8,14 @@
 
 .ant-form-item-explain {
   font-size: 12px;
+}
+
+.ant-tabs-tab + .ant-tabs-tab {
+  margin: 0;
+}
+
+.ant-tabs-small > .ant-tabs-nav .ant-tabs-tab {
+  padding: 8px 6px;
 }
 
 // own
@@ -22,7 +28,7 @@
   background-color: @component-background;
 }
 
-.child-margin-8 > * {
+.child-margin-8>* {
   margin-left: 4px;
   margin-right: 4px;
 

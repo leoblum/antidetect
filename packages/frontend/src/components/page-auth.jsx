@@ -31,15 +31,15 @@ function SingInForm () {
   }
 
   return (
-    <Form name="sign-in" initialValues={{remember: true}} onFinish={onFinish} layout="vertical">
+    <Form name="sign-in" onFinish={onFinish} layout="vertical">
       <Divider>Login</Divider>
 
       <Form.Item {...emailItemProps}>
-        <Input prefix={<UserOutlined className="site-form-item-icon"/>} placeholder="Email address"/>
+        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email address" />
       </Form.Item>
 
       <Form.Item {...passwordItemProps}>
-        <Input.Password prefix={<LockOutlined className="site-form-item-icon"/>} placeholder="Password"/>
+        <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} placeholder="Password" />
       </Form.Item>
 
       <Form.Item>
@@ -72,11 +72,11 @@ function SingUpForm () {
       <Divider>Create Account</Divider>
 
       <Form.Item {...emailItemProps}>
-        <Input prefix={<UserOutlined className="site-form-item-icon"/>} placeholder="Email address"/>
+        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email address" />
       </Form.Item>
 
       <Form.Item {...passwordItemProps}>
-        <Input.Password prefix={<LockOutlined className="site-form-item-icon"/>} placeholder="Password"/>
+        <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} placeholder="Password" />
       </Form.Item>
 
       <Form.Item>
@@ -112,7 +112,7 @@ function ResetForm () {
       </Typography.Text>
 
       <Form.Item {...emailItemProps}>
-        <Input prefix={<UserOutlined className="site-form-item-icon"/>} placeholder="Email address"/>
+        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Email address" />
       </Form.Item>
 
       <Form.Item>
@@ -144,6 +144,6 @@ function PageLayout ({content}) {
   )
 }
 
-export const SingIn = () => <PageLayout content={<SingInForm/>}/>
-export const SingUp = () => <PageLayout content={<SingUpForm/>}/>
-export const ResetPassword = () => <PageLayout content={<ResetForm/>}/>
+export const SingIn = () => <PageLayout content={<SingInForm />} />
+export const SingUp = () => <PageLayout content={<SingUpForm />} />
+export const ResetPassword = () => <PageLayout content={<ResetForm />} />

@@ -17,5 +17,5 @@ function isString (str) {
 
 export default function TimeAgo ({date}) {
   if (isString(date)) date = new Date(date)
-  return <ReactTimeAgo date={date}/>
+  return <ReactTimeAgo date={date} />
 }

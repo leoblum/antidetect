@@ -1,30 +1,30 @@
 import React, {useEffect, useState} from 'react'
-import {Table, Button, Space, Form, Input, Card} from 'antd'
-import {CaretRightOutlined, ReloadOutlined} from '@ant-design/icons'
+import {Table, Button, Space, Form, Input, Dropdown, Menu} from 'antd'
+import {ReloadOutlined, MoreOutlined, CaretRightOutlined} from '@ant-design/icons'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 
 import backend from '../backend'
 import {natSorter} from '../utils'
 import TimeAgo from './time-ago'
-import {useRouter} from './router'
+import {useRouter, Link} from './router'
 import {BaseLayout, StyleForEach} from './base-layout'
 
-import {AddBrowser} from './page-browsers-add'
+import {AddProfile} from './page-profiles-add'
 
-export {AddBrowser}
+export {AddProfile}
 
-async function getBrowsersAndProxies () {
-  let browsers = await backend.browsers()
+async function getProfilesAndProxies () {
+  let profiles = await backend.profiles()
   let proxies = await backend.proxies()
 
-  if (!browsers.success || !proxies.success) {
-    console.error('data not loaded', browsers, proxies)
+  if (!profiles.success || !proxies.success) {
+    console.error('data not loaded', profiles, proxies)
     return null
   }
 
-  browsers = browsers.browsers
+  profiles = profiles.profiles
   proxies = proxies.proxies
-  return {browsers, proxies}
+  return {profiles, proxies}
 }
 
 function selectById (items, id, key = '_id') {
@@ -35,9 +35,9 @@ function selectById (items, id, key = '_id') {
 }
 
 function TableProxyBlock ({proxy}) {
-  const name = proxy.name
-  const addr = `${proxy.host}:${proxy.port}`
-  const flag = getUnicodeFlagIcon(proxy.country)
+  const name = proxy ? proxy.name : 'None'
+  const addr = proxy ? `${proxy.host}:${proxy.port}` : 'Direct Conection'
+  const flag = proxy ? (proxy.country !== null ? getUnicodeFlagIcon(proxy.country) : '🌍') : '🚫'
 
   // todo: do not forget change color of text when change theme
   return (
@@ -65,8 +65,8 @@ function TableHeader () {
     <Block>
       <Button>Create Profile</Button>
       <Space>
-        <Button type="primary" onClick={() => router.replace('/browsers/add')}>Create Profile</Button>
-        <Button type="default" icon={<ReloadOutlined/>}/>
+        <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
+        <Button type="default" icon={<ReloadOutlined />} />
       </Space>
     </Block>
   )
@@ -87,12 +87,12 @@ function Proxies () {
     <BaseLayout>
       <div style={{fontSize: '32px', textAlign: 'center'}}>
         Привет, Оля! Я тебя люблю! ❤️
-        <br/>
+        <br />
         <Button onClick={onClick}>{data.number}</Button>
 
         <Form initialValues={data} form={form} style={{width: '500px'}}>
           <Form.Item name="number" shouldUpdate>
-            <Input.TextArea rows="2" style={{resize: 'none'}}/>
+            <Input.TextArea rows="2" style={{resize: 'none'}} />
           </Form.Item>
         </Form>
       </div>
@@ -100,18 +100,44 @@ function Proxies () {
   )
 }
 
-function Browsers () {
+function ActionRender ({profile}) {
+  return (
+    <Space>
+      <Button type="primary" icon={<CaretRightOutlined />}>Run</Button>
+      <Dropdown overlay={() => <MenuRenderer profile={profile}/>} trigger="click" placement="bottomRight">
+        <Button icon={<MoreOutlined />} />
+      </Dropdown>
+    </Space>
+  )
+}
+
+function MenuRenderer ({profile}) {
+  console.log(profile)
+  const profileId = profile._id
+  const router = useRouter()
+
+  return (
+    <Menu>
+      <Menu.Item onClick={() => router.replace(`/profiles/edit/${profileId}`) }>Edit</Menu.Item>
+      <Menu.Item>Clone</Menu.Item>
+      <Menu.Item>Delete</Menu.Item>
+      {/* <Menu.Divider /> */}
+    </Menu>
+  )
+}
+
+function Profiles () {
   const [data, setData] = useState(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
-  useEffect(async () => setData(await getBrowsersAndProxies()), [])
+  useEffect(async () => setData(await getProfilesAndProxies()), [])
 
   if (!data) return (
     <BaseLayout>
-      <Table loading/>
+      <Table loading />
     </BaseLayout>
   )
 
-  const {browsers, proxies} = data
+  const {profiles, proxies} = data
 
   const NameColumn = {
     title: 'Name',
@@ -122,20 +148,20 @@ function Browsers () {
   const ProxyColumn = {
     title: 'Proxy',
     dataIndex: 'proxy',
-    render: x => <TableProxyBlock proxy={selectById(proxies, x)}/>,
+    render: x => <TableProxyBlock proxy={selectById(proxies, x)} />,
   }
 
   const LastActiveColumn = {
     title: 'Last Active',
     dataIndex: 'createdAt', // todo:
-    render: x => <TimeAgo date={x}/>,
+    render: x => <TimeAgo date={x} />,
   }
 
   const ActionColumn = {
     title: 'Action',
     width: 100,
-    align: 'center',
-    render: () => <Button type="primary" icon={<CaretRightOutlined/>}>Run</Button>,
+    align: 'left',
+    render: (item) => <ActionRender profile={item} />,
   }
 
   const tableProps = {
@@ -144,7 +170,7 @@ function Browsers () {
       selectedRowKeys: selectedRowKeys,
       onChange: data => setSelectedRowKeys(data),
     },
-    dataSource: browsers,
+    dataSource: profiles,
     columns: [
       NameColumn,
       LastActiveColumn,
@@ -162,10 +188,10 @@ function Browsers () {
 
   return (
     <BaseLayout>
-      <TableHeader/>
+      <TableHeader />
       <Table {...tableProps}></Table>
     </BaseLayout>
   )
 }
 
-export {Browsers, Proxies}
+export {Profiles, Proxies}

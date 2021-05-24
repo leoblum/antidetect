@@ -84,7 +84,7 @@ class ProfileForm extends Component {
             <Row>
               <Col flex="1" style={{paddingRight: padding}}>
                 <Form.Item label="Profile Name" name="name">
-                  <Input/>
+                  <Input />
                 </Form.Item>
 
                 <Form.Item label="Operation System" name="os">
@@ -106,17 +106,17 @@ class ProfileForm extends Component {
                 <If condition={state.proxyType !== 'none'}>
                   <Form.Item label="Proxy Address and Port">
                     <Input.Group compact>
-                      <Input style={{width: '75%'}} placeholder="Address"/>
-                      <Input style={{width: '25%'}} placeholder="Port"/>
+                      <Input style={{width: '75%'}} placeholder="Address" />
+                      <Input style={{width: '25%'}} placeholder="Port" />
                     </Input.Group>
                   </Form.Item>
 
                   <Form.Item label="Login">
-                    <Input placeholder="Login"/>
+                    <Input placeholder="Login" />
                   </Form.Item>
 
                   <Form.Item label="Password">
-                    <Input placeholder="Password"/>
+                    <Input placeholder="Password" />
                   </Form.Item>
                 </If>
               </Col>
@@ -136,18 +136,18 @@ class ProfileForm extends Component {
                 <If condition={state.geolocationMode !== 'block'}>
                   <Space style={{marginBottom: 24}}>
                     <Form.Item name="geolocationFillFromIP" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Fill geolocation based on Public IP
                   </Space>
 
                   <If condition={!state.geolocationFillFromIP}>
                     <Form.Item label="Latitude" name="geolocationLatitude">
-                      <Input/>
+                      <Input />
                     </Form.Item>
 
                     <Form.Item label="Longitude" name="geolocationLongitude">
-                      <Input/>
+                      <Input />
                     </Form.Item>
                   </If>
                 </If>
@@ -156,7 +156,7 @@ class ProfileForm extends Component {
                 <Form.Item label="Timezone">
                   <Space style={{marginTop: 3, marginBottom: 24}}>
                     <Form.Item name="timezoneFillFromIP" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Fill timezone based on Public IP
                   </Space>
@@ -190,14 +190,14 @@ class ProfileForm extends Component {
 
                   <Space style={{marginBottom: 24}}>
                     <Form.Item name="webrtcFillFromIP" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Fill WebRTC based on Public IP
                   </Space>
 
                   <If condition={!state.webrtcFillFromIP}>
                     <Form.Item label="IP Address" name="webrtcPublicIP">
-                      <Input/>
+                      <Input />
                     </Form.Item>
                   </If>
                 </If>
@@ -210,11 +210,11 @@ class ProfileForm extends Component {
             <Row>
               <Col flex="1" style={{paddingRight: padding}}>
                 <Form.Item label="User Agent" name="navigatorUserAgent">
-                  <Input.TextArea rows="4" style={{resize: 'none'}}/>
+                  <Input.TextArea rows="4" style={{resize: 'none'}} />
                 </Form.Item>
 
                 <Form.Item label="Platform" name="navigatorPlatform">
-                  <Input/>
+                  <Input />
                 </Form.Item>
 
                 <Form.Item label="Hardware Concurrency" name="navigatorHardwareConcurrency">
@@ -253,7 +253,7 @@ class ProfileForm extends Component {
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: state.webglParametersMasking ? 8 : 24}}>
                     <Form.Item name="webglParametersMasking" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Mask WebGL metadata
                   </Space>
@@ -261,18 +261,18 @@ class ProfileForm extends Component {
 
                 <If condition={state.webglParametersMasking}>
                   <Form.Item label="WebGL Vendor" name="webglVendor">
-                    <Input/>
+                    <Input />
                   </Form.Item>
 
                   <Form.Item label="WebGL Renderer name" name="webglRendererName">
-                    <Input/>
+                    <Input />
                   </Form.Item>
                 </If>
 
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: 24}}>
                     <Form.Item name="webglRendererNoise" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Noise WebGL Renderer
                   </Space>
@@ -281,7 +281,7 @@ class ProfileForm extends Component {
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: 24}}>
                     <Form.Item name="canvasNoise" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Noise Canvas
                   </Space>
@@ -290,7 +290,7 @@ class ProfileForm extends Component {
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: 24}}>
                     <Form.Item name="audioNoise" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Noise Audio Context
                   </Space>
@@ -300,7 +300,7 @@ class ProfileForm extends Component {
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: state.mediaDevicesMasking ? 4 : 24}}>
                     <Form.Item name="mediaDevicesMasking" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Mask Media Devices
                   </Space>
@@ -308,22 +308,22 @@ class ProfileForm extends Component {
 
                 <If condition={state.mediaDevicesMasking}>
                   <Form.Item label="Video inputs" name="mediaDevicesVideoInputs">
-                    <InputNumber min={0} max={4}/>
+                    <InputNumber min={0} max={4} />
                   </Form.Item>
 
                   <Form.Item label="Audio inputs" name="mediaDevicesAudioInputs">
-                    <InputNumber min={0} max={4}/>
+                    <InputNumber min={0} max={4} />
                   </Form.Item>
 
                   <Form.Item label="Audio outputs" name="mediaDevicesAudioOutputs">
-                    <InputNumber min={0} max={4}/>
+                    <InputNumber min={0} max={4} />
                   </Form.Item>
                 </If>
 
                 <Form.Item>
                   <Space style={{marginTop: 3, marginBottom: state.fontsMasking ? 4 : 24}}>
                     <Form.Item name="fontsMasking" valuePropName="checked" noStyle>
-                      <Switch checkedChildren={<CheckOutlined/>} unCheckedChildren={<CloseOutlined/>}/>
+                      <Switch checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
                     </Form.Item>
                     Mask Fonts list
                   </Space>
@@ -339,7 +339,7 @@ class ProfileForm extends Component {
 }
 
 class PageProfileEditor extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
 
     let profileId = this.props.location.pathname.split('/').reverse()[0]
@@ -367,12 +367,12 @@ class PageProfileEditor extends Component {
           <Row style={{height: '100%'}} gutter="8">
             <Col flex="8">
               <Card>
-                <ProfileForm data={state} onValuesChange={onValueChange} isNew={this.isNew}/>
+                <ProfileForm data={state} onValuesChange={onValueChange} isNew={this.isNew} />
               </Card>
             </Col>
             <Col flex="4">
               <Card title="Profile Summary">
-                <ProfileSummary data={state}/>
+                <ProfileSummary data={state} />
               </Card>
             </Col>
           </Row>

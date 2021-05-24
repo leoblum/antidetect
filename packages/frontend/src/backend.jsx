@@ -4,7 +4,7 @@ import {createEmitter, storageGet, storageSet} from './utils'
 console.log('willow.bruen25@ethereal.email')
 
 class ServerApi {
-  constructor () {
+  constructor() {
     this.http = axios.create({
       baseURL: 'http://127.0.0.1:3030',
       validateStatus: status => status < 500,
@@ -58,8 +58,8 @@ class ServerApi {
     return await this.post('/users/reset-password', {email})
   }
 
-  async browsers () {
-    return await this.get('/browsers')
+  async profiles () {
+    return await this.get('/profiles')
   }
 
   async proxies () {
@@ -72,6 +72,14 @@ class ServerApi {
 
   async fingerprintOptions () {
     return await this.get('/fingerprint/options')
+  }
+
+  async saveProfile (params) {
+    return await this.post('/profiles/create', params)
+  }
+
+  async getProfile (profileId) {
+    return await this.post('/profiles/' + profileId)
   }
 }
 
