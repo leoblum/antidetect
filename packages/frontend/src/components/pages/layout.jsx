@@ -1,9 +1,8 @@
 import { Button, Layout, Space } from 'antd'
 import React, { useState } from 'react'
 
+import Link from '../app-link'
 import backend from '../backend'
-
-import Link from './app-link'
 
 export function DayNight ({ size = 16 }) {
   const [dark, setDark] = useState(true)

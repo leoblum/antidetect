@@ -55,7 +55,7 @@ class PageProfilesList extends Component {
 
     return (
       <Menu>
-        <Menu.Item><Link to={`/profiles/${profileId}`}>Edit</Link></Menu.Item>
+        <Menu.Item><Link to={`/profiles-old/${profileId}`}>Edit</Link></Menu.Item>
         <Menu.Item onClick={() => this.cloneProfile(profileId)}>Clone</Menu.Item>
         {/*<Menu.Item>Share</Menu.Item>*/}
         <Menu.Divider />

@@ -1,17 +1,18 @@
 const bcrypt = require('bcrypt')
-const models = require('./models')
-const mailer = require('./mailer')
-const fingerprints = require('./data/fingerprints.json')
 
-const {User, Team, Profile, Proxy, LinkToken} = models
+const fingerprints = require('./data/fingerprints.json')
+const mailer = require('./mailer')
+const models = require('./models')
+
+const { User, Team, Profile, Proxy, LinkToken } = models
 
 function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
 async function sendConfirmationLink (user) {
-  const token = await LinkToken.create({user, action: 'create'})
-  await mailer.confirmEmail({email: user.email, token: token._id})
+  const token = await LinkToken.create({ user, action: 'create' })
+  await mailer.confirmEmail({ email: user.email, token: token._id })
 }
 
 function randomFingerprint (os) {
@@ -37,28 +38,28 @@ function randomFingerprint (os) {
 
 module.exports = {
   async checkEmail (req, rep) {
-    const user = await User.findOne({email: req.body.email})
+    const user = await User.findOne({ email: req.body.email })
     const exists = user !== null
 
-    return rep.done({exists})
+    return rep.done({ exists })
   },
 
   async createUser (req, rep) {
     const email = req.body.email
     const password = await bcrypt.hash(req.body.password, 10)
 
-    if (await User.findOne({email})) return rep.fail(412, 'email_already_used')
+    if (await User.findOne({ email })) return rep.fail(412, 'email_already_used')
 
-    const team = await Team.create({name: email})
-    const user = await User.create({email, password, team})
+    const team = await Team.create({ name: email })
+    const user = await User.create({ email, password, team })
     await sendConfirmationLink(user)
-    return rep.done(201, {message: 'confirmation_link_sent'})
+    return rep.done(201, { message: 'confirmation_link_sent' })
   },
 
   async login (req, rep) {
-    const {email, password} = req.body
+    const { email, password } = req.body
 
-    const user = await User.findOne({email})
+    const user = await User.findOne({ email })
     const pass = user !== null ? await bcrypt.compare(password, user.password) : false
     if (!pass) return rep.fail(401, 'wrong_password')
     if (!user.emailConfirmed) return rep.fail(401, 'email_not_confirmed')
@@ -68,26 +69,26 @@ module.exports = {
       team: user.team,
     })
 
-    return rep.done({token})
+    return rep.done({ token })
   },
 
   async resetPassword (req, rep) {
-    const email = req.body.email
-    return rep.done({message: 'reset_link_sent'})
+    // const email = req.body.email
+    return rep.done({ message: 'reset_link_sent' })
   },
 
   async confirmEmail (req, rep) {
     // todo: make it works by tokens
     return rep.done()
 
-    const email = req.body.email
+    // const email = req.body.email
 
-    const user = await User.findOne({email})
-    if (user.emailConfirmed) return rep.fail(409, 'email_already_confirmed')
+    // const user = await User.findOne({ email })
+    // if (user.emailConfirmed) return rep.fail(409, 'email_already_confirmed')
 
-    user.emailConfirmed = true
-    await user.save()
-    return rep.done()
+    // user.emailConfirmed = true
+    // await user.save()
+    // return rep.done()
   },
 
   async protected (req, rep) {
@@ -106,12 +107,12 @@ module.exports = {
   },
 
   async createProfile (req, rep) {
-    const {name, fingerprint} = req.body
-    const {team} = req.user
+    const { name, fingerprint } = req.body
+    const { team } = req.user
 
     let proxy = req.body.proxy || null
     if (proxy) {
-      proxy = Object.assign(proxy, {team})
+      proxy = Object.assign(proxy, { team })
       proxy = await Proxy.create(proxy)
     }
 
@@ -119,26 +120,26 @@ module.exports = {
       name, team, fingerprint, proxy,
     })
 
-    return rep.done({profile})
+    return rep.done({ profile })
   },
 
   async profilesList (req, rep) {
-    const profiles = await Profile.find({team: req.user.team})
-    return rep.done({profiles})
+    const profiles = await Profile.find({ team: req.user.team })
+    return rep.done({ profiles })
   },
 
   async proxiesList (req, rep) {
-    const proxies = await Proxy.find({team: req.user.team})
-    return rep.done({proxies})
+    const proxies = await Proxy.find({ team: req.user.team })
+    return rep.done({ proxies })
   },
 
   async createProxy (req, rep) {
-    const {name, type, host, port, username, password} = req.body
-    const {team} = req.user
+    const { name, type, host, port, username, password } = req.body
+    const { team } = req.user
     const proxy = await Proxy.create({
       name, team, type, host, port, username, password,
     })
 
-    return rep.done({proxy})
+    return rep.done({ proxy })
   },
 }

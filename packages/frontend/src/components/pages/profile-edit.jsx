@@ -1,80 +1,19 @@
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
-import { Card, Form, Input, Radio, Select, Tabs, Skeleton, Button, Col, Row, Space, Switch, InputNumber } from 'antd'
+import { Card, Form, Input, Radio, Tabs, Skeleton, Button } from 'antd'
 import React, { useEffect, useState } from 'react'
-import { uniqueNamesGenerator, animals, colors } from 'unique-names-generator'
 
 import backend from '../backend'
+import { FormSwitch, FormSelect, FormNumber, FromButton, Cols } from '../form-items'
+import notify from '../notify'
+import useRouter from '../use-router'
+import { getRandomName } from '../utils/random'
 
-import notify from './notify'
-import PageLayout from './page-layout'
-import useRouter from './use-router'
-
-function getProfileName () {
-  return uniqueNamesGenerator({
-    dictionaries: [colors, animals],
-    length: 2,
-    style: 'capital',
-    separator: ' ',
-  })
-}
-
-// const {uniqueNamesGenerator, adjectives, colors, animals} = require('unique-names-generator')
-
-function LabelWrapper ({ children, label }) {
-  return !label
-    ? <>{children}</>
-    : (
-    <Form.Item label={label}>{children}</Form.Item>
-      )
-}
-
-function Cols ({ children, label, style }) {
-  if (!Array.isArray(children)) children = [children]
-  return (
-    <LabelWrapper label={label}>
-      <Row className={'child-margin-8'} style={style}>
-        {children.map((el, idx) => <Col key={idx} flex={1}>{el}</Col>)}
-      </Row>
-    </LabelWrapper>
-  )
-}
-
-function FormSwitch ({ name, label }) {
-  return (
-    <Space>
-      <Form.Item name={name} valuePropName={'checked'} noStyle>
-        <Switch size={'small'} checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
-      </Form.Item>
-      {label}
-    </Space>
-  )
-}
-
-function FormSelect ({ name, label, options, ...props }) {
-  return (
-    <Form.Item name={name} label={label} {...props}>
-      <Select>
-        {options.map((x, idx) => (
-          <Select.Option key={idx} value={x}>{x}</Select.Option>
-        ))}
-      </Select>
-    </Form.Item>
-  )
-}
-
-function FormNumber ({ name, label, min = 0, max = 100, size = 'default' }) {
-  return (
-    <Form.Item name={name} label={label}>
-      <InputNumber min={min} max={max} size={size} />
-    </Form.Item>
-  )
-}
+import PageLayout from './layout'
 
 function AddProfileForm () {
   const [state, setState] = useState(null)
   const [cache, setCache] = useState(null)
   const [form] = Form.useForm()
-  const [defaultName, setDefaultName] = useState(getProfileName())
+  const [defaultName, setDefaultName] = useState(getRandomName())
 
   const router = useRouter()
 
@@ -129,11 +68,12 @@ function AddProfileForm () {
     const toSave = { name, fingerprint: values }
     const rep = await backend.saveProfile(toSave)
 
-    // todo: maybe rewrite this
-    if (rep.success) {
-      notify.success('Profile sucessfuly created!')
-      router.replace('/')
+    if (!rep.success) {
+      console.error('profile not saved', rep)
     }
+
+    notify.success('Profile sucessfuly created!')
+    router.replace('/')
   }
 
   const formProps = {
@@ -202,9 +142,7 @@ function AddProfileForm () {
       </Tabs>
 
       <Cols style={{ textAlign: 'right' }}>
-        <Form.Item>
-          <Button type={'primary'} htmlType={'submit'}>Create Profile</Button>
-        </Form.Item>
+        <FromButton>Create Profile</FromButton>
       </Cols>
     </Form>
   )

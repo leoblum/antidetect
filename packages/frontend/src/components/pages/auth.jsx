@@ -2,11 +2,10 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { Button, Card, Col, Divider, Form, Input, Layout, Row, Typography } from 'antd'
 import React from 'react'
 
+import Link from '../app-link'
 import backend from '../backend'
-
-import { notifyByApiCode } from './notify'
-import Link from './app-link'
-import useRouter from './use-router'
+import { notifyByApiCode } from '../notify'
+import useRouter from '../use-router'
 
 const emailItemProps = {
   name: 'email',

@@ -1,4 +1,4 @@
-const {getThemeVariables} = require('antd/dist/theme')
+// const { getThemeVariables } = require('antd/dist/theme')
 
 module.exports = {
   plugins: [

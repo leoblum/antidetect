@@ -1,10 +1,12 @@
 import axios from 'axios'
-import {createEmitter, storageGet, storageSet} from './utils'
+
+import createEmitter from './utils/emitter'
+import { storageGet, storageSet } from './utils/storage'
 
 console.log('willow.bruen25@ethereal.email')
 
 class ServerApi {
-  constructor() {
+  constructor () {
     this.http = axios.create({
       baseURL: 'http://127.0.0.1:3030',
       validateStatus: status => status < 500,
@@ -21,11 +23,10 @@ class ServerApi {
   setAuthToken (token = null) {
     storageSet('authToken', token)
     if (token === null) {
-      delete this.http.defaults.headers['Authorization']
+      delete this.http.defaults.headers.Authorization
       this.onAuthStateChanged.fire(false)
-    }
-    else {
-      this.http.defaults.headers['Authorization'] = `Bearer ${token}`
+    } else {
+      this.http.defaults.headers.Authorization = `Bearer ${token}`
       this.onAuthStateChanged.fire(true)
     }
   }
@@ -40,8 +41,8 @@ class ServerApi {
     return rep.data
   }
 
-  async login ({email, password}) {
-    const rep = await this.post('/users/login', {email, password})
+  async login ({ email, password }) {
+    const rep = await this.post('/users/login', { email, password })
     if (rep.success) this.setAuthToken(rep.token)
     return rep
   }
@@ -50,12 +51,12 @@ class ServerApi {
     this.setAuthToken(null)
   }
 
-  async createUser ({email, password}) {
-    return await this.post('/users/create', {email, password})
+  async createUser ({ email, password }) {
+    return await this.post('/users/create', { email, password })
   }
 
-  async resetPassword ({email}) {
-    return await this.post('/users/reset-password', {email})
+  async resetPassword ({ email }) {
+    return await this.post('/users/reset-password', { email })
   }
 
   async profiles () {

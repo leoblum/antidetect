@@ -17,7 +17,7 @@ module.exports = fp(async function (fastify, tops) {
   }
 
   function pub (method, url, handler, schema = null, opts = {}) {
-    opts = Object.assign({method: method.toUpperCase(), url, handler, schema}, opts)
+    opts = Object.assign({ method: method.toUpperCase(), url, handler, schema }, opts)
     return fastify.route(opts)
   }
 
@@ -32,8 +32,8 @@ module.exports = fp(async function (fastify, tops) {
     pvt[method] = (...args) => pvt(method, ...args)
   }
 
-  fastify.decorate('pub', pub)  // To define public routes
-  fastify.decorate('pvt', pvt)  // To define private routes
+  fastify.decorate('pub', pub) // To define public routes
+  fastify.decorate('pvt', pvt) // To define private routes
 
   /* @ decorate reply */
 
@@ -45,13 +45,12 @@ module.exports = fp(async function (fastify, tops) {
     else if (args.length === 1 && Number.isInteger(args[0])) code = args[0]
     else if (args.length === 1 && !Number.isInteger(args[0])) data = args[0]
 
-    data = Object.assign({success: true}, data)
+    data = Object.assign({ success: true }, data)
     // console.log(code, data, this.request.url, args)
     return this.code(code).send(data)
   })
 
   fastify.decorateReply('fail', function (code, message) {
-    return this.code(code).send({success: false, message})
+    return this.code(code).send({ success: false, message })
   })
-
 })

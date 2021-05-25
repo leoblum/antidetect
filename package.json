@@ -4,6 +4,8 @@
   "scripts": {
     "start": "lerna run start --stream",
     "test": "lerna run test --stream",
+    "lint": "lerna run lint --stream",
+    "lint:fix": "lerna run lint:fix --stream",
     "cloc": "cloc --exclude-dir=.idea,node_modules --not-match-f='(package.json|package-lock.json)' ."
   },
   "devDependencies": {

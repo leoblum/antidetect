@@ -1,26 +1,3 @@
-import NatSort from 'natsort'
-
-export const natSorter = NatSort()
-
-export function createEmitter () {
-  let followers = []
-
-  function follow (fn) {
-    followers.push(fn)
-    return () => {
-      followers.splice(followers.indexOf(fn), 1)
-      return null
-    }
-  }
-
-  function fire (data) {
-    for (let fn of followers) fn(data)
-  }
-
-  follow.fire = fire
-  return follow
-}
-
 export function storageGet (key, defaultValue = null) {
   try {
     const item = window.localStorage.getItem(key)

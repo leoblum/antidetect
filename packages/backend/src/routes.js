@@ -2,7 +2,7 @@ const handlers = require('./handlers')
 const schemas = require('./schemas')
 
 module.exports = async function (fastify, opts) {
-  const {pub, pvt} = fastify
+  const { pub, pvt } = fastify
   // todo: add custom error handler to have same api for all reps: .success, .message
 
   // @Public
@@ -27,5 +27,4 @@ module.exports = async function (fastify, opts) {
 
   pvt.post('/profiles/create', handlers.createProfile)
   pvt.post('/proxies/create', handlers.createProxy)
-
 }

@@ -1,6 +1,7 @@
 const fp = require('fastify-plugin')
-const config = require('./../config')
 const mongoose = require('mongoose')
+
+const config = require('./../config')
 
 module.exports = fp(async function (fastify, opts) {
   const instance = await mongoose.connect(config.MONGODB_URI, {

@@ -1,5 +1,7 @@
 const client = require('./client')
+
 const buildApp = require('../src/app').build
+
 const getClient = require('./client')
 
 const email = 'willow.bruen25@ethereal.email'
@@ -7,7 +9,7 @@ const password = email
 
 async function main () {
   const app = await buildApp()
-  const api = getClient({app})
+  const api = getClient({ app })
 
   console.log(await app.db.dropCollection('profiles'))
   console.log(await app.db.dropCollection('proxies'))
@@ -16,7 +18,7 @@ async function main () {
     return arr[Math.floor(Math.random() * arr.length)]
   }
 
-  let proxy = {
+  const proxy = {
     name: 'proxy-1',
     type: 'socks5',
     host: 'localhost',
@@ -25,14 +27,14 @@ async function main () {
     password: 'pass',
   }
 
-  let users = ['willow.bruen25@ethereal.email', 'user@example.com']
-  for (let user of users) {
+  const users = ['willow.bruen25@ethereal.email', 'user@example.com']
+  for (const user of users) {
     for (let i = 0; i < 5; ++i) {
       proxy.name = 'proxy-' + (i + 1)
       proxy.country = randomChoice(['ru', 'ua', 'pl', 'au'])
 
-      let fingerprint = (await api.getFingerprint()).data
-      let rep = await api.createProfile('profile ' + (i + 1), fingerprint.mac, proxy)
+      const fingerprint = (await api.getFingerprint()).data
+      const rep = await api.createProfile('profile ' + (i + 1), fingerprint.mac, proxy)
       console.log(rep.statusCode)
     }
   }

@@ -2,8 +2,8 @@ const baseResponseSchema = {
   type: 'object',
   required: ['success'],
   properties: {
-    success: {type: 'boolean'},
-    message: {type: 'string'},
+    success: { type: 'boolean' },
+    message: { type: 'string' },
   },
 }
 
@@ -11,8 +11,8 @@ const baseAuthSchema = {
   type: 'object',
   required: ['email', 'password'],
   properties: {
-    email: {type: 'string', format: 'email'},
-    password: {type: 'string'},
+    email: { type: 'string', format: 'email' },
+    password: { type: 'string' },
   },
 }
 
@@ -31,8 +31,8 @@ const UserAuthSchema = {
       type: 'object',
       required: ['success', 'token'],
       properties: {
-        success: {type: 'boolean'},
-        token: {type: 'string'},
+        success: { type: 'boolean' },
+        token: { type: 'string' },
       },
     },
     401: baseResponseSchema,
@@ -44,17 +44,17 @@ const ProfileCreateSchema = {
     type: 'object',
     required: ['name', 'fingerprint'],
     properties: {
-      name: {type: 'string'},
+      name: { type: 'string' },
       fingerprint: {
         type: 'object',
         // required: ['name', 'fingerprint'],
         properties: {
-          os: {type: 'string'},
-          userAgent: {type: 'string'},
-          screen: {type: 'string'},
-          renderer: {type: 'string'},
-          cpu: {type: 'number'},
-          ram: {type: 'number'},
+          os: { type: 'string' },
+          userAgent: { type: 'string' },
+          screen: { type: 'string' },
+          renderer: { type: 'string' },
+          cpu: { type: 'number' },
+          ram: { type: 'number' },
         },
       },
     },

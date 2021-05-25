@@ -10,8 +10,8 @@ module.exports = function createClient (mochaContext) {
       opts.url = url
       opts.headers = Object.assign({}, this.headers, opts.headers || {})
 
-      let rep = await app.inject(opts)
-      Object.defineProperty(rep, 'data', {get: () => rep.json()})
+      const rep = await app.inject(opts)
+      Object.defineProperty(rep, 'data', { get: () => rep.json() })
       return rep
     },
 
@@ -25,20 +25,20 @@ module.exports = function createClient (mochaContext) {
     },
 
     async checkEmailExists (email) {
-      return await this.post('/users/checkEmail', {email})
+      return await this.post('/users/checkEmail', { email })
     },
 
     async createUser (email, password) {
-      return await this.post('/users/create', {email, password})
+      return await this.post('/users/create', { email, password })
     },
 
     async confirmEmail (email) {
-      return await this.post('/users/confirmEmail', {email})
+      return await this.post('/users/confirmEmail', { email })
     },
 
     async auth (email, password) {
-      let rep = await this.post('/users/login', {email, password})
-      if (rep.data.success) this.headers['Authorization'] = `Bearer ${rep.data.token}`
+      const rep = await this.post('/users/login', { email, password })
+      if (rep.data.success) this.headers.Authorization = `Bearer ${rep.data.token}`
       return rep
     },
 
@@ -55,7 +55,7 @@ module.exports = function createClient (mochaContext) {
     },
 
     async createProfile (name, fingerprint, proxy) {
-      return await this.post('/profiles/create', {name, fingerprint, proxy})
+      return await this.post('/profiles/create', { name, fingerprint, proxy })
     },
 
     async profilesList () {

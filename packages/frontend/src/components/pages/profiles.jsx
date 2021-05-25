@@ -4,11 +4,11 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import { natSorter } from '../utils'
+import TimeAgo from '../time-ago'
+import useRouter from '../use-router'
+import natSorter from '../utils/natsort'
 
-import PageLayout from './page-layout'
-import TimeAgo from './time-ago'
-import useRouter from './use-router'
+import PageLayout from './layout'
 
 export function StyleForEach ({ children, style }) {
   return (
@@ -66,7 +66,9 @@ function TableHeader () {
   const router = useRouter()
   return (
     <Block>
-      <Button>Create Profile</Button>
+      <Space>
+        <Button></Button>
+      </Space>
       <Space>
         <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
         <Button type="default" icon={<ReloadOutlined />} />
@@ -109,9 +111,9 @@ export default function ProfilesList () {
 
   if (!data) {
     return (
-    <PageLayout>
-      <Table loading />
-    </PageLayout>
+      <PageLayout>
+        <Table loading />
+      </PageLayout>
     )
   }
 

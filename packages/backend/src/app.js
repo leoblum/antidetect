@@ -3,7 +3,7 @@ const mailer = require('./mailer')
 
 async function build () {
   const fastify = require('fastify')({
-    logger: {level: 'error', prettyPrint: true},
+    logger: { level: 'error', prettyPrint: true },
   })
 
   fastify.register(require('fastify-cors'), {})
@@ -28,4 +28,4 @@ async function start () {
   console.log(`Server started at port ${port}`)
 }
 
-module.exports = {build, start}
+module.exports = { build, start }

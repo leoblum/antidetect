@@ -18,7 +18,7 @@ module.exports = {
     this.transporter = transporter
   },
 
-  async confirmEmail ({email, token}) {
+  async confirmEmail ({ email, token }) {
     // console.log(email, token)
 
     return await this.transporter.sendMail({

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-import backend from '../backend'
+import backend from './backend'
 
 const authContext = createContext(null)
 const useAuth = () => useContext(authContext)
