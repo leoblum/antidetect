@@ -1,15 +1,11 @@
-import React, {useState} from 'react'
-import {Button, Layout, Space} from 'antd'
-import {Link} from './router'
+import { Button, Layout, Space } from 'antd'
+import React, { useState } from 'react'
+
 import backend from '../backend'
 
-export function StyleForEach ({children, style}) {
-  return (
-    <>{React.Children.map(children, child => React.cloneElement(child, {style: {...style, ...child.props.style}}))}</>
-  )
-}
+import Link from './app-link'
 
-function DayNight ({size = 16}) {
+export function DayNight ({ size = 16 }) {
   const [dark, setDark] = useState(true)
   const onClick = () => {
     setDark(!dark)
@@ -26,8 +22,14 @@ function DayNight ({size = 16}) {
   )
 }
 
-function BaseHeader ({style}) {
-  style = {
+export function Header ({ style }) {
+  const Links = [
+    { to: '/profiles', title: 'Profiles' },
+    { to: '/proxies', title: 'Proxies' },
+    { to: '/profiles-old', title: 'Old' },
+  ]
+
+  const HeaderStyle = {
     width: '100%',
     maxHeight: '100%',
     display: 'flex',
@@ -38,28 +40,26 @@ function BaseHeader ({style}) {
   }
 
   return (
-    <div style={style}>
-      <Space style={{textTransform: 'uppercase'}}>
+    <div style={HeaderStyle}>
+      <Space>
         <DayNight size={32} />
-        <Link to="/profiles">Profiles</Link>
-        <Link to="/proxies">Proxies</Link>
-        <Link to="/profiles">Old</Link>
+        {Links.map((link, i) => <Link key={i} to={link.to}>{link.title}</Link>)}
       </Space>
       <Button onClick={() => backend.logout()}>Logout</Button>
     </div>
   )
 }
 
-export function BaseLayout ({children}) {
+export default function PageLayout ({ children }) {
   const maxWidth = '1240px' // todo: should be different for media-query
 
-  const layoutStyle = {
+  const LayoutStyle = {
     display: 'flex',
     alignItems: 'center',
     minHeight: '100vh',
   }
 
-  const headerStyle = {
+  const LayoutHeaderStyle = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
@@ -67,21 +67,19 @@ export function BaseLayout ({children}) {
     padding: 0,
   }
 
-  const contentStyle = {
+  const LayoutContentStyle = {
     width: '100%',
     height: '100%',
     maxWidth,
-    // marginTop: '8px',
-    // margin: '8px',
     padding: '8px',
   }
 
   return (
-    <Layout style={layoutStyle}>
-      <Layout.Header style={headerStyle}>
-        <BaseHeader style={{maxWidth}} />
+    <Layout style={LayoutStyle}>
+      <Layout.Header style={LayoutHeaderStyle}>
+        <Header style={{ maxWidth }} />
       </Layout.Header>
-      <Layout.Content style={contentStyle}>
+      <Layout.Content style={LayoutContentStyle}>
         {children}
       </Layout.Content>
     </Layout>

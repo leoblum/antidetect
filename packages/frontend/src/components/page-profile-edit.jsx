@@ -1,11 +1,13 @@
-import React, {useEffect, useState} from 'react'
-import {Card, Form, Input, Radio, Select, Tabs, Skeleton, Button, Col, Row, Space, Switch, InputNumber, Dropdown} from 'antd'
-import {BaseLayout, StyleForEach} from './base-layout'
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
+import { Card, Form, Input, Radio, Select, Tabs, Skeleton, Button, Col, Row, Space, Switch, InputNumber } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { uniqueNamesGenerator, animals, colors } from 'unique-names-generator'
+
 import backend from '../backend'
-import {CheckOutlined, CloseOutlined, MinusOutlined, MoreOutlined} from '@ant-design/icons'
-import {uniqueNamesGenerator, animals, colors} from 'unique-names-generator'
+
 import notify from './notify'
-import {useRouter} from './router'
+import PageLayout from './page-layout'
+import useRouter from './use-router'
 
 function getProfileName () {
   return uniqueNamesGenerator({
@@ -18,13 +20,15 @@ function getProfileName () {
 
 // const {uniqueNamesGenerator, adjectives, colors, animals} = require('unique-names-generator')
 
-function LabelWrapper ({children, label}) {
-  return !label ? <>{children}</> : (
+function LabelWrapper ({ children, label }) {
+  return !label
+    ? <>{children}</>
+    : (
     <Form.Item label={label}>{children}</Form.Item>
-  )
+      )
 }
 
-function Cols ({children, label, style}) {
+function Cols ({ children, label, style }) {
   if (!Array.isArray(children)) children = [children]
   return (
     <LabelWrapper label={label}>
@@ -35,7 +39,7 @@ function Cols ({children, label, style}) {
   )
 }
 
-function FormSwitch ({name, label}) {
+function FormSwitch ({ name, label }) {
   return (
     <Space>
       <Form.Item name={name} valuePropName={'checked'} noStyle>
@@ -46,7 +50,7 @@ function FormSwitch ({name, label}) {
   )
 }
 
-function FormSelect ({name, label, options, ...props}) {
+function FormSelect ({ name, label, options, ...props }) {
   return (
     <Form.Item name={name} label={label} {...props}>
       <Select>
@@ -58,7 +62,7 @@ function FormSelect ({name, label, options, ...props}) {
   )
 }
 
-function FormNumber ({name, label, min = 0, max = 100, size = 'default'}) {
+function FormNumber ({ name, label, min = 0, max = 100, size = 'default' }) {
   return (
     <Form.Item name={name} label={label}>
       <InputNumber min={min} max={max} size={size} />
@@ -79,8 +83,8 @@ function AddProfileForm () {
 
   useEffect(() => {
     const calls = [
-      backend.fingerprintRandom().then(random => ({random})),
-      backend.fingerprintOptions().then(options => ({options})),
+      backend.fingerprintRandom().then(random => ({ random })),
+      backend.fingerprintOptions().then(options => ({ options })),
     ]
 
     Promise.all(calls).then(data => Object.assign(...data))
@@ -93,7 +97,7 @@ function AddProfileForm () {
 
   function updateFromFingerprint () {
     const os = state?.os || (window.navigator.platform === 'MacIntel' ? 'mac' : 'win')
-    setState({...state, ...cache.random[os]})
+    setState({ ...state, ...cache.random[os] })
   }
 
   function updateFingerprint () {
@@ -122,16 +126,13 @@ function AddProfileForm () {
     const name = values?.name || defaultName
     delete values.name
 
-    const toSave = {name, fingerprint: values}
+    const toSave = { name, fingerprint: values }
     const rep = await backend.saveProfile(toSave)
 
     // todo: maybe rewrite this
     if (rep.success) {
       notify.success('Profile sucessfuly created!')
       router.replace('/')
-      return
-    } else {
-
     }
   }
 
@@ -141,7 +142,7 @@ function AddProfileForm () {
     initialValues: state,
     onValuesChange,
     onFinish,
-    name: 'profile-edit'
+    name: 'profile-edit',
   }
 
   return (
@@ -158,16 +159,16 @@ function AddProfileForm () {
 
           <Cols>
             <Form.Item name={'os'} label={'Operation System'}>
-              <Radio.Group style={{display: 'flex', width: '100%'}}>
-                <Radio.Button value={'win'} style={{flex: 1, textAlign: 'center'}}>Windows</Radio.Button>
-                <Radio.Button value={'mac'} style={{flex: 1, textAlign: 'center'}}>MacOS</Radio.Button>
+              <Radio.Group style={{ display: 'flex', width: '100%' }}>
+                <Radio.Button value={'win'} style={{ flex: 1, textAlign: 'center' }}>Windows</Radio.Button>
+                <Radio.Button value={'mac'} style={{ flex: 1, textAlign: 'center' }}>MacOS</Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Cols>
 
           <Cols>
             <Form.Item name={'userAgent'} label={'User Agent'}>
-              <Input.TextArea rows="2" style={{resize: 'none'}} />
+              <Input.TextArea rows="2" style={{ resize: 'none' }} />
             </Form.Item>
           </Cols>
         </TabPane>
@@ -200,7 +201,7 @@ function AddProfileForm () {
         </TabPane>
       </Tabs>
 
-      <Cols style={{textAlign: 'right'}}>
+      <Cols style={{ textAlign: 'right' }}>
         <Form.Item>
           <Button type={'primary'} htmlType={'submit'}>Create Profile</Button>
         </Form.Item>
@@ -209,14 +210,14 @@ function AddProfileForm () {
   )
 }
 
-export function AddProfile () {
+export default function ProfileEdit () {
   return (
-    <BaseLayout>
+    <PageLayout>
       <Card>
-        <div style={{maxWidth: '560px', margin: '0 auto'}}>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           <AddProfileForm />
         </div>
       </Card>
-    </BaseLayout>
+    </PageLayout>
   )
 }

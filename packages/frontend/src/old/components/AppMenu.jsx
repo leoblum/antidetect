@@ -3,8 +3,8 @@ import {Link, withRouter} from 'react-router-dom'
 import {Menu} from 'antd'
 
 const links = [
-  {path: '/profiles', name: 'All Profiles'},
-  {path: '/profiles/new', name: 'New Profile'},
+  {path: '/profiles-old', name: 'All Profiles'},
+  {path: '/profiles-old/new', name: 'New Profile'},
 ]
 
 class AppMenu extends Component {

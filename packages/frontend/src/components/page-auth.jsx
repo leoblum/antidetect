@@ -1,23 +1,25 @@
+import { LockOutlined, UserOutlined } from '@ant-design/icons'
+import { Button, Card, Col, Divider, Form, Input, Layout, Row, Typography } from 'antd'
 import React from 'react'
-import {Row, Col, Card, Layout, Typography, Form, Input, Button, Divider, notification} from 'antd'
-import {UserOutlined, LockOutlined} from '@ant-design/icons'
 
-import {Link, useRouter} from './router'
-import {notifyByApiCode} from './notify'
-import backend from './../backend'
+import backend from '../backend'
+
+import { notifyByApiCode } from './notify'
+import Link from './app-link'
+import useRouter from './use-router'
 
 const emailItemProps = {
   name: 'email',
   rules: [
-    {required: true, message: 'Please input your email!'},
-    {type: 'email', message: 'The input is not valid email!'},
+    { required: true, message: 'Please input your email!' },
+    { type: 'email', message: 'The input is not valid email!' },
   ],
 }
 
 const passwordItemProps = {
   name: 'password',
   rules: [
-    {required: true, message: 'Please input your password!'},
+    { required: true, message: 'Please input your password!' },
   ],
 }
 
@@ -43,10 +45,10 @@ function SingInForm () {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{width: '100%'}}>Login</Button>
+        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>Login</Button>
       </Form.Item>
 
-      <Row justify="space-between" style={{fontSize: '12px'}}>
+      <Row justify="space-between" style={{ fontSize: '12px' }}>
         <Col>
           <Link to="/auth/create">Create account</Link>
         </Col>
@@ -68,7 +70,7 @@ function SingUpForm () {
   }
 
   return (
-    <Form name="sign-up" initialValues={{remember: true}} onFinish={onFinish} layout="vertical">
+    <Form name="sign-up" initialValues={{ remember: true }} onFinish={onFinish} layout="vertical">
       <Divider>Create Account</Divider>
 
       <Form.Item {...emailItemProps}>
@@ -80,10 +82,10 @@ function SingUpForm () {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{width: '100%'}}>Create Account</Button>
+        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>Create Account</Button>
       </Form.Item>
 
-      <Row justify="space-between" style={{fontSize: '12px'}}>
+      <Row justify="space-between" style={{ fontSize: '12px' }}>
         <Col>
           <Link to="/auth/login">Login</Link>
         </Col>
@@ -105,9 +107,9 @@ function ResetForm () {
   }
 
   return (
-    <Form name="reset-password" initialValues={{remember: true}} onFinish={onFinish} layout="vertical">
+    <Form name="reset-password" initialValues={{ remember: true }} onFinish={onFinish} layout="vertical">
       <Divider>Reset Password</Divider>
-      <Typography.Text style={{fontSize: '13px', textAlign: 'center', display: 'block', marginBottom: '12px'}}>
+      <Typography.Text style={{ fontSize: '13px', textAlign: 'center', display: 'block', marginBottom: '12px' }}>
         Please provide your email address and we’ll send you instructions on how to change your password.
       </Typography.Text>
 
@@ -116,10 +118,10 @@ function ResetForm () {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{width: '100%'}}>Reset Password</Button>
+        <Button type="primary" htmlType="submit" style={{ width: '100%' }}>Reset Password</Button>
       </Form.Item>
 
-      <Row justify="space-between" style={{fontSize: '12px'}}>
+      <Row justify="space-between" style={{ fontSize: '12px' }}>
         <Col>
           <Link to="/auth/login">Login</Link>
         </Col>
@@ -128,12 +130,12 @@ function ResetForm () {
   )
 }
 
-function PageLayout ({content}) {
+function PageLayout ({ content }) {
   return (
-    <Layout style={{minHeight: '100vh'}}>
+    <Layout style={{ minHeight: '100vh' }}>
       <Layout.Content>
-        <Row type="flex" justify="center" align="middle" style={{minHeight: '100vh'}}>
-          <Col style={{width: '350px'}}>
+        <Row type="flex" justify="center" align="middle" style={{ minHeight: '100vh' }}>
+          <Col style={{ width: '350px' }}>
             <Card>
               {content}
             </Card>

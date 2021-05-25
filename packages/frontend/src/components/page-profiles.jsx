@@ -1,17 +1,20 @@
-import React, {useEffect, useState} from 'react'
-import {Table, Button, Space, Form, Input, Dropdown, Menu} from 'antd'
-import {ReloadOutlined, MoreOutlined, CaretRightOutlined} from '@ant-design/icons'
+import { ReloadOutlined, MoreOutlined, CaretRightOutlined } from '@ant-design/icons'
+import { Table, Button, Space, Dropdown, Menu } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
+import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import {natSorter} from '../utils'
+import { natSorter } from '../utils'
+
+import PageLayout from './page-layout'
 import TimeAgo from './time-ago'
-import {useRouter, Link} from './router'
-import {BaseLayout, StyleForEach} from './base-layout'
+import useRouter from './use-router'
 
-import {AddProfile} from './page-profiles-add'
-
-export {AddProfile}
+export function StyleForEach ({ children, style }) {
+  return (
+    <>{React.Children.map(children, child => React.cloneElement(child, { style: { ...style, ...child.props.style } }))}</>
+  )
+}
 
 async function getProfilesAndProxies () {
   let profiles = await backend.profiles()
@@ -24,38 +27,38 @@ async function getProfilesAndProxies () {
 
   profiles = profiles.profiles
   proxies = proxies.proxies
-  return {profiles, proxies}
+  return { profiles, proxies }
 }
 
 function selectById (items, id, key = '_id') {
-  for (let item of items) {
+  for (const item of items) {
     if (item[key] === id) return item
   }
   return null
 }
 
-function TableProxyBlock ({proxy}) {
+function TableProxyBlock ({ proxy }) {
   const name = proxy ? proxy.name : 'None'
   const addr = proxy ? `${proxy.host}:${proxy.port}` : 'Direct Conection'
   const flag = proxy ? (proxy.country !== null ? getUnicodeFlagIcon(proxy.country) : '🌍') : '🚫'
 
   // todo: do not forget change color of text when change theme
   return (
-    <div style={{display: 'flex', alignItems: 'center'}}>
-      <StyleForEach style={{paddingLeft: '8px'}}>
-        <div style={{fontSize: '18px'}}>{flag}</div>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <StyleForEach style={{ paddingLeft: '8px' }}>
+        <div style={{ fontSize: '18px' }}>{flag}</div>
         <div>
           <div>{name}</div>
-          <div style={{fontSize: '10px', color: '#8c8c8c'}}>{addr}</div>
+          <div style={{ fontSize: '10px', color: '#8c8c8c' }}>{addr}</div>
         </div>
       </StyleForEach>
     </div>
   )
 }
 
-function Block ({children, style}) {
+function Block ({ children, style }) {
   return (
-    <div className={'app-content-block'} style={{style}}>{children}</div>
+    <div className={'app-content-block'} style={{ style }}>{children}</div>
   )
 }
 
@@ -72,72 +75,47 @@ function TableHeader () {
   )
 }
 
-function Proxies () {
-  const [data, setData] = useState({number: 100})
-  const [form] = Form.useForm()
+function ActionRender ({ profile }) {
+  const profileId = profile._id
+  const router = useRouter()
 
-  function onClick () {
-    const number = ~~(Math.random() * 1000)
-    setData({number})
-    // form.resetFields()
-    form.setFieldsValue({number})
-  }
+  const editProfile = () => router.replace(`/profiles/edit/${profileId}`)
+  const cloneProfile = () => console.log(`clone profile: ${profileId}`)
+  const deleteProfile = () => console.log(`delete profile: ${profileId}`)
 
-  return (
-    <BaseLayout>
-      <div style={{fontSize: '32px', textAlign: 'center'}}>
-        Привет, Оля! Я тебя люблю! ❤️
-        <br />
-        <Button onClick={onClick}>{data.number}</Button>
-
-        <Form initialValues={data} form={form} style={{width: '500px'}}>
-          <Form.Item name="number" shouldUpdate>
-            <Input.TextArea rows="2" style={{resize: 'none'}} />
-          </Form.Item>
-        </Form>
-      </div>
-    </BaseLayout>
+  const menu = (
+    <Menu>
+      <Menu.Item onClick={editProfile}>Edit</Menu.Item>
+      <Menu.Item onClick={cloneProfile}>Clone</Menu.Item>
+      <Menu.Item onClick={deleteProfile}>Delete</Menu.Item>
+      {/* <Menu.Divider /> */}
+    </Menu>
   )
-}
 
-function ActionRender ({profile}) {
   return (
     <Space>
       <Button type="primary" icon={<CaretRightOutlined />}>Run</Button>
-      <Dropdown overlay={() => <MenuRenderer profile={profile}/>} trigger="click" placement="bottomRight">
+      <Dropdown overlay={menu} trigger="click" placement="bottomRight">
         <Button icon={<MoreOutlined />} />
       </Dropdown>
     </Space>
   )
 }
 
-function MenuRenderer ({profile}) {
-  console.log(profile)
-  const profileId = profile._id
-  const router = useRouter()
-
-  return (
-    <Menu>
-      <Menu.Item onClick={() => router.replace(`/profiles/edit/${profileId}`) }>Edit</Menu.Item>
-      <Menu.Item>Clone</Menu.Item>
-      <Menu.Item>Delete</Menu.Item>
-      {/* <Menu.Divider /> */}
-    </Menu>
-  )
-}
-
-function Profiles () {
+export default function ProfilesList () {
   const [data, setData] = useState(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   useEffect(async () => setData(await getProfilesAndProxies()), [])
 
-  if (!data) return (
-    <BaseLayout>
+  if (!data) {
+    return (
+    <PageLayout>
       <Table loading />
-    </BaseLayout>
-  )
+    </PageLayout>
+    )
+  }
 
-  const {profiles, proxies} = data
+  const { profiles, proxies } = data
 
   const NameColumn = {
     title: 'Name',
@@ -161,7 +139,8 @@ function Profiles () {
     title: 'Action',
     width: 100,
     align: 'left',
-    render: (item) => <ActionRender profile={item} />,
+    // render: (item) => <ActionRender profile={item} />,
+    render: (item) => ActionRender({ profile: item }),
   }
 
   const tableProps = {
@@ -187,11 +166,9 @@ function Profiles () {
   }
 
   return (
-    <BaseLayout>
+    <PageLayout>
       <TableHeader />
       <Table {...tableProps}></Table>
-    </BaseLayout>
+    </PageLayout>
   )
 }
-
-export {Profiles, Proxies}
