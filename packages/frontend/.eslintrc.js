@@ -25,5 +25,6 @@ module.exports = {
     'react/jsx-tag-spacing': ['error', { beforeSelfClosing: 'always' }],
     'react/jsx-uses-react': 'error',
     'react/jsx-indent': ['error', 2],
+    'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
   },
 }

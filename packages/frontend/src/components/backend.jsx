@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import createEmitter from './utils/emitter'
-import { storageGet, storageSet } from './utils/storage'
+import storage from './utils/storage'
 
 console.log('willow.bruen25@ethereal.email')
 
@@ -13,7 +13,7 @@ class ServerApi {
     })
 
     this.onAuthStateChanged = createEmitter()
-    this.setAuthToken(storageGet('authToken'))
+    this.setAuthToken(storage.get('authToken'))
   }
 
   get isAuth () {
@@ -21,7 +21,7 @@ class ServerApi {
   }
 
   setAuthToken (token = null) {
-    storageSet('authToken', token)
+    storage.set('authToken', token)
     if (token === null) {
       delete this.http.defaults.headers.Authorization
       this.onAuthStateChanged.fire(false)
@@ -75,12 +75,12 @@ class ServerApi {
     return await this.get('/fingerprint/options')
   }
 
-  async saveProfile (params) {
-    return await this.post('/profiles/create', params)
+  async saveProfile ({ profileId = null, values }) {
+    return await this.post('/profiles/save', { _id: profileId, ...values })
   }
 
   async getProfile (profileId) {
-    return await this.post('/profiles/' + profileId)
+    return await this.get('/profiles/' + profileId)
   }
 }
 

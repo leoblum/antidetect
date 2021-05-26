@@ -106,9 +106,17 @@ module.exports = {
     return rep.done(fingerprints)
   },
 
-  async createProfile (req, rep) {
-    const { name, fingerprint } = req.body
+  async saveProfile (req, rep) {
+    const { name, fingerprint, _id = null } = req.body
     const { team } = req.user
+
+    if (_id) {
+      const profile = await Profile.findById(_id)
+      profile.name = name
+      profile.fingerprint = Object.assign({}, profile.fingerprint, fingerprint) // todo: deepmerge
+      await profile.save()
+      return rep.done({ profile })
+    }
 
     let proxy = req.body.proxy || null
     if (proxy) {
@@ -141,5 +149,13 @@ module.exports = {
     })
 
     return rep.done({ proxy })
+  },
+
+  async getProfile (req, rep) {
+    const { profileId } = req.params
+    const profile = await Profile.findOne({ _id: profileId })
+
+    // todo: if no profile found
+    return rep.done({ profile })
   },
 }

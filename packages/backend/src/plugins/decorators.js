@@ -32,6 +32,9 @@ module.exports = fp(async function (fastify, tops) {
     pvt[method] = (...args) => pvt(method, ...args)
   }
 
+  pub.pst = (...args) => pub('post', ...args)
+  pvt.pst = (...args) => pvt('post', ...args)
+
   fastify.decorate('pub', pub) // To define public routes
   fastify.decorate('pvt', pvt) // To define private routes
 

@@ -1,8 +1,5 @@
-module.exports = function createClient (mochaContext) {
-  if (mochaContext.api) return mochaContext.api
-
-  const app = mochaContext.app
-  const api = {
+module.exports = function createClient (app) {
+  return {
     headers: {},
 
     async request (method, url, opts = {}) {
@@ -54,8 +51,8 @@ module.exports = function createClient (mochaContext) {
       return await this.get('/fingerprint/options')
     },
 
-    async createProfile (name, fingerprint, proxy) {
-      return await this.post('/profiles/create', { name, fingerprint, proxy })
+    async saveProfile ({ _id = null, name, fingerprint, proxy = null }) {
+      return await this.post('/profiles/save', { _id, name, fingerprint, proxy })
     },
 
     async profilesList () {
@@ -70,7 +67,4 @@ module.exports = function createClient (mochaContext) {
       return await this.get('/proxies')
     },
   }
-
-  mochaContext.api = api
-  return api
 }
