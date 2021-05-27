@@ -1,5 +1,5 @@
 import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Table, Button, Space, Dropdown, Menu, Input } from 'antd'
+import { Table, Button, Space, Dropdown, Menu, Input, Modal } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import React, { useEffect, useState } from 'react'
 
@@ -9,6 +9,8 @@ import useRouter from '../useRouter'
 import natSorter from '../utils/natsort'
 
 import PageLayout from './layout'
+
+const { confirm } = Modal
 
 export function StyleForEach ({ children, style }) {
   return (
@@ -27,8 +29,8 @@ export const TitleSearch = ({ onSearch, ...props }) => (
 )
 
 async function getProfilesAndProxies () {
-  let profiles = await backend.profiles()
-  let proxies = await backend.proxies()
+  let profiles = await backend.profiles.all()
+  let proxies = await backend.proxies.all()
 
   if (!profiles.success || !proxies.success) {
     console.error('data not loaded', profiles, proxies)
@@ -81,7 +83,7 @@ function TableHeader () {
       </Space>
       <Space>
         <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
-        <Button type="default" icon={<ReloadOutlined />} />
+        <Button type="default" onClick={() => router.replace('/')} icon={<ReloadOutlined />} />
       </Space>
     </Block>
   )
@@ -91,9 +93,21 @@ function ActionRender ({ profile }) {
   const profileId = profile._id
   const router = useRouter()
 
+  async function deleteProfile () {
+    confirm({
+      content: `Are you sure delete profile "${profile.name}"?`,
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: async function () {
+        await backend.profiles.delete(profileId)
+        router.replace('/')
+      },
+    })
+  }
+
   const editProfile = () => router.replace(`/profiles/edit/${profileId}`)
   const cloneProfile = () => console.log(`clone profile: ${profileId}`)
-  const deleteProfile = () => console.log(`delete profile: ${profileId}`)
 
   const menu = (
     <Menu style={{ minWidth: '100px' }}>
@@ -130,30 +144,41 @@ export default function ProfilesList () {
 
   const { profiles, proxies } = data
 
-  const ProfileTitle = ({ title, os, ...props }) => (
-    <div {...props}>
-      <span style={{ marginRight: '6px' }}>{os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}</span>
+  const NameRender = (title, item) => (
+    <div>
+      <span style={{ marginRight: '6px' }}>
+        {item.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
+      </span>
       {title}
     </div>
+  )
+
+  const ProxyRedner = (proxyId) => (
+    <TableProxyBlock proxy={selectById(proxies, proxyId)} />
+  )
+
+  const UpdatedRender = (time) => (
+    <TimeAgo date={time} />
   )
 
   const NameColumn = {
     title: 'Name',
     dataIndex: 'name',
     sorter: (a, b) => natSorter(a.name, b.name),
-    render: (title, item) => <ProfileTitle title={title} os={item.fingerprint.os} />,
+    render: NameRender,
   }
 
   const ProxyColumn = {
     title: 'Proxy',
     dataIndex: 'proxy',
-    render: x => <TableProxyBlock proxy={selectById(proxies, x)} />,
+    render: ProxyRedner,
   }
 
   const LastActiveColumn = {
     title: 'Last Active',
-    dataIndex: 'createdAt', // todo:
-    render: x => <TimeAgo date={x} />,
+    dataIndex: 'updatedAt',
+    sorter: (a, b) => natSorter(a.name, b.name),
+    render: UpdatedRender,
   }
 
   const ActionColumn = {

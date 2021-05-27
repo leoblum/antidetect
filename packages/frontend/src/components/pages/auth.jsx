@@ -26,7 +26,7 @@ function SingInForm () {
   const router = useRouter()
 
   async function onFinish (values) {
-    const response = await backend.login(values)
+    const response = await backend.auth.login(values)
     notifyByApiCode(response)
     return response.success ? router.replace('/') : null
   }
@@ -63,7 +63,7 @@ function SingUpForm () {
   const router = useRouter()
 
   async function onFinish (values) {
-    const response = await backend.createUser(values)
+    const response = await backend.users.create(values)
     notifyByApiCode(response)
     return response.success ? router.push('/auth/login') : null
   }
@@ -100,7 +100,7 @@ function ResetForm () {
   const router = useRouter()
 
   async function onFinish (values) {
-    const response = await backend.resetPassword(values)
+    const response = await backend.users.resetPassword(values)
     notifyByApiCode(response)
     router.push('/auth/login')
   }

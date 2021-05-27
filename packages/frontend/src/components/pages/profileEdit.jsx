@@ -12,9 +12,9 @@ import PageLayout from './layout'
 
 async function getInitialState (profileId) {
   const calls = [
-    backend.fingerprintRandom().then(rep => ({ fingerprint: { win: rep.win, mac: rep.mac } })),
-    backend.fingerprintOptions().then(rep => ({ variants: { win: rep.win, mac: rep.mac } })),
-    profileId && backend.getProfile(profileId).then(rep => ({ profile: rep.profile })),
+    backend.fingerprint.get().then(rep => ({ fingerprint: { win: rep.win, mac: rep.mac } })),
+    backend.fingerprint.variants().then(rep => ({ variants: { win: rep.win, mac: rep.mac } })),
+    profileId && backend.profiles.get(profileId).then(rep => ({ profile: rep.profile })),
   ]
 
   const data = Object.assign(...(await Promise.all(calls)))
@@ -64,11 +64,11 @@ function AddProfileForm () {
   }
 
   async function onFinish (values) {
-    const name = values?.name || state.placeholder
+    const name = values?.name || state.namePlaceholder
     delete values.name
 
     values = { name, fingerprint: values }
-    const rep = await backend.saveProfile({ profileId, values })
+    const rep = await backend.profiles.save({ profileId, ...values })
 
     if (!rep.success) {
       console.error('profile not saved', rep)
@@ -80,8 +80,8 @@ function AddProfileForm () {
   }
 
   async function randomize () {
-    const random = await backend.fingerprintRandom()
-    form.setFieldsValue(random[state.os])
+    const fingerprint = await backend.fingerprint.get()
+    form.setFieldsValue(fingerprint[state.os])
   }
 
   const variants = state.variants[state.os]

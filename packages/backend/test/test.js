@@ -280,6 +280,7 @@ describe('backend app', function () {
       expect(rep.data.profile._id).to.be.equal(profileId)
       expect(rep.data.profile.name).to.be.equal(name)
       expect(rep.data.profile.fingerprint.os).to.be.equal('win')
+      expect(rep.data.updatedAt).to.be.not.equal(profile.updatedAt)
     })
 
     it('should delete profile by id', async function () {
@@ -295,14 +296,14 @@ describe('backend app', function () {
       expect(rep.data.success).to.be.false
       expect(rep.data.message).to.be.equal('profile_not_found')
     })
-  })
 
-  it('should delete profiles by id (bulk)', async function () {
+    it('should delete profiles by id (bulk)', async function () {
 
-  })
+    })
 
-  it('should be success when id not found', async function () {
+    it('should be success when id not found', async function () {
 
+    })
   })
 
   // describe('proxies creation', function () {

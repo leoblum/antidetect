@@ -11,8 +11,8 @@ function ProvideAuth ({ children }) {
 }
 
 function useProvideAuth () {
-  const [auth, setAuth] = useState(backend.isAuth)
-  useEffect(() => backend.onAuthStateChanged(setAuth), [])
+  const [auth, setAuth] = useState(backend.auth.isAuth())
+  useEffect(() => backend.auth.onAuthStateChanged(setAuth), [])
   return auth
 }
 

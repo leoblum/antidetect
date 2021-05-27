@@ -18,7 +18,7 @@ const profileSchema = new Schema({
   team: { type: ObjectId, ref: 'Team', required: true },
   proxy: { type: ObjectId, ref: 'Proxy', default: null },
   createdAt: { type: Date, default: Date.now, required: true },
-  lastActiveAt: { type: Date, default: null },
+  updatedAt: { type: Date, default: Date.now },
   isActive: { type: Boolean, default: false },
   currentUser: { type: ObjectId, ref: 'User' },
   fingerprint: {

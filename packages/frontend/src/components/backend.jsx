@@ -3,85 +3,70 @@ import axios from 'axios'
 import createEmitter from './utils/emitter'
 import storage from './utils/storage'
 
-console.log('willow.bruen25@ethereal.email')
+const http = axios.create({
+  baseURL: 'http://127.0.0.1:3030',
+  validateStatus: status => status < 500,
+})
 
-class ServerApi {
-  constructor () {
-    this.http = axios.create({
-      baseURL: 'http://127.0.0.1:3030',
-      validateStatus: status => status < 500,
-    })
+const wrapArray = (item) => Array.isArray(item) ? item : [item]
 
-    this.onAuthStateChanged = createEmitter()
-    this.setAuthToken(storage.get('authToken'))
-  }
+export const request = async ({ method, url, ...config }) => (await http.request({ method, url, ...config })).data
 
-  get isAuth () {
-    return 'Authorization' in this.http.defaults.headers
-  }
+export const get = async (url, config) => await request({ method: 'get', url, ...config })
+export const post = async (url, data, config) => await request({ method: 'post', url, data, ...config })
 
-  setAuthToken (token = null) {
-    storage.set('authToken', token)
-    if (token === null) {
-      delete this.http.defaults.headers.Authorization
-      this.onAuthStateChanged.fire(false)
-    } else {
-      this.http.defaults.headers.Authorization = `Bearer ${token}`
-      this.onAuthStateChanged.fire(true)
-    }
-  }
-
-  async get (url) {
-    const rep = await this.http.get(url)
-    return rep.data
-  }
-
-  async post (url, data) {
-    const rep = await this.http.post(url, data)
-    return rep.data
-  }
+export const auth = {
+  onAuthStateChanged: createEmitter(),
 
   async login ({ email, password }) {
-    const rep = await this.post('/users/login', { email, password })
-    if (rep.success) this.setAuthToken(rep.token)
+    const rep = await post('/users/login', { email, password })
+    if (rep.success) this._setAuthToken(rep.token)
     return rep
-  }
+  },
 
   async logout () {
-    this.setAuthToken(null)
-  }
+    this._setAuthToken(null)
+    return { succes: true }
+  },
 
-  async createUser ({ email, password }) {
-    return await this.post('/users/create', { email, password })
-  }
+  isAuth () {
+    return 'Authorization' in http.defaults.headers
+  },
 
-  async resetPassword ({ email }) {
-    return await this.post('/users/reset-password', { email })
-  }
-
-  async profiles () {
-    return await this.get('/profiles')
-  }
-
-  async proxies () {
-    return await this.get('/proxies')
-  }
-
-  async fingerprintRandom () {
-    return await this.get('/fingerprint')
-  }
-
-  async fingerprintOptions () {
-    return await this.get('/fingerprint/options')
-  }
-
-  async saveProfile ({ profileId = null, values }) {
-    return await this.post('/profiles/save', { _id: profileId, ...values })
-  }
-
-  async getProfile (profileId) {
-    return await this.get('/profiles/' + profileId)
-  }
+  _setAuthToken (token) {
+    storage.set('authToken', token)
+    if (token === null) {
+      delete http.defaults.headers.Authorization
+      this.onAuthStateChanged.fire(false)
+    } else {
+      http.defaults.headers.Authorization = `Bearer ${token}`
+      this.onAuthStateChanged.fire(true)
+    }
+  },
 }
 
-export default new ServerApi()
+export const users = {
+  create: async ({ email, password }) => await post('/users/create', { email, password }),
+  resetPassword: async (email) => await post('/users/reset-password', { email }),
+}
+
+export const fingerprint = {
+  get: async () => await get('/fingerprint'),
+  variants: async () => await get('/fingerprint/options'),
+}
+
+export const profiles = {
+  all: async () => await get('/profiles'),
+  get: async (profileId) => await get('/profiles/' + profileId),
+  save: async ({ profileId, ...values }) => await post('/profiles/save', { _id: profileId, ...values }),
+  delete: async (ids) => await post('/profiles/delete', { ids: wrapArray(ids) }),
+}
+
+export const proxies = {
+  all: async () => await get('/proxies'),
+}
+
+auth._setAuthToken(storage.get('authToken'))
+
+const backend = { http, get, post, auth, users, fingerprint, profiles, proxies }
+export default backend

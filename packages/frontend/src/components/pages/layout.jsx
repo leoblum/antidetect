@@ -44,7 +44,7 @@ export function Header ({ style }) {
         <DayNight size={32} />
         {Links.map((link, i) => <Link key={i} to={link.to}>{link.title}</Link>)}
       </Space>
-      <Button onClick={() => backend.logout()}>Logout</Button>
+      <Button onClick={() => backend.auth.logout()}>Logout</Button>
     </div>
   )
 }

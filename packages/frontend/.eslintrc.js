@@ -15,6 +15,7 @@ module.exports = {
     react: { version: 'detect' },
   },
   rules: {
+    'no-unused-vars': ['warn', { vars: 'all', args: 'after-used', ignoreRestSiblings: false }],
     'comma-dangle': ['error', 'always-multiline'],
     'import/no-unresolved': 'error',
     'import/order': ['error', {

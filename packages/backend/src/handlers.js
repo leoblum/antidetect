@@ -114,6 +114,7 @@ module.exports = {
       const profile = await Profile.findById(_id)
       profile.name = name
       profile.fingerprint = Object.assign({}, profile.fingerprint, fingerprint) // todo: deepmerge
+      profile.updatedAt = Date.now()
       await profile.save()
       return rep.done({ profile })
     }
