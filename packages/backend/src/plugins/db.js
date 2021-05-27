@@ -12,8 +12,7 @@ module.exports = fp(async function (fastify, opts) {
   })
 
   fastify.decorate('db', instance.connection)
+  fastify.decorate('mongoose', instance)
 
-  fastify.addHook('onClose', async () => {
-    await instance.connection.close()
-  })
+  fastify.addHook('onClose', async () => await instance.disconnect())
 })

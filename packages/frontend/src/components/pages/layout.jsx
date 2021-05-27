@@ -1,7 +1,7 @@
 import { Button, Layout, Space } from 'antd'
 import React, { useState } from 'react'
 
-import Link from '../app-link'
+import Link from '../appLink'
 import backend from '../backend'
 
 export function DayNight ({ size = 16 }) {

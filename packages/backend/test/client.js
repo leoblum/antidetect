@@ -1,70 +1,54 @@
 module.exports = function createClient (app) {
+  const DefaultHeaders = {}
+
+  const request = async ({ method, url, ...opts }) => {
+    const headers = { ...DefaultHeaders, ...opts.headers }
+    const rep = await app.inject({ ...opts, method, url, headers })
+    Object.defineProperty(rep, 'data', { get: () => rep.json() })
+    return rep
+  }
+  const get = async (url, opts = {}) => await request({ method: 'get', url, ...opts })
+  const post = async (url, payload, opts = {}) => await request({ method: 'post', url, payload, ...opts })
+
+  const users = {
+    checkEmailExists: async (email) => await post('/users/checkEmail', { email }),
+    create: async (email, password) => await post('/users/create', { email, password }),
+    confirmEmail: async (email) => await post('/users/confirmEmail', { email }),
+    auth: async (email, password) => {
+      const rep = await post('/users/login', { email, password })
+      if (rep.data.success) DefaultHeaders.Authorization = `Bearer ${rep.data.token}`
+      return rep
+    },
+    checkAuth: async () => await get('/protected'),
+  }
+
+  const fingerprint = {
+    get: async () => await get('/fingerprint'),
+    variants: async () => await get('/fingerprint/options'),
+  }
+
+  const profiles = {
+    all: async () => await get('/profiles'),
+    get: async (profileId) => await get(`/profiles/${profileId}`),
+    save: async ({ profileId, name, fingerprint, proxy = null }) => (
+      await post('/profiles/save', { _id: profileId, name, fingerprint, proxy })
+    ),
+    delete: async ({ ids = [] }) => await post('/profiles/delete', { ids }),
+  }
+
+  const proxies = {
+    all: async () => await get('/proxies'),
+    get: async (proxyId) => await get(`/proxies/${proxyId}`),
+  }
+
   return {
-    headers: {},
-
-    async request (method, url, opts = {}) {
-      opts.method = method
-      opts.url = url
-      opts.headers = Object.assign({}, this.headers, opts.headers || {})
-
-      const rep = await app.inject(opts)
-      Object.defineProperty(rep, 'data', { get: () => rep.json() })
-      return rep
-    },
-
-    async get (url, opts = {}) {
-      return await this.request('get', url, opts)
-    },
-
-    async post (url, payload, opts = {}) {
-      opts.payload = payload
-      return await this.request('post', url, opts)
-    },
-
-    async checkEmailExists (email) {
-      return await this.post('/users/checkEmail', { email })
-    },
-
-    async createUser (email, password) {
-      return await this.post('/users/create', { email, password })
-    },
-
-    async confirmEmail (email) {
-      return await this.post('/users/confirmEmail', { email })
-    },
-
-    async auth (email, password) {
-      const rep = await this.post('/users/login', { email, password })
-      if (rep.data.success) this.headers.Authorization = `Bearer ${rep.data.token}`
-      return rep
-    },
-
-    async protected () {
-      return await this.get('/protected')
-    },
-
-    async getFingerprint () {
-      return await this.get('/fingerprint')
-    },
-
-    async getFingerprintOptions () {
-      return await this.get('/fingerprint/options')
-    },
-
-    async saveProfile ({ _id = null, name, fingerprint, proxy = null }) {
-      return await this.post('/profiles/save', { _id, name, fingerprint, proxy })
-    },
-
-    async profilesList () {
-      return await this.get('/profiles')
-    },
-
-    async createProxy (data) {
-      return this.post('/proxies/create', data)
-    },
-
-    async proxiesList () {
-      return await this.get('/proxies')
-    },
+    headers: DefaultHeaders,
+    request,
+    get,
+    post,
+    users,
+    fingerprint,
+    profiles,
+    proxies,
   }
 }

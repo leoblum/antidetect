@@ -1,11 +1,11 @@
-import { ReloadOutlined, MoreOutlined, CaretRightOutlined } from '@ant-design/icons'
-import { Table, Button, Space, Dropdown, Menu } from 'antd'
+import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Table, Button, Space, Dropdown, Menu, Input } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import TimeAgo from '../time-ago'
-import useRouter from '../use-router'
+import TimeAgo from '../timeAgo'
+import useRouter from '../useRouter'
 import natSorter from '../utils/natsort'
 
 import PageLayout from './layout'
@@ -15,6 +15,16 @@ export function StyleForEach ({ children, style }) {
     <>{React.Children.map(children, child => React.cloneElement(child, { style: { ...style, ...child.props.style } }))}</>
   )
 }
+
+export const TitleSearch = ({ onSearch, ...props }) => (
+  <div {...props}>
+    <Input.Search
+      placeholder="Enter Title"
+      onSearch={onSearch}
+      style={{ width: 200 }}
+    />
+  </div>
+)
 
 async function getProfilesAndProxies () {
   let profiles = await backend.profiles()
@@ -58,7 +68,7 @@ function TableProxyBlock ({ proxy }) {
 
 function Block ({ children, style }) {
   return (
-    <div className={'app-content-block'} style={{ style }}>{children}</div>
+    <div className="app-content-block" style={{ style }}>{children}</div>
   )
 }
 
@@ -67,7 +77,7 @@ function TableHeader () {
   return (
     <Block>
       <Space>
-        <Button></Button>
+        <TitleSearch></TitleSearch>
       </Space>
       <Space>
         <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
@@ -86,11 +96,12 @@ function ActionRender ({ profile }) {
   const deleteProfile = () => console.log(`delete profile: ${profileId}`)
 
   const menu = (
-    <Menu>
-      <Menu.Item onClick={editProfile}>Edit</Menu.Item>
-      <Menu.Item onClick={cloneProfile}>Clone</Menu.Item>
-      <Menu.Item onClick={deleteProfile}>Delete</Menu.Item>
-      {/* <Menu.Divider /> */}
+    <Menu style={{ minWidth: '100px' }}>
+      <Menu.Item icon={<EditOutlined />} onClick={editProfile}>Edit</Menu.Item>
+      <Menu.Divider />
+      <Menu.Item icon={<CopyOutlined />} onClick={cloneProfile}>Clone</Menu.Item>
+      <Menu.Divider />
+      <Menu.Item icon={<DeleteOutlined />} danger onClick={deleteProfile}>Delete</Menu.Item>
     </Menu>
   )
 
@@ -119,10 +130,18 @@ export default function ProfilesList () {
 
   const { profiles, proxies } = data
 
+  const ProfileTitle = ({ title, os, ...props }) => (
+    <div {...props}>
+      <span style={{ marginRight: '6px' }}>{os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}</span>
+      {title}
+    </div>
+  )
+
   const NameColumn = {
     title: 'Name',
     dataIndex: 'name',
     sorter: (a, b) => natSorter(a.name, b.name),
+    render: (title, item) => <ProfileTitle title={title} os={item.fingerprint.os} />,
   }
 
   const ProxyColumn = {

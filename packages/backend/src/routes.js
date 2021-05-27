@@ -24,6 +24,7 @@ module.exports = async function (fastify, opts) {
   pvt.get('/profiles', handlers.profilesList)
   pvt.get('/profiles/:profileId', handlers.getProfile)
   pvt.pst('/profiles/save', handlers.saveProfile)
+  pvt.pst('/profiles/delete', handlers.deleteProfiles)
 
   pvt.get('/proxies', handlers.proxiesList)
   // pvt.get('/userdata', handlers.proxiesList)

@@ -3,9 +3,9 @@ import merge from 'deepmerge'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import { FormSwitch, FormSelect, FormNumber, FromButton, Cols } from '../form-items'
+import { FormSwitch, FormSelect, FormNumber, FromButton, Cols } from '../formItems'
 import notify from '../notify'
-import useRouter from '../use-router'
+import useRouter from '../useRouter'
 import { getRandomName } from '../utils/random'
 
 import PageLayout from './layout'

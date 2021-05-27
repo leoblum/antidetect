@@ -7,7 +7,7 @@ export function Cols ({ children, label = null, style }) {
 
   return (
     <Form.Item label={label} style={{ marginBottom: 0 }}>
-      <Row className={'child-margin-8'} style={style}>
+      <Row className="child-margin-8" style={style}>
         {children.map((el, idx) => <Col key={idx} flex={1}>{el}</Col>)}
       </Row>
     </Form.Item>
@@ -17,8 +17,8 @@ export function Cols ({ children, label = null, style }) {
 export function FormSwitch ({ name, label }) {
   return (
     <Space>
-      <Form.Item name={name} valuePropName={'checked'} noStyle>
-        <Switch size={'small'} checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
+      <Form.Item name={name} valuePropName="checked" noStyle>
+        <Switch size="small" checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
       </Form.Item>
       {label}
     </Space>

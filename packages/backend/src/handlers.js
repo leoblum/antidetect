@@ -154,8 +154,12 @@ module.exports = {
   async getProfile (req, rep) {
     const { profileId } = req.params
     const profile = await Profile.findOne({ _id: profileId })
+    return profile ? rep.done({ profile }) : rep.fail(404, 'profile_not_found')
+  },
 
-    // todo: if no profile found
-    return rep.done({ profile })
+  async deleteProfiles (req, rep) {
+    const { ids } = req.body
+    await Promise.all(ids.map(_id => Profile.deleteOne({ _id })))
+    return rep.done()
   },
 }

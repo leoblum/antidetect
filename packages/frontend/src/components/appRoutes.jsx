@@ -2,8 +2,8 @@ import PageProfileEditor from '../old/components/PageProfileEditor'
 import PageProfilesList from '../old/components/PageProfilesList'
 
 import { SingIn, SingUp, ResetPassword } from './pages/auth'
-import ProfileEdit from './pages/profile-edit'
-import Profiles from './pages/profiles'
+import ProfileEdit from './pages/profileEdit'
+import ProfilesList from './pages/profilesList'
 
 const Routes = {
   publicOnly: [
@@ -15,7 +15,7 @@ const Routes = {
   authOnly: [
     { path: '/profiles/add', component: ProfileEdit },
     { path: '/profiles/edit/:profileId', component: ProfileEdit },
-    { path: '/profiles', component: Profiles },
+    { path: '/profiles', component: ProfilesList },
 
     { path: '/profiles-old/:profileId', component: PageProfileEditor },
     { path: '/profiles-old', component: PageProfilesList },

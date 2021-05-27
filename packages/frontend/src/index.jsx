@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom'
 
 import './index.less'
 
-import Router from './components/app-router'
-import Routes from './components/app-routes'
+import Router from './components/appRouter'
+import Routes from './components/appRoutes'
 
-export default function App () {
+function App () {
   return (
     <Router routes={Routes} />
   )
