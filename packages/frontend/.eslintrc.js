@@ -16,6 +16,7 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': ['warn', { vars: 'all', args: 'after-used', ignoreRestSiblings: false }],
+    'no-unreachable': 'warn',
     'comma-dangle': ['error', 'always-multiline'],
     'import/no-unresolved': 'error',
     'import/order': ['error', {

@@ -1,32 +1,32 @@
-const handlers = require('./handlers')
+const { users, fingerprint, profiles, proxies } = require('./handlers')
 const schemas = require('./schemas')
 
+const pubRoutes = (pub) => {
+  pub.pst('/users/create', users.create, schemas.UserCreateSchema)
+  pub.pst('/users/login', users.login, schemas.UserAuthSchema)
+  pub.pst('/users/checkEmail', users.checkEmail)
+  pub.pst('/users/confirmEmail', users.confirmEmail)
+  pub.pst('/users/resetPassword', users.resetPassword)
+}
+
+const pvtRoutes = (pvt) => {
+  pvt.get('/users/checkToken', users.checkToken)
+
+  pvt.get('/fingerprint', fingerprint.get)
+  pvt.get('/fingerprint/options', fingerprint.variants)
+
+  pvt.get('/profiles', profiles.list)
+  pvt.get('/profiles/:profileId', profiles.get)
+  pvt.pst('/profiles/save', profiles.save)
+  pvt.pst('/profiles/delete', profiles.remove)
+
+  pvt.get('/proxies', proxies.list)
+  pvt.get('/proxies/:proxyId', proxies.get)
+  pvt.pst('/proxies/save', proxies.save)
+  pvt.pst('/proxies/delete', proxies.remove)
+}
+
 module.exports = async function (fastify, opts) {
-  const { pub, pvt } = fastify
-  // todo: add custom error handler to have same api for all reps: .success, .message
-
-  // @Public
-
-  pub.post('/users/checkEmail', handlers.checkEmail)
-  pub.post('/users/confirmEmail', handlers.confirmEmail)
-
-  pub.post('/users/create', handlers.createUser, schemas.UserCreateSchema)
-  pub.post('/users/login', handlers.login, schemas.UserAuthSchema)
-
-  pub.post('/users/reset-password', handlers.resetPassword)
-
-  // @Private
-
-  pvt.get('/protected', handlers.protected)
-  pvt.get('/fingerprint', handlers.randomFingerprint)
-  pvt.get('/fingerprint/options', handlers.fingerprintVariants)
-
-  pvt.get('/profiles', handlers.profilesList)
-  pvt.get('/profiles/:profileId', handlers.getProfile)
-  pvt.pst('/profiles/save', handlers.saveProfile)
-  pvt.pst('/profiles/delete', handlers.deleteProfiles)
-
-  pvt.get('/proxies', handlers.proxiesList)
-  // pvt.get('/userdata', handlers.proxiesList)
-  pvt.post('/proxies/create', handlers.createProxy)
+  pubRoutes(fastify.pub)
+  pvtRoutes(fastify.pvt)
 }

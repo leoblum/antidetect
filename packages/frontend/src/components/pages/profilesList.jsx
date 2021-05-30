@@ -186,7 +186,7 @@ export default function ProfilesList () {
     width: 100,
     align: 'left',
     // render: (item) => <ActionRender profile={item} />,
-    render: (item) => ActionRender({ profile: item }),
+    render: (profile) => ActionRender({ profile }),
   }
 
   const tableProps = {

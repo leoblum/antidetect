@@ -1,14 +1,14 @@
-import { Card, Form, Input, Radio, Tabs, Skeleton, Button } from 'antd'
+import { Form, Input, Tabs, Skeleton, Button } from 'antd'
 import merge from 'deepmerge'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import { FormSwitch, FormSelect, FormNumber, FromButton, Cols } from '../formItems'
+import { FormSwitch, FormSelect, FormNumber, FromButton, Cols, FormRadio } from '../formItems'
 import notify from '../notify'
 import useRouter from '../useRouter'
 import { getRandomName } from '../utils/random'
 
-import PageLayout from './layout'
+import { FormLayout } from './layout'
 
 async function getInitialState (profileId) {
   const calls = [
@@ -45,7 +45,7 @@ function getStateFromForm (state, values) {
   })
 }
 
-function AddProfileForm () {
+function ProfileEditForm () {
   const [state, setState] = useState(null)
   const router = useRouter()
   const [form] = Form.useForm()
@@ -69,14 +69,10 @@ function AddProfileForm () {
 
     values = { name, fingerprint: values }
     const rep = await backend.profiles.save({ profileId, ...values })
+    if (!rep.success) return notify.error('Profile not saved. Try again.')
 
-    if (!rep.success) {
-      console.error('profile not saved', rep)
-      return
-    }
-
-    notify.success('Profile sucessfuly created!')
-    router.replace('/')
+    notify.success('Profile saved!')
+    router.replace('/profiles')
   }
 
   async function randomize () {
@@ -86,6 +82,7 @@ function AddProfileForm () {
 
   const variants = state.variants[state.os]
   const initialValues = { name: state.name, ...state.fingerprint[state.os] }
+  const osOptions = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]
 
   const TabPane = Tabs.TabPane
   const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
@@ -103,12 +100,7 @@ function AddProfileForm () {
           </Cols>
 
           <Cols>
-            <Form.Item name="os" label="Operation System">
-              <Radio.Group style={{ display: 'flex', width: '100%' }}>
-                <Radio.Button value="win" style={{ flex: 1, textAlign: 'center' }}>Windows</Radio.Button>
-                <Radio.Button value="mac" style={{ flex: 1, textAlign: 'center' }}>MacOS</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
+            <FormRadio name="os" label="Operation System" options={osOptions} />
           </Cols>
 
           <Cols>
@@ -155,12 +147,8 @@ function AddProfileForm () {
 
 export default function ProfileEdit () {
   return (
-    <PageLayout>
-      <Card>
-        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-          <AddProfileForm />
-        </div>
-      </Card>
-    </PageLayout>
+    <FormLayout>
+      <ProfileEditForm />
+    </FormLayout>
   )
 }

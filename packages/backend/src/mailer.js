@@ -4,7 +4,8 @@ module.exports = {
   transporter: null,
 
   async init () {
-    const testAccount = await nodemailer.createTestAccount()
+    // const testAccount = await nodemailer.createTestAccount()
+    const testAccount = { user: 'user', pass: 'pass' }
     const transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
@@ -20,6 +21,7 @@ module.exports = {
 
   async confirmEmail ({ email, token }) {
     // console.log(email, token)
+    return Promise.resolve()
 
     return await this.transporter.sendMail({
       from: '"Fred Foo 👻" <foo@example.com>',

@@ -1,25 +1,8 @@
-import { Button, Layout, Space } from 'antd'
+import { Button, Layout, Space, Card } from 'antd'
 import React, { useState } from 'react'
 
 import Link from '../appLink'
 import backend from '../backend'
-
-export function DayNight ({ size = 16 }) {
-  const [dark, setDark] = useState(true)
-  const onClick = () => {
-    setDark(!dark)
-    console.log(window.less)
-  }
-  const style = {
-    fontSize: `${size}px`,
-    margin: `0 ${size / 2}px`,
-    cursor: 'pointer',
-    userSelect: 'none',
-  }
-  return (
-    <div style={style} onClick={onClick}>{dark ? '☀️' : '🌙'}</div>
-  )
-}
 
 export function Header ({ style }) {
   const Links = [
@@ -41,7 +24,6 @@ export function Header ({ style }) {
   return (
     <div style={HeaderStyle}>
       <Space>
-        <DayNight size={32} />
         {Links.map((link, i) => <Link key={i} to={link.to}>{link.title}</Link>)}
       </Space>
       <Button onClick={() => backend.auth.logout()}>Logout</Button>
@@ -82,5 +64,17 @@ export default function PageLayout ({ children }) {
         {children}
       </Layout.Content>
     </Layout>
+  )
+}
+
+export function FormLayout ({ children }) {
+  return (
+    <PageLayout>
+      <Card>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+          {children}
+        </div>
+      </Card>
+    </PageLayout>
   )
 }

@@ -57,6 +57,7 @@ export const fingerprint = {
 
 export const profiles = {
   all: async () => await get('/profiles'),
+  list: async () => await get('/profiles'),
   get: async (profileId) => await get('/profiles/' + profileId),
   save: async ({ profileId, ...values }) => await post('/profiles/save', { _id: profileId, ...values }),
   delete: async (ids) => await post('/profiles/delete', { ids: wrapArray(ids) }),
@@ -64,6 +65,10 @@ export const profiles = {
 
 export const proxies = {
   all: async () => await get('/proxies'),
+  list: async () => await get('/proxies'),
+  get: async (proxyId) => await get('/proxies/' + proxyId),
+  save: async ({ proxyId, ...values }) => await post('/proxies/save', { _id: proxyId, ...values }),
+  delete: async (ids) => await post('/proxies/delete', { ids: wrapArray(ids) }),
 }
 
 auth._setAuthToken(storage.get('authToken'))

@@ -8,7 +8,9 @@ module.exports = fp(async function (fastify, opts) {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
+    useFindAndModify: false,
     serverSelectionTimeoutMS: 3000,
+    returnOriginal: false,
   })
 
   fastify.decorate('db', instance.connection)

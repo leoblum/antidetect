@@ -13,6 +13,7 @@
     "fastify-cors": "^6.0.1",
     "fastify-jwt": "^2.4.0",
     "fastify-plugin": "^3.0.0",
+    "flat": "^5.0.2",
     "mongoose": "^5.12.8",
     "nodemailer": "^6.6.0"
   },
