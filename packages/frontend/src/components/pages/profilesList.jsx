@@ -68,24 +68,19 @@ function TableProxyBlock ({ proxy }) {
   )
 }
 
-function Block ({ children, style }) {
-  return (
-    <div className="app-content-block" style={{ style }}>{children}</div>
-  )
-}
-
 function TableHeader () {
   const router = useRouter()
+
   return (
-    <Block>
+    <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
       <Space>
-        <TitleSearch></TitleSearch>
+        <Input.Search placeholder="Enter Name" onSearch={() => null} style={{ width: 200 }} />
       </Space>
       <Space>
         <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
         <Button type="default" onClick={() => router.replace('/')} icon={<ReloadOutlined />} />
       </Space>
-    </Block>
+    </Space>
   )
 }
 
@@ -129,18 +124,12 @@ function ActionRender ({ profile }) {
   )
 }
 
-export default function ProfilesList () {
+function ProfilesTable () {
   const [data, setData] = useState(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   useEffect(async () => setData(await getProfilesAndProxies()), [])
 
-  if (!data) {
-    return (
-      <PageLayout>
-        <Table loading />
-      </PageLayout>
-    )
-  }
+  if (!data) return <Table loading />
 
   const { profiles, proxies } = data
 
@@ -189,7 +178,7 @@ export default function ProfilesList () {
     render: (profile) => ActionRender({ profile }),
   }
 
-  const tableProps = {
+  const props = {
     rowKey: '_id',
     rowSelection: {
       selectedRowKeys: selectedRowKeys,
@@ -208,13 +197,16 @@ export default function ProfilesList () {
     },
     size: 'small',
     showSorterTooltip: false,
-    // title: () => <TableHeader/>,
+    title () { return <TableHeader /> },
   }
 
+  return <Table {...props}></Table>
+}
+
+export default function ProxiesList () {
   return (
     <PageLayout>
-      <TableHeader />
-      <Table {...tableProps}></Table>
+      <ProfilesTable />
     </PageLayout>
   )
 }

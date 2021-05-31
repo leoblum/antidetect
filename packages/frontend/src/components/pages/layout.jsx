@@ -1,68 +1,48 @@
-import { Button, Layout, Space, Card } from 'antd'
+import { ApiOutlined, LaptopOutlined } from '@ant-design/icons'
+import { Button, Layout, Card, Menu, Divider } from 'antd'
 import React, { useState } from 'react'
 
 import Link from '../appLink'
 import backend from '../backend'
+import useRouter from '../useRouter'
 
-export function Header ({ style }) {
+export default function PageLayout ({ children }) {
   const Links = [
-    { to: '/profiles', title: 'Profiles' },
-    { to: '/proxies', title: 'Proxies' },
+    { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
+    { to: '/proxies', title: 'Proxies', icon: <ApiOutlined /> },
     { to: '/profiles-old', title: 'Old' },
   ]
 
-  const HeaderStyle = {
-    width: '100%',
-    maxHeight: '100%',
+  const router = useRouter()
+  const selectedKeys = Links.map((el, idx) => [el.to === router.pathname, idx])
+    .filter(el => el[0]).map(el => el[1].toString())
+
+  const headerStyle = {
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0 12px',
-    ...style,
+    padding: '0 8px',
+    height: '48px',
+    backgroundColor: 'white',
   }
 
   return (
-    <div style={HeaderStyle}>
-      <Space>
-        {Links.map((link, i) => <Link key={i} to={link.to}>{link.title}</Link>)}
-      </Space>
-      <Button onClick={() => backend.auth.logout()}>Logout</Button>
-    </div>
-  )
-}
-
-export default function PageLayout ({ children }) {
-  const maxWidth = '1240px' // todo: should be different for media-query
-
-  const LayoutStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    minHeight: '100vh',
-  }
-
-  const LayoutHeaderStyle = {
-    display: 'flex',
-    justifyContent: 'center',
-    width: '100%',
-    height: '52px',
-    padding: 0,
-  }
-
-  const LayoutContentStyle = {
-    width: '100%',
-    height: '100%',
-    maxWidth,
-    padding: '8px',
-  }
-
-  return (
-    <Layout style={LayoutStyle}>
-      <Layout.Header style={LayoutHeaderStyle}>
-        <Header style={{ maxWidth }} />
-      </Layout.Header>
-      <Layout.Content style={LayoutContentStyle}>
-        {children}
-      </Layout.Content>
+    <Layout style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+      <div style={{ maxWidth: '1240px', width: '100%', padding: '0 8px' }}>
+        <Layout.Content style={headerStyle}>
+          <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">
+            {Links.map((el, idx) => (
+              <Menu.Item key={idx} icon={el.icon}>
+                <Link to={el.to}>{el.title}</Link>
+              </Menu.Item>
+            ))}
+          </Menu>
+          <Button onClick={() => backend.auth.logout()}>Logout</Button>
+        </Layout.Content>
+        <Layout.Content style={{ padding: '8px 0' }}>
+          {children}
+        </Layout.Content>
+      </div>
     </Layout>
   )
 }

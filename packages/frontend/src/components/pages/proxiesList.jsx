@@ -29,7 +29,9 @@ function ProxyAddress ({ item }) {
 }
 
 function ProxyType ({ item }) {
-  return (<Tag>{item.type}</Tag>)
+  return (
+    <Tag>{item.type}</Tag>
+  )
 }
 
 function TableHeader () {
@@ -53,6 +55,7 @@ function ItemActions ({ item }) {
   const proxyId = item._id
 
   const onEdit = () => router.replace(`/proxies/edit/${proxyId}`)
+  const onDelete = () => null
 
   const menu = (
     <Menu style={{ minWidth: '100px' }}>
@@ -60,7 +63,7 @@ function ItemActions ({ item }) {
       <Menu.Divider />
       <Menu.Item icon={<CopyOutlined />}>Copy</Menu.Item>
       <Menu.Divider />
-      <Menu.Item icon={<DeleteOutlined />} danger>Delete</Menu.Item>
+      <Menu.Item icon={<DeleteOutlined />} onClick={onDelete} danger>Delete</Menu.Item>
     </Menu>
   )
 
@@ -73,12 +76,6 @@ function ItemActions ({ item }) {
     </Space>
   )
 }
-
-// function ItemRender ({ proxy, Component }) {
-// return ({})
-// }
-
-// (proxy) { return <ItemActions proxy={proxy} /> }
 
 function ProxiesTable () {
   const [data, setData] = useState(null)
