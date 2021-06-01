@@ -6,6 +6,20 @@ import Link from '../appLink'
 import backend from '../backend'
 import useRouter from '../useRouter'
 
+function AppLogo () {
+  return (
+    <div style={{ userSelect: 'none', fontSize: '22px', margin: '0 10px 0 12px', display: 'flex', alignItems: 'center' }}>
+      <div style={{ fontSize: '28px', marginRight: '10px' }}>
+        🎭
+      </div>
+      <div style={{ textAlign: 'center', marginTop: '2px' }}>
+        <div style={{ fontSize: '18px', lineHeight: '16px', fontWeight: '500', letterSpacing: '2px' }}>YANUS</div>
+        <div style={{ fontSize: '11px', lineHeight: '10px' }}>antidetect</div>
+      </div>
+    </div>
+  )
+}
+
 export default function PageLayout ({ children }) {
   const Links = [
     { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
@@ -31,9 +45,7 @@ export default function PageLayout ({ children }) {
       <div style={{ maxWidth: '1240px', width: '100%', padding: '0 8px' }}>
         <Layout.Content style={headerStyle}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ userSelect: 'none', fontSize: '22px', margin: '0 12px' }}>
-              🎭 Yanus
-            </div>
+            <AppLogo />
             <Divider type="vertical" style={{ fontSize: '24px', top: 0 }} />
             <div>
               <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">

@@ -3,18 +3,21 @@ import merge from 'deepmerge'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import { FormSwitch, FormSelect, FormNumber, FromButton, Cols, FormRadio } from '../formItems'
+import { FormSwitch, FormSelect, FormNumber, FromButton, Cols, FormRadio, FormInput, FormTextArea } from '../formItems'
 import notify from '../notify'
 import useRouter from '../useRouter'
 import { getRandomName } from '../utils/random'
 
 import { FormLayout } from './layout'
 
+const If = ({ children, condition }) => (condition ? children : <></>)
+
 async function getInitialState (profileId) {
   const calls = [
     backend.fingerprint.get().then(rep => ({ fingerprint: { win: rep.win, mac: rep.mac } })),
     backend.fingerprint.variants().then(rep => ({ variants: { win: rep.win, mac: rep.mac } })),
     profileId && backend.profiles.get(profileId).then(rep => ({ profile: rep.profile })),
+    backend.proxies.list().then(rep => ({ proxies: rep.proxies })),
   ]
 
   const data = Object.assign(...(await Promise.all(calls)))
@@ -29,7 +32,8 @@ async function getInitialState (profileId) {
     delete data.profile
   }
 
-  return Object.assign(data, { os, name, namePlaceholder })
+  const proxyType = 'new'
+  return Object.assign(data, { os, name, namePlaceholder, proxyType })
 }
 
 function getStateFromForm (state, values) {
@@ -59,13 +63,24 @@ function ProfileEditForm () {
 
   if (!state) return <Skeleton active />
 
+  async function randomize () {
+    const fingerprint = await backend.fingerprint.get()
+    form.setFieldsValue(fingerprint[state.os])
+  }
+
+  const TabPane = Tabs.TabPane
+  const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
+
   function onValuesChange (value, all) {
     if ('os' in value && value.os !== state.os) return setState(getStateFromForm(state, all))
+    if ('proxyType' in value) return setState({ ...state, ...value })
   }
 
   async function onFinish (values) {
     const name = values?.name || state.namePlaceholder
     delete values.name
+
+    return console.log(values)
 
     values = { name, fingerprint: values }
     const rep = await backend.profiles.save({ profileId, ...values })
@@ -75,54 +90,65 @@ function ProfileEditForm () {
     router.replace('/profiles')
   }
 
-  async function randomize () {
-    const fingerprint = await backend.fingerprint.get()
-    form.setFieldsValue(fingerprint[state.os])
+  const variants = state.variants[state.os]
+  const initialValues = {
+    name: state.name,
+    proxyType: state.proxyType,
+    ...state.fingerprint[state.os],
   }
 
-  const variants = state.variants[state.os]
-  const initialValues = { name: state.name, ...state.fingerprint[state.os] }
   const osOptions = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]
+  const proxyTypeOptions = [{ value: 'socks5', title: 'SOCKS5' }, { value: 'http', title: 'HTTP' }]
 
-  const TabPane = Tabs.TabPane
-  const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
+  const rules = {
+    host: [{ required: true }],
+    port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
+  }
+
+  const proxyOptions = [
+    { value: 'none', title: 'No Proxy' },
+    { value: 'saved', title: 'From Saved' },
+    { value: 'new', title: 'New' },
+  ]
 
   return (
     <Form name="profile-edit" layout="vertical" {...{ form, initialValues, onValuesChange, onFinish }}>
-
       <Tabs size="small" tabBarExtraContent={extraContent}>
-
         <TabPane key={0} tab="General" forceRender="true">
-          <Cols>
-            <Form.Item name="name" label="Profile Name">
-              <Input placeholder={state.namePlaceholder} />
-            </Form.Item>
-          </Cols>
+          <FormInput name="name" label="Profile Name" placeholder={state.namePlaceholder} />
+          <FormRadio name="os" label="Operation System" options={osOptions} />
+          <FormRadio name="proxyType" label="Proxy" options={proxyOptions} />
 
-          <Cols>
-            <FormRadio name="os" label="Operation System" options={osOptions} />
-          </Cols>
+          <If condition={state.proxyType === 'new'}>
+            {/* <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} /> */}
+            <FormRadio name="proxy.type" label="Protocol" options={proxyTypeOptions} />
 
-          <Cols>
-            <Form.Item name="userAgent" label="User Agent">
-              <Input.TextArea rows="2" style={{ resize: 'none' }} />
-            </Form.Item>
-          </Cols>
+            <Cols>
+              <FormInput name="proxy.host" label="Host" placeholder="IP or hostname" rules={rules.host} />
+              <FormInput name="proxy.port" label="Port" placeholder="Port" rules={rules.port} />
+            </Cols>
+
+            <Cols>
+              <FormInput name="proxy.username" label="Login" placeholder="Login" />
+              <FormInput name="proxy.password" label="Password" placeholder="Password" />
+            </Cols>
+          </If>
+
+          <If condition={state.proxyType === 'saved'}>
+            <FormSelect name="proxy.id" options={state.proxies.map(x => [x._id, x.name])} placeholder="Tap to select" />
+          </If>
         </TabPane>
 
         <TabPane key={1} tab="Hardware" forceRender={true}>
-          <Cols>
-            <FormSelect name="screen" label="Screen Resolution" options={variants.screen} />
-          </Cols>
+          <FormTextArea name="userAgent" label="User Agent" />
+          <FormSelect name="screen" label="Screen Resolution" options={variants.screen} />
 
           <Cols>
             <FormSelect name="cpu" label="CPU Cores" options={variants.cpu} />
             <FormSelect name="ram" label="Memory, GB" options={variants.ram} />
           </Cols>
 
-          <Cols>
-            <FormSelect name="renderer" label="Renderer" options={variants.renderer} />
-          </Cols>
+          <FormSelect name="renderer" label="Renderer" options={variants.renderer} />
 
           <Cols label="Hardware Noise">
             <FormSwitch name="noiseWebGl" label="WebGL" />
@@ -135,6 +161,7 @@ function ProfileEditForm () {
             <FormNumber name="deviceMicrophones" label="Microphones" min={0} max={4} size="small" />
             <FormNumber name="deviceSpeakers" label="Speakers" min={0} max={4} size="small" />
           </Cols>
+
         </TabPane>
       </Tabs>
 

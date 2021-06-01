@@ -45,13 +45,8 @@ function ProxyEditForm () {
 
   return (
     <Form name="proxy-edit" layout="vertical" {...{ form, onFinish, initialValues }}>
-      <Cols>
-        <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} />
-      </Cols>
-
-      <Cols>
-        <FormRadio name="type" label="Protocol" options={typeOptions} />
-      </Cols>
+      <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} />
+      <FormRadio name="type" label="Protocol" options={typeOptions} />
 
       <Cols>
         <FormInput name="host" label="Host" placeholder="IP or hostname" rules={rules.host} />

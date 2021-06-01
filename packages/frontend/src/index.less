@@ -2,11 +2,13 @@
 //@import '~antd/dist/antd.dark.less';
 
 
+// !!! Do not select title in table
+
 .ant-table-thead .ant-table-cell {
   user-select: none;
 }
 
-//
+// !!! Tabs
 
 .ant-tabs-tab-btn {
   min-width: 64px;
@@ -25,7 +27,11 @@
   padding: 8px 6px;
 }
 
-// top menu fix
+.ant-tabs-content-holder {
+  margin: 0 2px;
+}
+
+// !!! Main header
 
 .ant-menu-horizontal.ant-menu-light {
   border: 0;
@@ -44,12 +50,19 @@
   .ant-menu-item-selected {
     border-bottom: none;
     border-top: 2px solid @menu-highlight-color;
+    // background-color: @menu-item-active-bg;
   }
-
-  // .ant-menu-item-selected {
-  // background-color: @menu-item-active-bg;
-  // }
 }
+
+// !!! Forms
+
+.ant-form-item {
+  margin-bottom: 16px;
+}
+
+// .ant-form-item-label>label {
+// color: rgba(0, 0, 0, 0.7);
+// }
 
 // own
 

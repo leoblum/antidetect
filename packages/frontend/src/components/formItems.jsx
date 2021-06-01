@@ -3,7 +3,8 @@ import { Space, Form, Switch, Button, InputNumber, Select, Row, Col, Radio, Inpu
 import React, { useState } from 'react'
 
 export function Cols ({ children, label = null, style }) {
-  children = Array.isArray(children) ? children : [children]
+  if (!children) children = []
+  if (!Array.isArray(children)) children = [children]
 
   const props = []
   for (let i = 0; i < children.length; ++i) {
@@ -39,6 +40,14 @@ export function FormNumber ({ name, label, min = 0, max = 100, size = 'default' 
   )
 }
 
+export function FormTextArea ({ name, label, rows = 2, style = null }) {
+  return (
+    <Form.Item name={name} label={label}>
+      <Input.TextArea rows={rows} style={{ resize: 'none', ...style }} />
+    </Form.Item>
+  )
+}
+
 export function FormSwitch ({ name, label }) {
   return (
     <Space>
@@ -50,12 +59,14 @@ export function FormSwitch ({ name, label }) {
   )
 }
 
-export function FormSelect ({ name, label, options, ...props }) {
+export function FormSelect ({ name, label, options, placeholder, ...props }) {
+  options = options.map(x => Array.isArray(x) ? x : [x, x])
+
   return (
     <Form.Item name={name} label={label} {...props}>
-      <Select>
+      <Select showSearch placeholder={placeholder}>
         {options.map((x, idx) => (
-          <Select.Option key={idx} value={x}>{x}</Select.Option>
+          <Select.Option key={idx} value={x[0]}>{x[1]}</Select.Option>
         ))}
       </Select>
     </Form.Item>
