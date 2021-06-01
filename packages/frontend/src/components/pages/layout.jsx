@@ -1,6 +1,6 @@
 import { ApiOutlined, LaptopOutlined } from '@ant-design/icons'
 import { Button, Layout, Card, Menu, Divider } from 'antd'
-import React, { useState } from 'react'
+import React from 'react'
 
 import Link from '../appLink'
 import backend from '../backend'
@@ -30,14 +30,24 @@ export default function PageLayout ({ children }) {
     <Layout style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <div style={{ maxWidth: '1240px', width: '100%', padding: '0 8px' }}>
         <Layout.Content style={headerStyle}>
-          <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">
-            {Links.map((el, idx) => (
-              <Menu.Item key={idx} icon={el.icon}>
-                <Link to={el.to}>{el.title}</Link>
-              </Menu.Item>
-            ))}
-          </Menu>
-          <Button onClick={() => backend.auth.logout()}>Logout</Button>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ userSelect: 'none', fontSize: '22px', margin: '0 12px' }}>
+              🎭 Yanus
+            </div>
+            <Divider type="vertical" style={{ fontSize: '24px', top: 0 }} />
+            <div>
+              <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">
+                {Links.map((el, idx) => (
+                  <Menu.Item key={idx} icon={el.icon}>
+                    <Link to={el.to}>{el.title}</Link>
+                  </Menu.Item>
+                ))}
+              </Menu>
+            </div>
+          </div>
+          <div>
+            <Button onClick={() => backend.auth.logout()}>Logout</Button>
+          </div>
         </Layout.Content>
         <Layout.Content style={{ padding: '8px 0' }}>
           {children}

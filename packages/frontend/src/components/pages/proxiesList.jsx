@@ -1,9 +1,10 @@
 import { ReloadOutlined, DeleteOutlined, EditOutlined, MoreOutlined, CopyOutlined } from '@ant-design/icons'
-import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag } from 'antd'
+import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag, Modal } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import backend from '../backend'
+import useGetData from '../useGetData'
 import useRouter from '../useRouter'
 
 import PageLayout from './layout'
@@ -14,9 +15,9 @@ function getCountryFlag (proxy) {
   return '🌍'
 }
 
-function wrap (Component) {
+function wrap (Component, props) {
   return function ColumnRender (item) {
-    return <Component item={item} />
+    return <Component item={item} {...props} />
   }
 }
 
@@ -29,12 +30,10 @@ function ProxyAddress ({ item }) {
 }
 
 function ProxyType ({ item }) {
-  return (
-    <Tag>{item.type}</Tag>
-  )
+  return (<Tag>{item.type}</Tag>)
 }
 
-function TableHeader () {
+function TableHeader ({ reload }) {
   const router = useRouter()
 
   return (
@@ -44,18 +43,27 @@ function TableHeader () {
       </Space>
       <Space>
         <Button type="primary" onClick={() => router.replace('/proxies/add')}>Create Proxy</Button>
-        <Button type="default" onClick={() => router.replace('/')} icon={<ReloadOutlined />} />
+        <Button type="default" onClick={reload} icon={<ReloadOutlined />} />
       </Space>
     </Space>
   )
 }
 
-function ItemActions ({ item }) {
+function ItemActions ({ item, reload }) {
   const router = useRouter()
   const proxyId = item._id
 
   const onEdit = () => router.replace(`/proxies/edit/${proxyId}`)
-  const onDelete = () => null
+  const onDelete = () => Modal.confirm({
+    content: 'Are you sure to delete proxy?',
+    okText: 'Yes',
+    okType: 'danger',
+    cancelText: 'No',
+    onOk: async function () {
+      await backend.proxies.delete(proxyId)
+      reload()
+    },
+  })
 
   const menu = (
     <Menu style={{ minWidth: '100px' }}>
@@ -78,18 +86,17 @@ function ItemActions ({ item }) {
 }
 
 function ProxiesTable () {
-  const [data, setData] = useState(null)
+  const [data, loading, reload] = useGetData(async () => (await backend.proxies.list()).proxies)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
-  useEffect(async () => setData((await backend.proxies.list()).proxies), [])
 
-  if (!data) return <Table loading />
+  if (loading) return <Table loading />
 
   const columns = [
     { title: 'Name', dataIndex: 'name' },
     { title: 'Type', render: wrap(ProxyType) },
     { title: 'Address', render: wrap(ProxyAddress) },
     { title: 'Country', render: wrap(CountryFlag), align: 'center' },
-    { title: 'Action', render: wrap(ItemActions) },
+    { title: 'Action', render: wrap(ItemActions, { reload }), width: 100 },
   ]
 
   const props = {
@@ -100,7 +107,7 @@ function ProxiesTable () {
     pagination: { defaultPageSize: 25, size: 'default' },
     size: 'small',
     showSorterTooltip: false,
-    title () { return <TableHeader /> },
+    title () { return <TableHeader reload={reload} /> },
   }
 
   return <Table {...props} />

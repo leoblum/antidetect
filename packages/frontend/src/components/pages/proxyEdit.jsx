@@ -11,7 +11,7 @@ import { FormLayout } from './layout'
 
 async function getInitialState (proxyId) {
   const namePlaceholder = getRandomName()
-  const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks' }
+  const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
   return { namePlaceholder, proxy }
 }
 
@@ -37,7 +37,7 @@ function ProxyEditForm () {
   }
 
   const initialValues = state.proxy
-  const typeOptions = [{ value: 'socks', title: 'SOCKS5' }, { value: 'http', title: 'HTTP' }]
+  const typeOptions = [{ value: 'socks5', title: 'SOCKS5' }, { value: 'http', title: 'HTTP' }]
   const rules = {
     host: [{ required: true }],
     port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
@@ -50,11 +50,11 @@ function ProxyEditForm () {
       </Cols>
 
       <Cols>
-        <FormRadio name="type" label="Proxy Type" options={typeOptions} />
+        <FormRadio name="type" label="Protocol" options={typeOptions} />
       </Cols>
 
       <Cols>
-        <FormInput name="host" label="Host" placeholder="Host" rules={rules.host} />
+        <FormInput name="host" label="Host" placeholder="IP or hostname" rules={rules.host} />
         <FormInput name="port" label="Port" placeholder="Port" rules={rules.port} />
       </Cols>
 

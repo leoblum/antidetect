@@ -1,16 +1,15 @@
 import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
 import { Table, Button, Space, Dropdown, Menu, Input, Modal } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import backend from '../backend'
 import TimeAgo from '../timeAgo'
+import useGetData from '../useGetData'
 import useRouter from '../useRouter'
 import natSorter from '../utils/natsort'
 
 import PageLayout from './layout'
-
-const { confirm } = Modal
 
 export function StyleForEach ({ children, style }) {
   return (
@@ -18,28 +17,10 @@ export function StyleForEach ({ children, style }) {
   )
 }
 
-export const TitleSearch = ({ onSearch, ...props }) => (
-  <div {...props}>
-    <Input.Search
-      placeholder="Enter Title"
-      onSearch={onSearch}
-      style={{ width: 200 }}
-    />
-  </div>
-)
-
-async function getProfilesAndProxies () {
-  let profiles = await backend.profiles.all()
-  let proxies = await backend.proxies.all()
-
-  if (!profiles.success || !proxies.success) {
-    console.error('data not loaded', profiles, proxies)
-    return null
+function wrap (Component, props) {
+  return function ColumnRender (item) {
+    return <Component item={item} {...props} />
   }
-
-  profiles = profiles.profiles
-  proxies = proxies.proxies
-  return { profiles, proxies }
 }
 
 function selectById (items, id, key = '_id') {
@@ -49,7 +30,77 @@ function selectById (items, id, key = '_id') {
   return null
 }
 
-function TableProxyBlock ({ proxy }) {
+function TableHeader ({ reload }) {
+  const router = useRouter()
+
+  return (
+    <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Space>
+        <Input.Search placeholder="Enter Name" onSearch={() => null} style={{ width: 200 }} />
+      </Space>
+      <Space>
+        <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
+        <Button type="default" onClick={reload} icon={<ReloadOutlined />} />
+      </Space>
+    </Space>
+  )
+}
+
+function ActionItem ({ item, reload }) {
+  const profileId = item._id
+  const router = useRouter()
+
+  const onEdit = () => router.replace(`/profiles/edit/${profileId}`)
+  const onClone = () => console.log(`clone profile: ${profileId}`)
+  const onDelete = () => Modal.confirm({
+    content: 'Are you sure delete profile?',
+    okText: 'Yes',
+    okType: 'danger',
+    cancelText: 'No',
+    onOk: async function () {
+      await backend.profiles.delete(profileId)
+      reload()
+    },
+  })
+
+  const menu = (
+    <Menu style={{ minWidth: '100px' }}>
+      <Menu.Item icon={<EditOutlined />} onClick={onEdit}>Edit</Menu.Item>
+      <Menu.Divider />
+      <Menu.Item icon={<CopyOutlined />} onClick={onClone}>Clone</Menu.Item>
+      <Menu.Divider />
+      <Menu.Item icon={<DeleteOutlined />} danger onClick={onDelete}>Delete</Menu.Item>
+    </Menu>
+  )
+
+  return (
+    <Space>
+      <Button type="primary" icon={<CaretRightOutlined />}>Run</Button>
+      <Dropdown overlay={menu} trigger="click" placement="bottomRight">
+        <Button icon={<MoreOutlined />} />
+      </Dropdown>
+    </Space>
+  )
+}
+
+function NameItem ({ item }) {
+  return (
+    <div>
+      <span style={{ marginRight: '6px' }}>
+        {item.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
+      </span>
+      {item.name}
+    </div>
+  )
+}
+
+function LastActiveItem ({ item }) {
+  return (<TimeAgo date={item.updatedAt} />)
+}
+
+function ProxyItem ({ item, proxies }) {
+  const proxy = selectById(proxies, item.proxy)
+
   const name = proxy ? proxy.name : 'None'
   const addr = proxy ? `${proxy.host}:${proxy.port}` : 'Direct Conection'
   const flag = proxy ? (proxy.country !== null ? getUnicodeFlagIcon(proxy.country) : '🌍') : '🚫'
@@ -68,136 +119,35 @@ function TableProxyBlock ({ proxy }) {
   )
 }
 
-function TableHeader () {
-  const router = useRouter()
-
-  return (
-    <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
-      <Space>
-        <Input.Search placeholder="Enter Name" onSearch={() => null} style={{ width: 200 }} />
-      </Space>
-      <Space>
-        <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
-        <Button type="default" onClick={() => router.replace('/')} icon={<ReloadOutlined />} />
-      </Space>
-    </Space>
-  )
-}
-
-function ActionRender ({ profile }) {
-  const profileId = profile._id
-  const router = useRouter()
-
-  async function deleteProfile () {
-    confirm({
-      content: `Are you sure delete profile "${profile.name}"?`,
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
-      onOk: async function () {
-        await backend.profiles.delete(profileId)
-        router.replace('/')
-      },
-    })
-  }
-
-  const editProfile = () => router.replace(`/profiles/edit/${profileId}`)
-  const cloneProfile = () => console.log(`clone profile: ${profileId}`)
-
-  const menu = (
-    <Menu style={{ minWidth: '100px' }}>
-      <Menu.Item icon={<EditOutlined />} onClick={editProfile}>Edit</Menu.Item>
-      <Menu.Divider />
-      <Menu.Item icon={<CopyOutlined />} onClick={cloneProfile}>Clone</Menu.Item>
-      <Menu.Divider />
-      <Menu.Item icon={<DeleteOutlined />} danger onClick={deleteProfile}>Delete</Menu.Item>
-    </Menu>
-  )
-
-  return (
-    <Space>
-      <Button type="primary" icon={<CaretRightOutlined />}>Run</Button>
-      <Dropdown overlay={menu} trigger="click" placement="bottomRight">
-        <Button icon={<MoreOutlined />} />
-      </Dropdown>
-    </Space>
-  )
-}
-
 function ProfilesTable () {
-  const [data, setData] = useState(null)
+  const [data, loading, reload] = useGetData(async () => {
+    const profiles = (await backend.profiles.all()).profiles
+    const proxies = (await backend.proxies.all()).proxies
+    return { profiles, proxies }
+  })
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
-  useEffect(async () => setData(await getProfilesAndProxies()), [])
 
-  if (!data) return <Table loading />
+  if (loading) return <Table loading />
 
   const { profiles, proxies } = data
+  const byKey = (key) => (a, b) => natSorter(a[key], b[key])
 
-  const NameRender = (title, item) => (
-    <div>
-      <span style={{ marginRight: '6px' }}>
-        {item.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
-      </span>
-      {title}
-    </div>
-  )
-
-  const ProxyRedner = (proxyId) => (
-    <TableProxyBlock proxy={selectById(proxies, proxyId)} />
-  )
-
-  const UpdatedRender = (time) => (
-    <TimeAgo date={time} />
-  )
-
-  const NameColumn = {
-    title: 'Name',
-    dataIndex: 'name',
-    sorter: (a, b) => natSorter(a.name, b.name),
-    render: NameRender,
-  }
-
-  const ProxyColumn = {
-    title: 'Proxy',
-    dataIndex: 'proxy',
-    render: ProxyRedner,
-  }
-
-  const LastActiveColumn = {
-    title: 'Last Active',
-    dataIndex: 'updatedAt',
-    sorter: (a, b) => natSorter(a.name, b.name),
-    render: UpdatedRender,
-  }
-
-  const ActionColumn = {
-    title: 'Action',
-    width: 100,
-    align: 'left',
-    // render: (item) => <ActionRender profile={item} />,
-    render: (profile) => ActionRender({ profile }),
-  }
+  const columns = [
+    { title: 'Name', render: wrap(NameItem), sorter: byKey('name') },
+    { title: 'Last Active', render: wrap(LastActiveItem), sorter: byKey('updatedAt') },
+    { title: 'Proxy', render: wrap(ProxyItem, { proxies }) },
+    { title: 'Action', render: wrap(ActionItem, { reload }), width: 100 },
+  ]
 
   const props = {
     rowKey: '_id',
-    rowSelection: {
-      selectedRowKeys: selectedRowKeys,
-      onChange: data => setSelectedRowKeys(data),
-    },
+    rowSelection: { selectedRowKeys, onChange: setSelectedRowKeys },
     dataSource: profiles,
-    columns: [
-      NameColumn,
-      LastActiveColumn,
-      ProxyColumn,
-      ActionColumn,
-    ],
-    pagination: {
-      defaultPageSize: 25,
-      size: 'default',
-    },
+    columns: columns,
+    pagination: { defaultPageSize: 25, size: 'default' },
     size: 'small',
     showSorterTooltip: false,
-    title () { return <TableHeader /> },
+    title () { return <TableHeader reload={reload} /> },
   }
 
   return <Table {...props}></Table>
