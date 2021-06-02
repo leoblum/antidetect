@@ -89,8 +89,6 @@ function ProxiesTable () {
   const [data, loading, reload] = useGetData(async () => (await backend.proxies.list()).proxies)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
 
-  if (loading) return <Table loading />
-
   const columns = [
     { title: 'Name', dataIndex: 'name' },
     { title: 'Type', render: wrap(ProxyType) },
@@ -108,6 +106,7 @@ function ProxiesTable () {
     size: 'small',
     showSorterTooltip: false,
     title () { return <TableHeader reload={reload} /> },
+    loading,
   }
 
   return <Table {...props} />

@@ -132,9 +132,7 @@ function ProfilesTable () {
     return { profiles, proxies }
   })
 
-  if (loading) return <Table loading />
-
-  const { profiles, proxies } = data
+  const { profiles = [], proxies = [] } = data || {}
   const columns = [
     { title: 'Name', render: wrap(NameItem), sorter: byKey('name') },
     { title: 'Last Active', render: wrap(LastActiveItem), sorter: byKey('updatedAt', true), defaultSortOrder: 'ascend' },
@@ -151,6 +149,7 @@ function ProfilesTable () {
     size: 'small',
     showSorterTooltip: false,
     title () { return <TableHeader reload={reload} /> },
+    loading,
   }
 
   return <Table {...props} />
