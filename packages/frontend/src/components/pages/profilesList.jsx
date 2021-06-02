@@ -70,11 +70,11 @@ function ActionItem ({ item, reload }) {
 
   const menu = (
     <Menu style={{ minWidth: '100px' }}>
-      <Menu.Item icon={<EditOutlined />} onClick={onEdit}>Edit</Menu.Item>
+      <Menu.Item key="edit" icon={<EditOutlined />} onClick={onEdit}>Edit</Menu.Item>
       <Menu.Divider />
-      <Menu.Item icon={<CopyOutlined />} onClick={onClone}>Clone</Menu.Item>
+      <Menu.Item key="clone" icon={<CopyOutlined />} onClick={onClone}>Clone</Menu.Item>
       <Menu.Divider />
-      <Menu.Item icon={<DeleteOutlined />} danger onClick={onDelete}>Delete</Menu.Item>
+      <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={onDelete}>Delete</Menu.Item>
     </Menu>
   )
 

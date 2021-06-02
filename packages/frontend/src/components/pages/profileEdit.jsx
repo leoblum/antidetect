@@ -82,7 +82,6 @@ function ProfileEditForm () {
 
   const { name, os, fingerprint, proxy } = state
   const initialValues = flatten({ name, os, fingerprint, proxy })
-  console.log(initialValues, form.getFieldValue('proxy.proxy'))
 
   const variants = state.variants[state.os]
   const osOptions = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]

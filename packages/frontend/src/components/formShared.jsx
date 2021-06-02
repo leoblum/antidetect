@@ -31,7 +31,7 @@ export function ProxiesList ({ proxies, prefix = '' }) {
   const name = prefix.length ? `${prefix}.id` : 'id'
   const options = proxies.map(x => ({ value: x._id, title: x.name }))
 
-  return <FormSelect name={name} options={options} placeholder="Tap to select" initialValue={options[0].value} />
+  return <FormSelect name={name} options={options} placeholder="Tap to select" />
 }
 
 export function ProxyFields ({ prefix = '' }) {

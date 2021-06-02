@@ -95,9 +95,7 @@ export function FormRadio ({ name, label, options, ...props }) {
 export function FormButton ({ children, icon = null }) {
   const [loading, setLoading] = useState(false)
 
-  function onClick () {
-    console.log('submited')
-  }
+  const onClick = () => null
 
   return (
     <Form.Item>
