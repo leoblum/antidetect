@@ -1,15 +1,20 @@
 import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
 import { Table, Button, Space, Dropdown, Menu, Input, Modal } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
+import natsort from 'natsort'
 import React, { useState } from 'react'
 
 import backend from '../backend'
 import TimeAgo from '../timeAgo'
 import useGetData from '../useGetData'
 import useRouter from '../useRouter'
-import natSorter from '../utils/natsort'
 
 import PageLayout from './layout'
+
+function byKey (key, desc = false) {
+  const sorter = natsort({ desc })
+  return (a, b) => sorter(a[key], b[key])
+}
 
 export function StyleForEach ({ children, style }) {
   return (
@@ -120,21 +125,19 @@ function ProxyItem ({ item, proxies }) {
 }
 
 function ProfilesTable () {
+  const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   const [data, loading, reload] = useGetData(async () => {
     const profiles = (await backend.profiles.all()).profiles
     const proxies = (await backend.proxies.all()).proxies
     return { profiles, proxies }
   })
-  const [selectedRowKeys, setSelectedRowKeys] = useState(null)
 
   if (loading) return <Table loading />
 
   const { profiles, proxies } = data
-  const byKey = (key) => (a, b) => natSorter(a[key], b[key])
-
   const columns = [
     { title: 'Name', render: wrap(NameItem), sorter: byKey('name') },
-    { title: 'Last Active', render: wrap(LastActiveItem), sorter: byKey('updatedAt') },
+    { title: 'Last Active', render: wrap(LastActiveItem), sorter: byKey('updatedAt', true), defaultSortOrder: 'ascend' },
     { title: 'Proxy', render: wrap(ProxyItem, { proxies }) },
     { title: 'Action', render: wrap(ActionItem, { reload }), width: 100 },
   ]
@@ -150,7 +153,7 @@ function ProfilesTable () {
     title () { return <TableHeader reload={reload} /> },
   }
 
-  return <Table {...props}></Table>
+  return <Table {...props} />
 }
 
 export default function ProxiesList () {

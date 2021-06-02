@@ -2,6 +2,13 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Space, Form, Switch, Button, InputNumber, Select, Row, Col, Radio, Input } from 'antd'
 import React, { useState } from 'react'
 
+function isObject (value) {
+  if (Object.prototype.toString.call(value) !== '[object Object]') return false
+
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === null || prototype === Object.prototype
+}
+
 export function Cols ({ children, label = null, style }) {
   if (!children) children = []
   if (!Array.isArray(children)) children = [children]
@@ -60,22 +67,22 @@ export function FormSwitch ({ name, label }) {
 }
 
 export function FormSelect ({ name, label, options, placeholder, ...props }) {
-  options = options.map(x => Array.isArray(x) ? x : [x, x])
+  options = options.map(x => isObject(x) ? x : { value: x, title: x })
 
   return (
     <Form.Item name={name} label={label} {...props}>
       <Select showSearch placeholder={placeholder}>
         {options.map((x, idx) => (
-          <Select.Option key={idx} value={x[0]}>{x[1]}</Select.Option>
+          <Select.Option key={idx} value={x.value}>{x.title}</Select.Option>
         ))}
       </Select>
     </Form.Item>
   )
 }
 
-export function FormRadio ({ name, label, options }) {
+export function FormRadio ({ name, label, options, ...props }) {
   return (
-    <Form.Item name={name} label={label}>
+    <Form.Item name={name} label={label} {...props}>
       <Radio.Group style={{ display: 'flex', width: '100%' }}>
         {options.map((x, idx) => (
           <Radio.Button key={idx} value={x.value} style={{ flex: 1, textAlign: 'center' }}>{x.title}</Radio.Button>
@@ -85,7 +92,7 @@ export function FormRadio ({ name, label, options }) {
   )
 }
 
-export function FromButton ({ children, icon = null }) {
+export function FormButton ({ children, icon = null }) {
   const [loading, setLoading] = useState(false)
 
   function onClick () {

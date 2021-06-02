@@ -1,52 +1,39 @@
-import { Form, Input, Tabs, Skeleton, Button } from 'antd'
+import { Form, Tabs, Skeleton, Button } from 'antd'
+import { diff } from 'deep-object-diff'
 import merge from 'deepmerge'
+import { flatten, unflatten } from 'flat'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
-import { FormSwitch, FormSelect, FormNumber, FromButton, Cols, FormRadio, FormInput, FormTextArea } from '../formItems'
+import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '../formItems'
+import { ProfileProxy } from '../formShared'
 import notify from '../notify'
 import useRouter from '../useRouter'
 import { getRandomName } from '../utils/random'
 
 import { FormLayout } from './layout'
 
-const If = ({ children, condition }) => (condition ? children : <></>)
-
 async function getInitialState (profileId) {
-  const calls = [
-    backend.fingerprint.get().then(rep => ({ fingerprint: { win: rep.win, mac: rep.mac } })),
-    backend.fingerprint.variants().then(rep => ({ variants: { win: rep.win, mac: rep.mac } })),
-    profileId && backend.profiles.get(profileId).then(rep => ({ profile: rep.profile })),
-    backend.proxies.list().then(rep => ({ proxies: rep.proxies })),
-  ]
+  const clientOS = window.navigator.platform === 'MacIntel' ? 'mac' : 'win'
+  const [fingerprint, variants, proxies, profile] = await Promise.all([
+    backend.fingerprint.get().then(rep => ({ win: rep.win, mac: rep.mac })),
+    backend.fingerprint.variants().then(rep => ({ win: rep.win, mac: rep.mac })),
+    backend.proxies.list().then(rep => rep.proxies),
+    profileId ? backend.profiles.get(profileId).then(rep => rep.profile) : null,
+  ])
 
-  const data = Object.assign(...(await Promise.all(calls)))
-  const clientOs = window.navigator.platform === 'MacIntel' ? 'mac' : 'win'
+  const name = profile ? profile.name : null
+  const os = profile ? profile.fingerprint.os : clientOS
+  const proxy = profile.proxy ? { proxy: 'saved', id: profile.proxy } : { proxy: 'none' }
+  const generatedName = getRandomName()
+  if (profile) Object.assign(fingerprint[os], profile.fingerprint)
 
-  const os = data?.profile?.fingerprint?.os || clientOs
-  const name = data?.profile?.name || null
-  const namePlaceholder = getRandomName()
-
-  if (data.profile) {
-    Object.assign(data.fingerprint[os], data.profile.fingerprint)
-    delete data.profile
-  }
-
-  const proxyType = 'new'
-  return Object.assign(data, { os, name, namePlaceholder, proxyType })
+  return { name, os, fingerprint, variants, proxies, proxy, generatedName, profile }
 }
 
-function getStateFromForm (state, values) {
-  const name = values.name
-  delete values.name
-
-  // save fingerprint values for prev selected os
-  // todo: specify list of values to keep from form when os is updated
-  return merge(state, {
-    name,
-    fingerprint: { [state.os]: { ...values, os: state.os } },
-    os: values.os,
-  })
+async function getFlattenFingerprint (os) {
+  const data = await backend.fingerprint.get()
+  return flatten({ fingerprint: { [os]: data[os] } })
 }
 
 function ProfileEditForm () {
@@ -57,32 +44,35 @@ function ProfileEditForm () {
   const { profileId } = router.query
 
   useEffect(() => getInitialState(profileId).then(setState), [profileId])
-  useEffect(() => form.resetFields(), [state?.os])
+  useEffect(() => state && form.resetFields(), [state?.os])
 
   // RENDER
 
   if (!state) return <Skeleton active />
 
-  async function randomize () {
-    const fingerprint = await backend.fingerprint.get()
-    form.setFieldsValue(fingerprint[state.os])
-  }
-
-  const TabPane = Tabs.TabPane
-  const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
-
   function onValuesChange (value, all) {
-    if ('os' in value && value.os !== state.os) return setState(getStateFromForm(state, all))
-    if ('proxyType' in value) return setState({ ...state, ...value })
+    if ('os' in value && value.os !== state.os) return setState(merge(state, unflatten(all)))
+    if ('proxy.proxy' in value) return setState(merge(state, unflatten(value)))
   }
 
   async function onFinish (values) {
-    const name = values?.name || state.namePlaceholder
-    delete values.name
+    values = unflatten(values)
 
-    return console.log(values)
+    const profileProxyType = values.proxy.proxy
+    if (profileProxyType === 'new') delete values.proxy.proxy
 
-    values = { name, fingerprint: values }
+    const name = values.name || state.generatedName
+    const fingerprint = { ...values.fingerprint[state.os], os: state.os }
+    const proxy = profileProxyType === 'saved' ? values.proxy.id : null
+    const createProxy = profileProxyType === 'new' ? values.proxy : null
+
+    values = { name, fingerprint, proxy, createProxy }
+
+    const profile = state.profile
+    const prev = { name: profile.name, fingerprint: profile.fingerprint, proxy: profile.proxy, createProxy: null }
+    const dataDiff = diff(prev, values)
+    console.log(flatten(dataDiff))
+
     const rep = await backend.profiles.save({ profileId, ...values })
     if (!rep.success) return notify.error('Profile not saved. Try again.')
 
@@ -90,83 +80,56 @@ function ProfileEditForm () {
     router.replace('/profiles')
   }
 
+  const { name, os, fingerprint, proxy } = state
+  const initialValues = flatten({ name, os, fingerprint, proxy })
+  console.log(initialValues, form.getFieldValue('proxy.proxy'))
+
   const variants = state.variants[state.os]
-  const initialValues = {
-    name: state.name,
-    proxyType: state.proxyType,
-    ...state.fingerprint[state.os],
-  }
-
   const osOptions = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]
-  const proxyTypeOptions = [{ value: 'socks5', title: 'SOCKS5' }, { value: 'http', title: 'HTTP' }]
+  const fp = name => `fingerprint.${state.os}.${name}`
 
-  const rules = {
-    host: [{ required: true }],
-    port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
-  }
-
-  const proxyOptions = [
-    { value: 'none', title: 'No Proxy' },
-    { value: 'saved', title: 'From Saved' },
-    { value: 'new', title: 'New' },
-  ]
+  const TabPane = Tabs.TabPane
+  const randomize = async () => form.setFieldsValue(await getFlattenFingerprint(state.os))
+  const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
 
   return (
     <Form name="profile-edit" layout="vertical" {...{ form, initialValues, onValuesChange, onFinish }}>
       <Tabs size="small" tabBarExtraContent={extraContent}>
         <TabPane key={0} tab="General" forceRender="true">
-          <FormInput name="name" label="Profile Name" placeholder={state.namePlaceholder} />
+          <FormInput name="name" label="Profile Name" placeholder={state.generatedName} />
           <FormRadio name="os" label="Operation System" options={osOptions} />
-          <FormRadio name="proxyType" label="Proxy" options={proxyOptions} />
 
-          <If condition={state.proxyType === 'new'}>
-            {/* <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} /> */}
-            <FormRadio name="proxy.type" label="Protocol" options={proxyTypeOptions} />
-
-            <Cols>
-              <FormInput name="proxy.host" label="Host" placeholder="IP or hostname" rules={rules.host} />
-              <FormInput name="proxy.port" label="Port" placeholder="Port" rules={rules.port} />
-            </Cols>
-
-            <Cols>
-              <FormInput name="proxy.username" label="Login" placeholder="Login" />
-              <FormInput name="proxy.password" label="Password" placeholder="Password" />
-            </Cols>
-          </If>
-
-          <If condition={state.proxyType === 'saved'}>
-            <FormSelect name="proxy.id" options={state.proxies.map(x => [x._id, x.name])} placeholder="Tap to select" />
-          </If>
+          <ProfileProxy state={state} />
         </TabPane>
 
         <TabPane key={1} tab="Hardware" forceRender={true}>
-          <FormTextArea name="userAgent" label="User Agent" />
-          <FormSelect name="screen" label="Screen Resolution" options={variants.screen} />
+          <FormTextArea name={fp('userAgent')} label="User Agent" />
+          <FormSelect name={fp('screen')} label="Screen Resolution" options={variants.screen} />
 
           <Cols>
-            <FormSelect name="cpu" label="CPU Cores" options={variants.cpu} />
-            <FormSelect name="ram" label="Memory, GB" options={variants.ram} />
+            <FormSelect name={fp('cpu')} label="CPU Cores" options={variants.cpu} />
+            <FormSelect name={fp('ram')} label="Memory, GB" options={variants.ram} />
           </Cols>
 
-          <FormSelect name="renderer" label="Renderer" options={variants.renderer} />
+          <FormSelect name={fp('renderer')} label="Renderer" options={variants.renderer} />
 
           <Cols label="Hardware Noise">
-            <FormSwitch name="noiseWebGl" label="WebGL" />
-            <FormSwitch name="noiseCanvas" label="Canvas" />
-            <FormSwitch name="noiseAudio" label="Audio" />
+            <FormSwitch name={fp('noiseWebGl')} label="WebGL" />
+            <FormSwitch name={fp('noiseCanvas')} label="Canvas" />
+            <FormSwitch name={fp('noiseAudio')} label="Audio" />
           </Cols>
 
           <Cols label="Media Devices">
-            <FormNumber name="deviceCameras" label="Cameras" min={0} max={4} size="small" />
-            <FormNumber name="deviceMicrophones" label="Microphones" min={0} max={4} size="small" />
-            <FormNumber name="deviceSpeakers" label="Speakers" min={0} max={4} size="small" />
+            <FormNumber name={fp('deviceCameras')} label="Cameras" min={0} max={4} size="small" />
+            <FormNumber name={fp('deviceMicrophones')} label="Microphones" min={0} max={4} size="small" />
+            <FormNumber name={fp('deviceSpeakers')} label="Speakers" min={0} max={4} size="small" />
           </Cols>
 
         </TabPane>
       </Tabs>
 
       <Cols style={{ textAlign: 'right' }}>
-        <FromButton>{profileId ? 'Save Profile' : 'Create Profile'}</FromButton>
+        <FormButton>{profileId ? 'Save Profile' : 'Create Profile'}</FormButton>
       </Cols>
     </Form>
   )

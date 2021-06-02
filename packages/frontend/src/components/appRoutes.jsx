@@ -25,7 +25,6 @@ const Routes = {
 
     { path: '/profiles-old/:profileId', component: PageProfileEditor },
     { path: '/profiles-old', component: PageProfilesList },
-
   ],
 
   default: '/profiles',

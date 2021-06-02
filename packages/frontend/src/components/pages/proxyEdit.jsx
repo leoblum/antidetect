@@ -2,7 +2,7 @@ import { Skeleton, Form } from 'antd'
 import React, { useState, useEffect } from 'react'
 
 import backend from '../backend'
-import { FromButton, FormRadio, Cols, FormInput } from '../formItems'
+import { FormButton, FormRadio, Cols, FormInput } from '../formItems'
 import notify from '../notify'
 import useRouter from '../useRouter'
 import { getRandomName } from '../utils/random'
@@ -59,7 +59,7 @@ function ProxyEditForm () {
       </Cols>
 
       <Cols style={{ textAlign: 'right' }}>
-        <FromButton>{proxyId ? 'Save Proxy' : 'Create Proxy'}</FromButton>
+        <FormButton>{proxyId ? 'Save Proxy' : 'Create Proxy'}</FormButton>
       </Cols>
 
     </Form>

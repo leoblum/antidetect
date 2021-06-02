@@ -1,5 +1,9 @@
 @import '~antd/dist/antd.less';
-//@import '~antd/dist/antd.dark.less';
+// @import '~antd/dist/antd.dark.less';
+
+@import './styles/fix-antd-form.less';
+@import './styles/fix-antd-menu.less';
+@import './styles/fix-antd-tabs.less';
 
 
 // !!! Do not select title in table
@@ -7,62 +11,6 @@
 .ant-table-thead .ant-table-cell {
   user-select: none;
 }
-
-// !!! Tabs
-
-.ant-tabs-tab-btn {
-  min-width: 64px;
-  text-align: center;
-}
-
-.ant-form-item-explain {
-  font-size: 12px;
-}
-
-.ant-tabs-tab+.ant-tabs-tab {
-  margin: 0;
-}
-
-.ant-tabs-small>.ant-tabs-nav .ant-tabs-tab {
-  padding: 8px 6px;
-}
-
-.ant-tabs-content-holder {
-  margin: 0 2px;
-}
-
-// !!! Main header
-
-.ant-menu-horizontal.ant-menu-light {
-  border: 0;
-
-  .ant-menu-item {
-    margin: 0 8px;
-    padding: 0 8px;
-    top: 0;
-    box-sizing: border-box;
-
-    border-bottom: none;
-    border-top: 2px solid transparent;
-  }
-
-  .ant-menu-item:hover,
-  .ant-menu-item-selected {
-    border-bottom: none;
-    border-top: 2px solid @menu-highlight-color;
-    // background-color: @menu-item-active-bg;
-  }
-}
-
-// !!! Forms
-
-.ant-form-item {
-  margin-bottom: 16px;
-}
-
-// .ant-form-item-label>label {
-// color: rgba(0, 0, 0, 0.7);
-// }
 
 // own
 
