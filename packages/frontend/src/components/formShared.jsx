@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Cols, FormRadio, FormInput, FormSelect } from './formItems'
 
-const If = ({ children, condition }) => (condition ? children : <></>)
+export const If = ({ children, condition }) => (condition ? children : <></>)
 
 export function ProfileProxy ({ prefix = 'proxy', state, ...props }) {
   const options = [

@@ -5,14 +5,12 @@ import backend from '../backend'
 import { FormButton, FormRadio, Cols, FormInput } from '../formItems'
 import notify from '../notify'
 import useRouter from '../useRouter'
-import { getRandomName } from '../utils/random'
 
 import { FormLayout } from './layout'
 
 async function getInitialState (proxyId) {
-  const namePlaceholder = getRandomName()
   const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
-  return { namePlaceholder, proxy }
+  return { proxy }
 }
 
 function ProxyEditForm () {
@@ -26,7 +24,6 @@ function ProxyEditForm () {
   if (!state) return <Skeleton active />
 
   async function onFinish (values) {
-    if (!values.name) values.name = state.namePlaceholder
     values.port = parseInt(values.port, 10)
 
     const rep = await backend.proxies.save({ proxyId, ...values })
@@ -45,7 +42,7 @@ function ProxyEditForm () {
 
   return (
     <Form name="proxy-edit" layout="vertical" {...{ form, onFinish, initialValues }}>
-      <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} />
+      <FormInput name="name" label="Proxy Name" placeholder="Enter proxy name" rules={[{ required: true }]} />
       <FormRadio name="type" label="Protocol" options={typeOptions} />
 
       <Cols>
@@ -59,7 +56,9 @@ function ProxyEditForm () {
       </Cols>
 
       <Cols style={{ textAlign: 'right' }}>
-        <FormButton>{proxyId ? 'Save Proxy' : 'Create Proxy'}</FormButton>
+        <FormButton style={{ marginBottom: 0, marginTop: '10px' }}>
+          {proxyId ? 'Save Proxy' : 'Create Proxy'}
+        </FormButton>
       </Cols>
 
     </Form>

@@ -24,7 +24,6 @@ export default function PageLayout ({ children }) {
   const Links = [
     { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
     { to: '/proxies', title: 'Proxies', icon: <ApiOutlined /> },
-    { to: '/profiles-old', title: 'Old' },
   ]
 
   const router = useRouter()

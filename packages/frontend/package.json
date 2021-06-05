@@ -7,6 +7,7 @@
     "@craco/craco": "^6.1.2",
     "antd": "^4.16.1",
     "axios": "^0.21.1",
+    "countries-and-timezones": "^2.4.0",
     "country-flag-icons": "^1.2.10",
     "craco-less": "^1.17.1",
     "deep-object-diff": "^1.1.0",

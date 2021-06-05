@@ -4,16 +4,27 @@ function randomChoice (arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-function randomFingerprint (os) {
+function randomHardware (os) {
   const values = fingerprints[os]
 
   return {
-    os: os,
     userAgent: randomChoice(values.ua),
     screen: randomChoice(values.screen),
     cpu: randomChoice(values.cpu),
     ram: randomChoice(values.ram),
     renderer: randomChoice(values.renderer),
+  }
+}
+
+async function get (req, rep) {
+  const acceptLanguage = (req.headers['accept-language'] || '')
+    .split(',').map(x => x.split(';')[0]).filter(x => x.length > 0).join(',') || null
+
+  const fingerprint = {
+    os: randomChoice(['win', 'mac']),
+
+    win: randomHardware('win'),
+    mac: randomHardware('mac'),
 
     noiseWebGl: true,
     noiseCanvas: false,
@@ -22,11 +33,13 @@ function randomFingerprint (os) {
     deviceCameras: 1,
     deviceMicrophones: 1,
     deviceSpeakers: 1,
-  }
-}
 
-async function get (req, rep) {
-  return rep.done({ win: randomFingerprint('win'), mac: randomFingerprint('mac') })
+    languages: { mode: 'ip', value: acceptLanguage },
+    timezone: { mode: 'ip' },
+    geolocation: { mode: 'ip' },
+  }
+
+  return rep.done({ fingerprint })
 }
 
 async function variants (req, rep) {

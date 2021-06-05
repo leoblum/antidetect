@@ -23,6 +23,26 @@ describe('backend app', function () {
     await app.close()
   })
 
+  async function getFingerprint (os) {
+    const { fingerprint } = (await api.fingerprint.get()).data
+    fingerprint.os = os
+    return fingerprint
+  }
+
+  async function fillUser () {
+    const email = 'user@example.com'
+    const password = '1234'
+
+    await api.users.create(email, password)
+    await api.users.confirmEmail(email)
+    await api.users.auth(email, password, true)
+  }
+
+  async function fillProfile ({ name = '1234', os = 'mac' }) {
+    const fingerprint = await getFingerprint(os)
+    return (await api.profiles.save({ name, fingerprint })).data.profile
+  }
+
   describe('tests setup', function () {
     it('should be initiated app & api vars', async function () {
       expect(app).not.to.be.null
@@ -152,15 +172,6 @@ describe('backend app', function () {
     })
   })
 
-  async function fillUser () {
-    const email = 'user@example.com'
-    const password = '1234'
-
-    await api.users.create(email, password)
-    await api.users.confirmEmail(email)
-    await api.users.auth(email, password, true)
-  }
-
   describe('fingerprints', function () {
     beforeEach(fillUser)
 
@@ -170,8 +181,9 @@ describe('backend app', function () {
       rep = await api.fingerprint.get()
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
-      expect(rep.data.win).to.be.an('object')
-      expect(rep.data.mac).to.be.an('object')
+      expect(rep.data.fingerprint).to.be.an('object')
+      expect(rep.data.fingerprint.win).to.be.an('object')
+      expect(rep.data.fingerprint.mac).to.be.an('object')
     })
 
     it('should return fingerprint options for generator', async function () {
@@ -195,7 +207,6 @@ describe('backend app', function () {
     beforeEach(fillUser)
 
     it('should create profile', async function () {
-      const fingerprint = (await api.fingerprint.get()).data
       let rep = null
 
       rep = await api.profiles.list()
@@ -204,7 +215,8 @@ describe('backend app', function () {
       expect(rep.data.profiles).to.be.an('array')
       expect(rep.data.profiles).to.have.lengthOf(0)
 
-      rep = await api.profiles.save({ name: 'profile-mac', fingerprint: fingerprint.mac })
+      const fingerprint = await getFingerprint('mac')
+      rep = await api.profiles.save({ name: 'profile-mac', fingerprint })
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
       expect(rep.data.profile).to.be.an('object')
@@ -218,7 +230,7 @@ describe('backend app', function () {
       expect(rep.data.profile).to.have.property('updatedAt')
 
       expect(rep.data.profile.name).to.equal('profile-mac')
-      expect(rep.data.profile.fingerprint).to.deep.equal(fingerprint.mac)
+      expect(rep.data.profile.fingerprint).to.deep.equal(fingerprint)
       expect(rep.data.profile.proxy).to.be.null
 
       rep = await api.profiles.list()
@@ -250,11 +262,6 @@ describe('backend app', function () {
 
     //   console.log(rep.data.profile)
     // })
-
-    async function fillProfile ({ name = '1234', os = 'mac' }) {
-      const fingerprint = (await api.fingerprint.get()).data[os]
-      return (await api.profiles.save({ name, fingerprint })).data.profile
-    }
 
     it('should update by id', async function () {
       let rep = null

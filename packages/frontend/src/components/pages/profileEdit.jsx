@@ -1,7 +1,9 @@
 import { Form, Tabs, Skeleton, Button } from 'antd'
+import { getAllTimezones } from 'countries-and-timezones'
 import { diff } from 'deep-object-diff'
 import merge from 'deepmerge'
 import { flatten, unflatten } from 'flat'
+import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
 
 import backend from '../backend'
@@ -9,31 +11,91 @@ import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTe
 import { ProfileProxy } from '../formShared'
 import notify from '../notify'
 import useRouter from '../useRouter'
-import { getRandomName } from '../utils/random'
 
 import { FormLayout } from './layout'
 
 async function getInitialState (profileId) {
-  const clientOS = window.navigator.platform === 'MacIntel' ? 'mac' : 'win'
-  const [fingerprint, variants, proxies, profile] = await Promise.all([
-    backend.fingerprint.get().then(rep => ({ win: rep.win, mac: rep.mac })),
+  const [fp, variants, proxies, profile] = await Promise.all([
+    backend.fingerprint.get().then(rep => rep.fingerprint),
     backend.fingerprint.variants().then(rep => ({ win: rep.win, mac: rep.mac })),
     backend.proxies.list().then(rep => rep.proxies),
     profileId ? backend.profiles.get(profileId).then(rep => rep.profile) : null,
   ])
 
-  const name = profile ? profile.name : null
-  const os = profile ? profile.fingerprint.os : clientOS
-  const proxy = profile.proxy ? { proxy: 'saved', id: profile.proxy } : { proxy: 'none' }
-  const generatedName = getRandomName()
-  if (profile) Object.assign(fingerprint[os], profile.fingerprint)
+  const fpClientDefaults = {
+    os: window.navigator.platform === 'MacIntel' ? 'mac' : 'win',
+    timezone: {
+      value: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
+  }
 
-  return { name, os, fingerprint, variants, proxies, proxy, generatedName, profile }
+  const name = profile ? profile.name : null
+
+  const fingerprint = merge.all([fp, fpClientDefaults, profile ? profile.fingerprint : {}])
+  const timezones = getTimezones().map(x => ({ value: x.name, title: `(${x.utcOffsetStr}) ${x.name}` }))
+
+  const defaultProxyId = proxies.length ? proxies[0]._id : null
+  const proxy = profile && profile.proxy ? { proxy: 'saved', id: profile.proxy } : { proxy: 'none', id: defaultProxyId }
+
+  return { name, fingerprint, variants, proxies, proxy, profile, timezones }
 }
 
 async function getFlattenFingerprint (os) {
-  const data = await backend.fingerprint.get()
+  const data = (await backend.fingerprint.get()).fingerprint
   return flatten({ fingerprint: { [os]: data[os] } })
+}
+
+async function onFormFinish ({ state, values, router, profileId }) {
+  values = unflatten(values)
+
+  const { name, fingerprint } = values
+  const profileProxyType = values.proxy.proxy
+  if (profileProxyType === 'new') delete values.proxy.proxy
+
+  const proxy = profileProxyType === 'saved' ? values.proxy.id : null
+  const createProxy = profileProxyType === 'new' ? values.proxy : null
+
+  values = { name, fingerprint, proxy, createProxy }
+
+  const profile = state.profile || {}
+  const prev = { name: profile.name, fingerprint: profile.fingerprint, proxy: profile.proxy, createProxy: null }
+  const dataDiff = diff(prev, values)
+  console.log(flatten(dataDiff))
+
+  const rep = await backend.profiles.save({ profileId, ...values })
+  if (!rep.success) return notify.error('Profile not saved. Try again.')
+
+  notify.success('Profile saved!')
+  router.replace('/profiles')
+}
+
+async function onFormValuesChange ({ state, setState, value }) {
+  const updateStateOnKeys = [
+    'proxy.proxy',
+    'fingerprint.os',
+    'fingerprint.languages.mode',
+    'fingerprint.timezone.mode',
+    'fingerprint.geolocation.mode',
+  ]
+
+  for (const key of updateStateOnKeys) {
+    if (key in value) return setState(merge(state, unflatten(value)))
+  }
+}
+
+function getTimezones () {
+  const sorter = natsort()
+  const timezones = Object.values(getAllTimezones())
+    .filter(x => !x.name.startsWith('Etc'))
+    .sort((a, b) => sorter(a.name, b.name))
+    .sort((a, b) => sorter(a.utcOffsetStr, b.utcOffsetStr))
+  return timezones
+}
+
+function getOptions () {
+  const base = [{ value: 'ip', title: 'Based on IP' }, { value: 'manual', title: 'Manual' }]
+  const os = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]
+  return { os, languages: base, timezone: base, geolocation: base }
 }
 
 function ProfileEditForm () {
@@ -50,61 +112,54 @@ function ProfileEditForm () {
 
   if (!state) return <Skeleton active />
 
-  function onValuesChange (value, all) {
-    if ('os' in value && value.os !== state.os) return setState(merge(state, unflatten(all)))
-    if ('proxy.proxy' in value) return setState(merge(state, unflatten(value)))
-  }
+  const { name, fingerprint, proxy } = state
+  const initialValues = flatten({ name, fingerprint, proxy })
+  const fp = name => `fingerprint.${fingerprint.os}.${name}`
 
-  async function onFinish (values) {
-    values = unflatten(values)
-
-    const profileProxyType = values.proxy.proxy
-    if (profileProxyType === 'new') delete values.proxy.proxy
-
-    const name = values.name || state.generatedName
-    const fingerprint = { ...values.fingerprint[state.os], os: state.os }
-    const proxy = profileProxyType === 'saved' ? values.proxy.id : null
-    const createProxy = profileProxyType === 'new' ? values.proxy : null
-
-    values = { name, fingerprint, proxy, createProxy }
-
-    const profile = state.profile
-    const prev = { name: profile.name, fingerprint: profile.fingerprint, proxy: profile.proxy, createProxy: null }
-    const dataDiff = diff(prev, values)
-    console.log(flatten(dataDiff))
-
-    const rep = await backend.profiles.save({ profileId, ...values })
-    if (!rep.success) return notify.error('Profile not saved. Try again.')
-
-    notify.success('Profile saved!')
-    router.replace('/profiles')
-  }
-
-  const { name, os, fingerprint, proxy } = state
-  const initialValues = flatten({ name, os, fingerprint, proxy })
-
-  const variants = state.variants[state.os]
-  const osOptions = [{ value: 'win', title: 'Windows' }, { value: 'mac', title: 'MacOS' }]
-  const fp = name => `fingerprint.${state.os}.${name}`
+  const onValuesChange = async (value, all) => await onFormValuesChange({ state, setState, value, all })
+  const onFinish = async (values) => await onFormFinish({ state, values, router, profileId })
 
   const TabPane = Tabs.TabPane
-  const randomize = async () => form.setFieldsValue(await getFlattenFingerprint(state.os))
+  const randomize = async () => form.setFieldsValue(await getFlattenFingerprint(fingerprint.os))
   const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
+
+  const options = getOptions()
+  const variants = state.variants[fingerprint.os]
 
   return (
     <Form name="profile-edit" layout="vertical" {...{ form, initialValues, onValuesChange, onFinish }}>
       <Tabs size="small" tabBarExtraContent={extraContent}>
-        <TabPane key={0} tab="General" forceRender="true">
-          <FormInput name="name" label="Profile Name" placeholder={state.generatedName} />
-          <FormRadio name="os" label="Operation System" options={osOptions} />
+        <TabPane key="General" tab="General" forceRender="true">
+          <FormInput name="name" label="Profile Name" placeholder="Enter profile name" rules={[{ required: true }]} />
+          <FormRadio name="fingerprint.os" label="Operation System" options={options.os} />
+        </TabPane>
 
+        <TabPane key="Connection" tab="Connection" forceRender="true">
           <ProfileProxy state={state} />
         </TabPane>
 
-        <TabPane key={1} tab="Hardware" forceRender={true}>
+        <TabPane key="Navigator" tab="Navigator" forceRender="true">
           <FormTextArea name={fp('userAgent')} label="User Agent" />
           <FormSelect name={fp('screen')} label="Screen Resolution" options={variants.screen} />
 
+          <FormRadio name="fingerprint.languages.mode" label="Languages" options={options.languages} />
+          <Cols condition={fingerprint.languages.mode === 'manual'}>
+            <FormInput name="fingerprint.languages.value" rules={[{ required: true }]} />
+          </Cols>
+
+          <FormRadio name="fingerprint.timezone.mode" label="Timezone" options={options.timezone} />
+          <Cols condition={fingerprint.timezone.mode === 'manual'}>
+            <FormSelect name="fingerprint.timezone.value" options={state.timezones} />
+          </Cols>
+
+          <FormRadio name="fingerprint.geolocation.mode" label="Geolocation" options={options.geolocation} />
+          <Cols condition={fingerprint.geolocation.mode === 'manual'}>
+            <FormInput name="fingerprint.geolocation.latitude" label="Latitude" rules={[{ required: true }]} />
+            <FormInput name="fingerprint.geolocation.longitude" label="Longitude" rules={[{ required: true }]} />
+          </Cols>
+        </TabPane>
+
+        <TabPane key="Hardware" tab="Hardware" forceRender="true">
           <Cols>
             <FormSelect name={fp('cpu')} label="CPU Cores" options={variants.cpu} />
             <FormSelect name={fp('ram')} label="Memory, GB" options={variants.ram} />
@@ -113,22 +168,27 @@ function ProfileEditForm () {
           <FormSelect name={fp('renderer')} label="Renderer" options={variants.renderer} />
 
           <Cols label="Hardware Noise">
-            <FormSwitch name={fp('noiseWebGl')} label="WebGL" />
-            <FormSwitch name={fp('noiseCanvas')} label="Canvas" />
-            <FormSwitch name={fp('noiseAudio')} label="Audio" />
+            <FormSwitch name="fingerprint.noiseWebGl" label="WebGL" />
+            <FormSwitch name="fingerprint.noiseCanvas" label="Canvas" />
+            <FormSwitch name="fingerprint.noiseAudio" label="Audio" />
           </Cols>
 
           <Cols label="Media Devices">
-            <FormNumber name={fp('deviceCameras')} label="Cameras" min={0} max={4} size="small" />
-            <FormNumber name={fp('deviceMicrophones')} label="Microphones" min={0} max={4} size="small" />
-            <FormNumber name={fp('deviceSpeakers')} label="Speakers" min={0} max={4} size="small" />
+            <FormNumber name="fingerprint.deviceCameras" label="Cameras" min={0} max={4} size="small" />
+            <FormNumber name="fingerprint.deviceMicrophones" label="Microphones" min={0} max={4} size="small" />
+            <FormNumber name="fingerprint.deviceSpeakers" label="Speakers" min={0} max={4} size="small" />
           </Cols>
-
         </TabPane>
+
+        <TabPane key="Cookies" tab="Cookies" forceRender="true">
+        </TabPane>
+
       </Tabs>
 
-      <Cols style={{ textAlign: 'right' }}>
-        <FormButton>{profileId ? 'Save Profile' : 'Create Profile'}</FormButton>
+      <Cols style={{ textAlign: 'right', marginRight: '8px' }}>
+        <FormButton style={{ marginBottom: 0, marginTop: '10px' }}>
+          {profileId ? 'Save Profile' : 'Create Profile'}
+        </FormButton>
       </Cols>
     </Form>
   )

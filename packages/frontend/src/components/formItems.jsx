@@ -9,9 +9,15 @@ function isObject (value) {
   return prototype === null || prototype === Object.prototype
 }
 
-export function Cols ({ children, label = null, style }) {
+function normalizeReactChildren (children) {
   if (!children) children = []
   if (!Array.isArray(children)) children = [children]
+  return children
+}
+export function Cols ({ children, label = null, style, condition = true }) {
+  if (!condition) return <></>
+
+  children = normalizeReactChildren(children)
 
   const props = []
   for (let i = 0; i < children.length; ++i) {
@@ -92,13 +98,13 @@ export function FormRadio ({ name, label, options, ...props }) {
   )
 }
 
-export function FormButton ({ children, icon = null }) {
+export function FormButton ({ children, icon = null, ...props }) {
   const [loading, setLoading] = useState(false)
 
   const onClick = () => null
 
   return (
-    <Form.Item>
+    <Form.Item {...props}>
       <Button type="primary" htmlType="submit" icon={icon} loading={loading} onClick={onClick}>
         {children}
       </Button>

@@ -1,23 +1,64 @@
 @import '~antd/dist/antd.less';
 // @import '~antd/dist/antd.dark.less';
 
-@import './styles/fix-antd-form.less';
-@import './styles/fix-antd-menu.less';
-@import './styles/fix-antd-tabs.less';
+// !!! Main header
 
+.ant-menu-horizontal.ant-menu-light {
+  border: 0;
+
+  .ant-menu-item {
+    margin: 0 8px;
+    padding: 0 8px;
+    top: 0;
+    box-sizing: border-box;
+
+    border-bottom: none;
+    border-top: 2px solid transparent;
+  }
+
+  .ant-menu-item:hover,
+  .ant-menu-item-selected {
+    border-bottom: none;
+    border-top: 2px solid @menu-highlight-color;
+    // background-color: @menu-item-active-bg;
+  }
+
+  .ant-menu-item::after {
+    content: none;
+  }
+}
+
+// !!! Profile form tabs
+
+.ant-tabs {
+  .ant-tabs-content-holder {
+    margin: 0 8px;
+  }
+
+  &.ant-tabs-small {
+    .ant-tabs-nav .ant-tabs-tab {
+      margin: 0 6px;
+      padding: 8px 8px;
+    }
+  }
+}
+
+// !!! Profiles / Proxies form
+
+.ant-form-item {
+  margin-bottom: 12px;
+}
+
+.ant-form-vertical .ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+.ant-form-item-explain {
+  font-size: 11px;
+}
 
 // !!! Do not select title in table
 
 .ant-table-thead .ant-table-cell {
   user-select: none;
-}
-
-// own
-
-.app-content-block {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  margin-bottom: 8px;
-  background-color: @component-background;
 }
