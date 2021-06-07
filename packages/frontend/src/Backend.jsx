@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import createEmitter from './utils/emitter'
-import storage from './utils/storage'
+import createEmitter from 'Utils/emitter'
+import storage from 'Utils/storage'
 
 const http = axios.create({
   baseURL: 'http://127.0.0.1:3030',
@@ -10,7 +10,11 @@ const http = axios.create({
 
 const wrapArray = (item) => Array.isArray(item) ? item : [item]
 
-export const request = async ({ method, url, ...config }) => (await http.request({ method, url, ...config })).data
+export const request = async ({ method, url, ...config }) => {
+  const data = (await http.request({ method, url, ...config })).data
+  console.log(`api\t${method}\t${url}\nreq`, config.data, '\nrep', data)
+  return data
+}
 
 export const get = async (url, config) => await request({ method: 'get', url, ...config })
 export const post = async (url, data, config) => await request({ method: 'post', url, data, ...config })

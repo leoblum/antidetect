@@ -1,4 +1,4 @@
-const { Profile, createOrUpdate } = require('../models')
+const { Profile, Proxy, createOrUpdate } = require('../models')
 
 async function list (req, rep) {
   const { team } = req.user
@@ -13,6 +13,15 @@ async function get (req, rep) {
 
 async function save (req, rep) {
   const { team } = req.user
+
+  if (req.body.createProxy) {
+    const { createProxy } = req.body
+    delete req.body.createProxy
+
+    const proxy = await Proxy.create({ ...createProxy, team })
+    req.body.proxy = proxy._id
+  }
+
   const profile = await createOrUpdate(Profile, { team, ...req.body })
   return rep.done({ profile })
 }

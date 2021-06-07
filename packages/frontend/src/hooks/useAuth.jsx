@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-import backend from './backend'
+import backend from 'Backend'
 
 const authContext = createContext(null)
 const useAuth = () => useContext(authContext)
@@ -16,5 +16,5 @@ function useProvideAuth () {
   return auth
 }
 
-export { ProvideAuth }
+useAuth.ProvideAuth = ProvideAuth
 export default useAuth

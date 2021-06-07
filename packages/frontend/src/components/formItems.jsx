@@ -1,6 +1,6 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Space, Form, Switch, Button, InputNumber, Select, Row, Col, Radio, Input } from 'antd'
-import React, { useState } from 'react'
+import React from 'react'
 
 function isObject (value) {
   if (Object.prototype.toString.call(value) !== '[object Object]') return false
@@ -61,11 +61,11 @@ export function FormTextArea ({ name, label, rows = 2, style = null }) {
   )
 }
 
-export function FormSwitch ({ name, label }) {
+export function FormSwitch ({ name, label, onChange }) {
   return (
     <Space>
       <Form.Item name={name} valuePropName="checked" noStyle>
-        <Switch size="small" checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
+        <Switch size="small" checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} onChange={onChange} />
       </Form.Item>
       {label}
     </Space>
@@ -99,13 +99,9 @@ export function FormRadio ({ name, label, options, ...props }) {
 }
 
 export function FormButton ({ children, icon = null, ...props }) {
-  const [loading, setLoading] = useState(false)
-
-  const onClick = () => null
-
   return (
     <Form.Item {...props}>
-      <Button type="primary" htmlType="submit" icon={icon} loading={loading} onClick={onClick}>
+      <Button type="primary" htmlType="submit" icon={icon}>
         {children}
       </Button>
     </Form.Item>

@@ -1,7 +1,8 @@
+import { Typography } from 'antd'
 import React from 'react'
-import { HashRouter as BaseRouter, Redirect, Route, Switch } from 'react-router-dom'
+import { HashRouter as BaseRouter, Redirect, Route, Switch, Link as BaseLink } from 'react-router-dom'
 
-import useAuth, { ProvideAuth } from './useAuth'
+import { useAuth } from 'Hooks'
 
 export function flattenRoutes (routesIn) {
   const routes = []
@@ -19,15 +20,19 @@ export function SuperRoute ({ children, publicOnly, authOnly, redirect, ...props
   return <Route {...props}>{children}</Route>
 }
 
+export function Link ({ children, ...props }) {
+  return <BaseLink component={Typography.Link} {...props}>{children}</BaseLink>
+}
+
 export default function Router ({ routes }) {
   const flatten = flattenRoutes(routes)
   return (
-    <ProvideAuth>
+    <useAuth.ProvideAuth>
       <BaseRouter>
         <Switch>
           {flatten.map((props, idx) => <SuperRoute key={idx} {...props} />)}
         </Switch>
       </BaseRouter>
-    </ProvideAuth>
+    </useAuth.ProvideAuth>
   )
 }

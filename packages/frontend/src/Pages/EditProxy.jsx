@@ -1,19 +1,18 @@
 import { Skeleton, Form } from 'antd'
 import React, { useState, useEffect } from 'react'
 
-import backend from '../backend'
-import { FormButton, FormRadio, Cols, FormInput } from '../formItems'
-import notify from '../notify'
-import useRouter from '../useRouter'
-
-import { FormLayout } from './layout'
+import backend from 'Backend'
+import { FormButton, FormRadio, Cols, FormInput } from 'Components/FormItems'
+import Layout from 'Components/Layout'
+import Notify from 'Components/Notify'
+import { useRouter } from 'Hooks'
 
 async function getInitialState (proxyId) {
   const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
   return { proxy }
 }
 
-function ProxyEditForm () {
+export default function EditProxy () {
   const [state, setState] = useState(null)
   const router = useRouter()
   const [form] = Form.useForm()
@@ -27,9 +26,9 @@ function ProxyEditForm () {
     values.port = parseInt(values.port, 10)
 
     const rep = await backend.proxies.save({ proxyId, ...values })
-    if (!rep.success) return notify.error('Proxy not saved. Try again.')
+    if (!rep.success) return Notify.error('Proxy not saved. Try again.')
 
-    notify.success('Proxy saved!')
+    Notify.success('Proxy saved!')
     router.replace('/proxies')
   }
 
@@ -40,8 +39,10 @@ function ProxyEditForm () {
     port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
   }
 
+  const props = { form, onFinish, initialValues }
+
   return (
-    <Form name="proxy-edit" layout="vertical" {...{ form, onFinish, initialValues }}>
+    <Layout.Form name="proxy-edit" layout="vertical" {...props}>
       <FormInput name="name" label="Proxy Name" placeholder="Enter proxy name" rules={[{ required: true }]} />
       <FormRadio name="type" label="Protocol" options={typeOptions} />
 
@@ -60,15 +61,6 @@ function ProxyEditForm () {
           {proxyId ? 'Save Proxy' : 'Create Proxy'}
         </FormButton>
       </Cols>
-
-    </Form>
-  )
-}
-
-export default function ProfileEdit () {
-  return (
-    <FormLayout>
-      <ProxyEditForm />
-    </FormLayout>
+    </Layout.Form>
   )
 }

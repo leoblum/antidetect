@@ -1,4 +1,4 @@
-import { message as Notify } from 'antd'
+import { message as Msg } from 'antd'
 
 const messages = {
   email_already_used: 'Email already used.',
@@ -9,21 +9,21 @@ const messages = {
 }
 
 function success (message) {
-  return Notify.success(message)
+  return Msg.success(message)
 }
 
 function error (message) {
-  return Notify.error(message)
+  return Msg.error(message)
 }
 
 function notifyByApiCode ({ success, message: code, ...props }) {
-  const handler = Notify[success ? 'success' : 'error']
+  const handler = Msg[success ? 'success' : 'error']
   const message = messages[code]
   if (!success && !message) console.warn('unknown message', code, props)
   return message ? handler(message) : null
 }
 
-const notify = { notifyByApiCode, success, error }
+const Notify = { notifyByApiCode, success, error }
 
 export { notifyByApiCode, success, error }
-export default notify
+export default Notify

@@ -1,10 +1,11 @@
 import { ApiOutlined, LaptopOutlined } from '@ant-design/icons'
 import { Button, Layout, Card, Menu, Divider } from 'antd'
+import Form from 'antd/lib/form/Form'
 import React from 'react'
 
-import Link from '../appLink'
-import backend from '../backend'
-import useRouter from '../useRouter'
+import backend from 'Backend'
+import { Link } from 'Components/Router'
+import { useRouter } from 'Hooks'
 
 function AppLogo () {
   return (
@@ -20,14 +21,9 @@ function AppLogo () {
   )
 }
 
-export default function PageLayout ({ children }) {
-  const Links = [
-    { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
-    { to: '/proxies', title: 'Proxies', icon: <ApiOutlined /> },
-  ]
-
+function AppHeader ({ links }) {
   const router = useRouter()
-  const selectedKeys = Links.map((el, idx) => [el.to === router.pathname, idx])
+  const selectedKeys = links.map((el, idx) => [el.to === router.pathname, idx])
     .filter(el => el[0]).map(el => el[1].toString())
 
   const headerStyle = {
@@ -40,26 +36,37 @@ export default function PageLayout ({ children }) {
   }
 
   return (
+    <Layout.Content style={headerStyle}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <AppLogo />
+        <Divider type="vertical" style={{ fontSize: '24px', top: 0 }} />
+        <div>
+          <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">
+            {links.map((el, idx) => (
+              <Menu.Item key={idx} icon={el.icon}>
+                <Link to={el.to}>{el.title}</Link>
+              </Menu.Item>
+            ))}
+          </Menu>
+        </div>
+      </div>
+      <div>
+        <Button onClick={() => backend.auth.logout()}>Logout</Button>
+      </div>
+    </Layout.Content>
+  )
+}
+
+function AppLayout ({ children }) {
+  const Links = [
+    { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
+    { to: '/proxies', title: 'Proxies', icon: <ApiOutlined /> },
+  ]
+
+  return (
     <Layout style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
       <div style={{ maxWidth: '1240px', width: '100%', padding: '0 8px' }}>
-        <Layout.Content style={headerStyle}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <AppLogo />
-            <Divider type="vertical" style={{ fontSize: '24px', top: 0 }} />
-            <div>
-              <Menu mode="horizontal" selectedKeys={selectedKeys} theme="light">
-                {Links.map((el, idx) => (
-                  <Menu.Item key={idx} icon={el.icon}>
-                    <Link to={el.to}>{el.title}</Link>
-                  </Menu.Item>
-                ))}
-              </Menu>
-            </div>
-          </div>
-          <div>
-            <Button onClick={() => backend.auth.logout()}>Logout</Button>
-          </div>
-        </Layout.Content>
+        <AppHeader links={Links} />
         <Layout.Content style={{ padding: '8px 0' }}>
           {children}
         </Layout.Content>
@@ -68,14 +75,19 @@ export default function PageLayout ({ children }) {
   )
 }
 
-export function FormLayout ({ children }) {
+function FormLayout ({ children, ...props }) {
   return (
-    <PageLayout>
+    <AppLayout>
       <Card>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-          {children}
+          <Form {...props}>
+            {children}
+          </Form>
         </div>
       </Card>
-    </PageLayout>
+    </AppLayout>
   )
 }
+
+AppLayout.Form = FormLayout
+export default AppLayout

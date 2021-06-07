@@ -3,11 +3,9 @@ import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag, Modal } f
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import React, { useState } from 'react'
 
-import backend from '../backend'
-import useGetData from '../useGetData'
-import useRouter from '../useRouter'
-
-import PageLayout from './layout'
+import backend from 'Backend'
+import Layout from 'Components/Layout'
+import { useRouter, useGetData } from 'Hooks'
 
 function getCountryFlag (proxy) {
   if (!proxy) return '🚫'
@@ -49,13 +47,30 @@ function TableHeader ({ reload }) {
   )
 }
 
+function reactJoin (items, itemRender, separatorRender) {
+  return items.reduce((prev, item, idx) => {
+    const isLast = idx === items.length - 1
+    prev.push(<span key={idx}>{isLast ? itemRender(item) : <>{itemRender(item)}{separatorRender()}</>}</span>)
+    return prev
+  }, [])
+}
+
+function ConfirmMessage ({ items }) {
+  const children = reactJoin(items, x => <u>{x.name}</u>, () => ', ')
+  return (
+    <div style={{ textAlign: 'left' }}>
+      Are you sure to delete {children}?
+    </div>
+  )
+}
+
 function ItemActions ({ item, reload }) {
   const router = useRouter()
   const proxyId = item._id
 
   const onEdit = () => router.replace(`/proxies/edit/${proxyId}`)
   const onDelete = () => Modal.confirm({
-    content: 'Are you sure to delete proxy?',
+    content: <ConfirmMessage items={[item]} />,
     okText: 'Yes',
     okType: 'danger',
     cancelText: 'No',
@@ -85,7 +100,7 @@ function ItemActions ({ item, reload }) {
   )
 }
 
-function ProxiesTable () {
+export default function ListProxies () {
   const [data, loading, reload] = useGetData(async () => (await backend.proxies.list()).proxies)
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
 
@@ -109,13 +124,9 @@ function ProxiesTable () {
     loading,
   }
 
-  return <Table {...props} />
-}
-
-export default function ProxiesList () {
   return (
-    <PageLayout>
-      <ProxiesTable />
-    </PageLayout>
+    <Layout>
+      <Table {...props} />
+    </Layout>
   )
 }

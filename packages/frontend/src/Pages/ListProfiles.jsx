@@ -4,12 +4,10 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import natsort from 'natsort'
 import React, { useState } from 'react'
 
-import backend from '../backend'
-import TimeAgo from '../timeAgo'
-import useGetData from '../useGetData'
-import useRouter from '../useRouter'
-
-import PageLayout from './layout'
+import backend from 'Backend'
+import Layout from 'Components/Layout'
+import TimeAgo from 'Components/TimeAgo'
+import { useRouter, useGetData } from 'Hooks'
 
 function byKey (key, desc = false) {
   const sorter = natsort({ desc })
@@ -124,7 +122,7 @@ function ProxyItem ({ item, proxies }) {
   )
 }
 
-function ProfilesTable () {
+export default function ListProfiles () {
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   const [data, loading, reload] = useGetData(async () => {
     const profiles = (await backend.profiles.all()).profiles
@@ -152,13 +150,9 @@ function ProfilesTable () {
     loading,
   }
 
-  return <Table {...props} />
-}
-
-export default function ProxiesList () {
   return (
-    <PageLayout>
-      <ProfilesTable />
-    </PageLayout>
+    <Layout>
+      <Table {...props} />
+    </Layout>
   )
 }

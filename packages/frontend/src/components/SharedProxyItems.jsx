@@ -1,14 +1,13 @@
 import React from 'react'
 
-import { Cols, FormRadio, FormInput, FormSelect } from './formItems'
-
-export const If = ({ children, condition }) => (condition ? children : <></>)
+import { Cols, FormRadio, FormInput, FormSelect } from './FormItems'
+import If from './If'
 
 export function ProfileProxy ({ prefix = 'proxy', state, ...props }) {
   const options = [
     { value: 'none', title: 'No Proxy' },
-    { value: 'saved', title: 'From Saved' },
-    { value: 'new', title: 'New' },
+    { value: 'saved', title: 'From List' },
+    { value: 'manual', title: 'Manual' },
   ]
 
   const name = `${prefix}.proxy`
@@ -17,7 +16,7 @@ export function ProfileProxy ({ prefix = 'proxy', state, ...props }) {
   return (
     <>
       <FormRadio name={name} label="Proxy" options={options} {...props} />
-      <If condition={value === 'new'}>
+      <If condition={value === 'manual'}>
         <ProxyFields prefix={prefix} />
       </If>
       <If condition={value === 'saved'}>
@@ -41,6 +40,7 @@ export function ProxyFields ({ prefix = '' }) {
   ]
 
   const rules = {
+    name: [{ required: true }],
     host: [{ required: true, message: 'Should not be empty.' }],
     port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
   }
@@ -49,7 +49,7 @@ export function ProxyFields ({ prefix = '' }) {
 
   return (
     <>
-      {/* <FormInput name="name" label="Proxy Name" placeholder={state.namePlaceholder} /> */}
+      <FormInput name={wrap('name')} label="Name" placeholder="Enter proxy name" rules={rules.name} />
       <FormRadio name={wrap('type')} label="Protocol" options={options} initialValue="socks5" />
 
       <Cols>

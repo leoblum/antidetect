@@ -6,13 +6,14 @@ import { flatten, unflatten } from 'flat'
 import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
 
-import backend from '../backend'
-import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '../formItems'
-import { ProfileProxy } from '../formShared'
-import notify from '../notify'
-import useRouter from '../useRouter'
+import backend from 'Backend'
+import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from 'Components/FormItems'
+import Layout from 'Components/Layout'
+import Notify from 'Components/Notify'
+import { ProfileProxy } from 'Components/SharedProxyItems'
+import { useRouter } from 'Hooks'
 
-import { FormLayout } from './layout'
+const TabPane = Tabs.TabPane
 
 async function getInitialState (profileId) {
   const [fp, variants, proxies, profile] = await Promise.all([
@@ -50,10 +51,10 @@ async function onFormFinish ({ state, values, router, profileId }) {
 
   const { name, fingerprint } = values
   const profileProxyType = values.proxy.proxy
-  if (profileProxyType === 'new') delete values.proxy.proxy
+  if (profileProxyType === 'manual') delete values.proxy.proxy
 
   const proxy = profileProxyType === 'saved' ? values.proxy.id : null
-  const createProxy = profileProxyType === 'new' ? values.proxy : null
+  const createProxy = profileProxyType === 'manual' ? values.proxy : null
 
   values = { name, fingerprint, proxy, createProxy }
 
@@ -63,9 +64,9 @@ async function onFormFinish ({ state, values, router, profileId }) {
   console.log(flatten(dataDiff))
 
   const rep = await backend.profiles.save({ profileId, ...values })
-  if (!rep.success) return notify.error('Profile not saved. Try again.')
+  if (!rep.success) return Notify.error('Profile not saved. Try again.')
 
-  notify.success('Profile saved!')
+  Notify.success('Profile saved!')
   router.replace('/profiles')
 }
 
@@ -98,7 +99,7 @@ function getOptions () {
   return { os, languages: base, timezone: base, geolocation: base }
 }
 
-function ProfileEditForm () {
+export default function EditProfile () {
   const [state, setState] = useState(null)
   const router = useRouter()
   const [form] = Form.useForm()
@@ -113,25 +114,26 @@ function ProfileEditForm () {
   if (!state) return <Skeleton active />
 
   const { name, fingerprint, proxy } = state
-  const initialValues = flatten({ name, fingerprint, proxy })
-  const fp = name => `fingerprint.${fingerprint.os}.${name}`
 
+  const initialValues = flatten({ name, fingerprint, proxy })
   const onValuesChange = async (value, all) => await onFormValuesChange({ state, setState, value, all })
   const onFinish = async (values) => await onFormFinish({ state, values, router, profileId })
+  const props = { form, initialValues, onValuesChange, onFinish }
 
-  const TabPane = Tabs.TabPane
   const randomize = async () => form.setFieldsValue(await getFlattenFingerprint(fingerprint.os))
   const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
 
   const options = getOptions()
   const variants = state.variants[fingerprint.os]
+  const fp = name => `fingerprint.${fingerprint.os}.${name}`
 
   return (
-    <Form name="profile-edit" layout="vertical" {...{ form, initialValues, onValuesChange, onFinish }}>
+    <Layout.Form name="profile-edit" layout="vertical" {...props}>
       <Tabs size="small" tabBarExtraContent={extraContent}>
         <TabPane key="General" tab="General" forceRender="true">
           <FormInput name="name" label="Profile Name" placeholder="Enter profile name" rules={[{ required: true }]} />
           <FormRadio name="fingerprint.os" label="Operation System" options={options.os} />
+          <FormInput name="startPage" label="Start Page" placeholder="https://google.com" />
         </TabPane>
 
         <TabPane key="Connection" tab="Connection" forceRender="true">
@@ -190,14 +192,6 @@ function ProfileEditForm () {
           {profileId ? 'Save Profile' : 'Create Profile'}
         </FormButton>
       </Cols>
-    </Form>
-  )
-}
-
-export default function ProfileEdit () {
-  return (
-    <FormLayout>
-      <ProfileEditForm />
-    </FormLayout>
+    </Layout.Form>
   )
 }

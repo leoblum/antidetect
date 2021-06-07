@@ -50,9 +50,9 @@ const proxySchema = new Schema({
   team: { type: ObjectId, ref: 'Team', required: true },
   type: { type: String, enum: ['socks4', 'socks5', 'http', 'https', 'ssh'], required: true },
   host: { type: String, required: true },
-  port: { type: String, required: true },
-  username: String,
-  password: String,
+  port: { type: Number, required: true },
+  username: { type: String, default: null },
+  password: { type: String, default: null },
   country: { type: String, default: null },
 }, { timestamps: true })
 

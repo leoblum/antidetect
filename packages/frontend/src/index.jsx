@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom'
 
 import './index.less'
 
-import Router from './components/appRouter'
-import Routes from './components/appRoutes'
+// import Router from '@/Components/Router'
+// import Routes from './Components/Router'
+import Router from '@/Components/Router'
 
 function App () {
   return (
