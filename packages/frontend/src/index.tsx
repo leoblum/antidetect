@@ -2,13 +2,14 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import Router from '@/components/Router'
+import { useTheme } from '@/hooks'
 import Routes from '@/routes'
-
-import './index.less'
 
 function App () {
   return (
-    <Router routes={Routes} />
+    <useTheme.Provide>
+      <Router routes={Routes} />
+    </useTheme.Provide>
   )
 }
 

@@ -5,12 +5,13 @@ import React from 'react'
 
 import backend from '@/backend'
 import { Link } from '@/components/Router'
-import { useRouter } from '@/hooks'
+import { useRouter, useTheme } from '@/hooks'
 
 function AppLogo () {
+  const { toggleTheme } = useTheme()
   return (
     <div style={{ userSelect: 'none', fontSize: '22px', margin: '0 10px 0 12px', display: 'flex', alignItems: 'center' }}>
-      <div style={{ fontSize: '28px', marginRight: '10px' }}>
+      <div style={{ fontSize: '28px', marginRight: '10px' }} onClick={toggleTheme}>
         🎭
       </div>
       <div style={{ textAlign: 'center', marginTop: '2px' }}>
@@ -32,11 +33,10 @@ function AppHeader ({ links }) {
     justifyContent: 'space-between',
     padding: '0 8px',
     height: '48px',
-    backgroundColor: 'white',
   }
 
   return (
-    <Layout.Content style={headerStyle}>
+    <Layout.Content style={headerStyle} className="app-header">
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <AppLogo />
         <Divider type="vertical" style={{ fontSize: '24px', top: 0 }} />

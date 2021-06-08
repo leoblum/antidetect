@@ -1,4 +1,5 @@
 const path = require('path')
+
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 
@@ -14,11 +15,19 @@ module.exports = {
         use: ['babel-loader'],
       },
       {
-        test: /\.less$/i,
+        test: /\.theme\.less$/i,
+        use: [
+          { loader: 'style-loader', options: { injectType: 'lazyStyleTag' } },
+          { loader: 'css-loader' },
+          { loader: 'less-loader', options: { lessOptions: { javascriptEnabled: true }, sourceMap: true } },
+        ],
+      },
+      {
+        test: /(?<!\.theme)\.less$/,
         use: [
           { loader: 'style-loader' },
           { loader: 'css-loader' },
-          { loader: 'less-loader', options: { lessOptions: { javascriptEnabled: true } } },
+          { loader: 'less-loader', options: { lessOptions: { javascriptEnabled: true }, sourceMap: true } },
         ],
       },
     ],
