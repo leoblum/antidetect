@@ -2,9 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import Router from '@/components/Router'
-import Routes from '@/Routes'
+import Routes from '@/routes'
 
-function App() {
+import './index.less'
+
+function App () {
   return (
     <Router routes={Routes} />
   )

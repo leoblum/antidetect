@@ -1,8 +1,8 @@
-import { SingIn, SingUp, ResetPassword } from 'Pages/Auth'
-import EditProfile from 'Pages/EditProfile'
-import EditProxy from 'Pages/EditProxy'
-import ListProfiles from 'Pages/ListProfiles'
-import ListProxies from 'Pages/ListProxies'
+import { SingIn, SingUp, ResetPassword } from '@/pages/Auth'
+import EditProfile from '@/pages/EditProfile'
+import EditProxy from '@/pages/EditProxy'
+import ListProfiles from '@/pages/ListProfiles'
+import ListProxies from '@/pages/ListProxies'
 
 const Routes = {
   publicOnly: [

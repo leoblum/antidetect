@@ -4,10 +4,10 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import natsort from 'natsort'
 import React, { useState } from 'react'
 
-import backend from 'Backend'
-import Layout from 'Components/Layout'
-import TimeAgo from 'Components/TimeAgo'
-import { useRouter, useGetData } from 'Hooks'
+import backend from '@/backend'
+import Layout from '@/components/Layout'
+import TimeAgo from '@/components/TimeAgo'
+import { useRouter, useGetData } from '@/hooks'
 
 function byKey (key, desc = false) {
   const sorter = natsort({ desc })

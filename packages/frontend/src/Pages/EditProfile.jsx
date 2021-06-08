@@ -6,12 +6,12 @@ import { flatten, unflatten } from 'flat'
 import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
 
-import backend from 'Backend'
-import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from 'Components/FormItems'
-import Layout from 'Components/Layout'
-import Notify from 'Components/Notify'
-import { ProfileProxy } from 'Components/SharedProxyItems'
-import { useRouter } from 'Hooks'
+import backend from '@/backend'
+import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '@/components/FormItems'
+import Layout from '@/components/Layout'
+import Notify from '@/components/Notify'
+import { ProfileProxy } from '@/components/SharedProxyItems'
+import { useRouter } from '@/hooks'
 
 const TabPane = Tabs.TabPane
 

@@ -1,11 +1,11 @@
 import { Skeleton, Form } from 'antd'
 import React, { useState, useEffect } from 'react'
 
-import backend from 'Backend'
-import { FormButton, FormRadio, Cols, FormInput } from 'Components/FormItems'
-import Layout from 'Components/Layout'
-import Notify from 'Components/Notify'
-import { useRouter } from 'Hooks'
+import backend from '@/backend'
+import { FormButton, FormRadio, Cols, FormInput } from '@/components/FormItems'
+import Layout from '@/components/Layout'
+import Notify from '@/components/Notify'
+import { useRouter } from '@/hooks'
 
 async function getInitialState (proxyId) {
   const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }

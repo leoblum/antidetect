@@ -3,9 +3,9 @@ import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag, Modal } f
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import React, { useState } from 'react'
 
-import backend from 'Backend'
-import Layout from 'Components/Layout'
-import { useRouter, useGetData } from 'Hooks'
+import backend from '@/backend'
+import Layout from '@/components/Layout'
+import { useRouter, useGetData } from '@/hooks'
 
 function getCountryFlag (proxy) {
   if (!proxy) return '🚫'

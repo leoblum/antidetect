@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-import createEmitter from 'Utils/emitter'
-import storage from 'Utils/storage'
+import createEmitter from '@/utils/emitter'
+import storage from '@/utils/storage'
 
 const http = axios.create({
   baseURL: 'http://127.0.0.1:3030',

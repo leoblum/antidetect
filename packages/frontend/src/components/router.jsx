@@ -2,7 +2,7 @@ import { Typography } from 'antd'
 import React from 'react'
 import { HashRouter as BaseRouter, Redirect, Route, Switch, Link as BaseLink } from 'react-router-dom'
 
-import { useAuth } from 'Hooks'
+import { useAuth } from '@/hooks'
 
 export function flattenRoutes (routesIn) {
   const routes = []

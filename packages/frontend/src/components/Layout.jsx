@@ -3,9 +3,9 @@ import { Button, Layout, Card, Menu, Divider } from 'antd'
 import Form from 'antd/lib/form/Form'
 import React from 'react'
 
-import backend from 'Backend'
-import { Link } from 'Components/Router'
-import { useRouter } from 'Hooks'
+import backend from '@/backend'
+import { Link } from '@/components/Router'
+import { useRouter } from '@/hooks'
 
 function AppLogo () {
   return (
