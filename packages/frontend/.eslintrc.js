@@ -9,7 +9,7 @@ module.exports = {
     'no-unreachable': 'warn',
     'comma-dangle': ['error', 'always-multiline'],
     'import/no-unresolved': 'error',
-    // 'import/order': ['error', { 'newlines-between': 'always', alphabetize: { order: 'asc', caseInsensitive: true } }],
+    'import/order': ['error', { 'newlines-between': 'always', alphabetize: { order: 'asc', caseInsensitive: true } }],
     'react/prop-types': 'off',
     'react/jsx-tag-spacing': ['error', { beforeSelfClosing: 'always' }],
     'react/jsx-uses-react': 'error',
@@ -17,18 +17,12 @@ module.exports = {
     'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
   },
   settings: {
-    // 'import/resolver': {
-    // node: {
-    // paths: ['./src'],
-    // extensions: ['.js', '.jsx'],
-    // },
-    // },
     'import/resolver': {
       alias: {
         map: [
           ['@', './src'],
         ],
-        extensions: ['.js', '.jsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
     },
     react: { version: 'detect' },
