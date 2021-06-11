@@ -1,11 +1,12 @@
 import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Table, Button, Space, Dropdown, Menu, Input, Modal } from 'antd'
+import { Table, Button, Space, Dropdown, Menu, Input } from 'antd'
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import natsort from 'natsort'
 import React, { useState } from 'react'
 
 import backend from '@/backend'
 import Layout from '@/components/Layout'
+import confirmDelete from '@/components/modals/confirmDelete'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
 
@@ -14,15 +15,11 @@ function byKey (key, desc = false) {
   return (a, b) => sorter(a[key], b[key])
 }
 
-export function StyleForEach ({ children, style }) {
-  return (
-    <>{React.Children.map(children, child => React.cloneElement(child, { style: { ...style, ...child.props.style } }))}</>
-  )
-}
-
 function wrap (Component, props) {
   return function ColumnRender (item) {
-    return <Component item={item} {...props} />
+    return (
+      <Component item={item} {...props} />
+    )
   }
 }
 
@@ -55,15 +52,9 @@ function ActionItem ({ item, reload }) {
 
   const onEdit = () => router.replace(`/profiles/edit/${profileId}`)
   const onClone = () => console.log(`clone profile: ${profileId}`)
-  const onDelete = () => Modal.confirm({
-    content: 'Are you sure delete profile?',
-    okText: 'Yes',
-    okType: 'danger',
-    cancelText: 'No',
-    onOk: async function () {
-      await backend.profiles.delete(profileId)
-      reload()
-    },
+  const onDelete = () => confirmDelete([item].map(x => x.name), async function () {
+    await backend.profiles.delete(profileId)
+    reload()
   })
 
   const menu = (
@@ -111,13 +102,11 @@ function ProxyItem ({ item, proxies }) {
   // todo: do not forget change color of text when change theme
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-      <StyleForEach style={{ paddingLeft: '8px' }}>
-        <div style={{ fontSize: '18px' }}>{flag}</div>
-        <div>
-          <div>{name}</div>
-          <div style={{ fontSize: '10px', color: '#8c8c8c' }}>{addr}</div>
-        </div>
-      </StyleForEach>
+      <div style={{ fontSize: '18px', paddingLeft: '8px' }}>{flag}</div>
+      <div style={{ paddingLeft: '8px' }}>
+        <div>{name}</div>
+        <div style={{ fontSize: '10px', color: '#8c8c8c' }}>{addr}</div>
+      </div>
     </div>
   )
 }
@@ -125,8 +114,8 @@ function ProxyItem ({ item, proxies }) {
 export default function ListProfiles () {
   const [selectedRowKeys, setSelectedRowKeys] = useState(null)
   const [data, loading, reload] = useGetData(async () => {
-    const profiles = (await backend.profiles.all()).profiles
-    const proxies = (await backend.proxies.all()).proxies
+    const profiles = (await backend.profiles.list()).profiles
+    const proxies = (await backend.proxies.list()).proxies
     return { profiles, proxies }
   })
 

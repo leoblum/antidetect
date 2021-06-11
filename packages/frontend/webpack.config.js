@@ -1,5 +1,6 @@
 const path = require('path')
 
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 
@@ -37,6 +38,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.jsx', '.js'],
   },
   plugins: [
+    new ReactRefreshWebpackPlugin(),
     new HtmlWebpackPlugin({ template: 'public/index.html' }),
     new webpack.HotModuleReplacementPlugin(),
   ],

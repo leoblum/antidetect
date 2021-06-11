@@ -14,6 +14,7 @@ function normalizeReactChildren (children) {
   if (!Array.isArray(children)) children = [children]
   return children
 }
+
 export function Cols ({ children, label = null, style, condition = true }) {
   if (!condition) return <></>
 
