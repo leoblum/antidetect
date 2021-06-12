@@ -7,7 +7,7 @@ import Layout from '@/components/Layout'
 import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
 
-async function getInitialState (proxyId) {
+async function getInitialState (proxyId: string) {
   const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
   return { proxy }
 }
@@ -17,8 +17,8 @@ export default function EditProxy () {
   const router = useRouter()
   const [form] = Form.useForm()
 
-  const { proxyId } = router.query
-  useEffect(() => getInitialState(proxyId).then(setState), [proxyId])
+  const { proxyId } = router.params
+  useEffect(async () => await getInitialState(proxyId).then(setState), [proxyId])
 
   if (!state) return <Skeleton active />
 
@@ -26,7 +26,7 @@ export default function EditProxy () {
     values.port = parseInt(values.port, 10)
 
     const rep = await backend.proxies.save({ proxyId, ...values })
-    if (!rep.success) return Notify.error('Proxy not saved. Try again.')
+    if (!rep.success) return await Notify.error('Proxy not saved. Try again.')
 
     Notify.success('Proxy saved!')
     router.replace('/proxies')

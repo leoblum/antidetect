@@ -5,7 +5,7 @@ import { useParams, useLocation, useHistory, useRouteMatch } from 'react-router-
 // https://usehooks.com/useRouter/
 
 export default function useRouter () {
-  const params = useParams()
+  const params = useParams<{ [key: string]: string }>() // todo: pass full type here
   const location = useLocation()
   const history = useHistory()
   const match = useRouteMatch()
@@ -15,6 +15,7 @@ export default function useRouter () {
       replace: history.replace,
       pathname: location.pathname,
       query: { ...queryString.parse(location.search), ...params },
+      params,
       match,
       location,
       history,

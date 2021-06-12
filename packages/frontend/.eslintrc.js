@@ -15,6 +15,7 @@ module.exports = {
     'react/jsx-tag-spacing': ['error', { beforeSelfClosing: 'always' }],
     'react/jsx-uses-react': 'error',
     'react/jsx-indent': ['error', 2],
+    'react/jsx-indent-props': ['error', 2],
     'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
   },
   settings: {
@@ -25,15 +26,25 @@ module.exports = {
   overrides: [{
     files: ['**/*.ts', '**/*.tsx'],
     parser: '@typescript-eslint/parser',
+    parserOptions: { project: './tsconfig.json' },
 
-    extends: [
-      'plugin:@typescript-eslint/eslint-recommended',
-      'plugin:@typescript-eslint/recommended',
-    ],
+    extends: ['standard-with-typescript'],
     plugins: ['@typescript-eslint'],
     rules: {
-      'no-use-before-define': 'off',
-      '@typescript-eslint/no-use-before-define': ['error'],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+
+      'comma-dangle': 'off',
+      '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
+
+      'object-curly-spacing': 'off',
+      '@typescript-eslint/object-curly-spacing': ['error', 'always'],
+
+      // 'no-use-before-define': 'off',
+      // '@typescript-eslint/no-use-before-define': ['error'],
+
+      // indent: 'off',
+      // '@typescript-eslint/indent': ['error', 2],
+      // '@typescript-eslint/type-annotation-spacing': ['error', { before: true, after: true }],
     },
   }],
 }

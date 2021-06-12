@@ -1,13 +1,11 @@
 import { useState, useReducer, useEffect } from 'react'
 
-type AsyncCb<T> = () => Promise<T>
-type DataT<T> = T | undefined
-type Result<T> = [DataT<T>, boolean, () => void]
+import { Callback, AsyncCallback } from '@/types'
 
-export default function useGetData<T> (source: AsyncCb<T>): Result<T> {
-  const [data, setData] = useState<DataT<T>>()
+export default function useGetData<T> (source: AsyncCallback<T>): [T | undefined, boolean, Callback] {
+  const [data, setData] = useState<T | undefined>()
   const [loading, setLoading] = useState(true)
-  const [counter, dispatch] = useReducer(x => x + 1, 0)
+  const [counter, dispatch] = useReducer((x: number) => x + 1, 0)
 
   useEffect(() => {
     let didCancel = false
@@ -21,7 +19,7 @@ export default function useGetData<T> (source: AsyncCb<T>): Result<T> {
       setLoading(false)
     }
 
-    load()
+    load().catch(() => null)
     return () => { didCancel = true }
   }, [counter])
 

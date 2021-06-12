@@ -27,12 +27,12 @@ export function Link ({ children, ...props }) {
 export default function Router ({ routes }) {
   const flatten = flattenRoutes(routes)
   return (
-    <useAuth.ProvideAuth>
+    <useAuth.Provide>
       <BaseRouter>
         <Switch>
           {flatten.map((props, idx) => <SuperRoute key={idx} {...props} />)}
         </Switch>
       </BaseRouter>
-    </useAuth.ProvideAuth>
+    </useAuth.Provide>
   )
 }

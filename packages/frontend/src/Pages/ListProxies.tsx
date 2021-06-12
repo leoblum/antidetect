@@ -8,23 +8,19 @@ import Layout from '@/components/Layout'
 import confirmDelete from '@/components/modals/confirmDelete'
 import ProxyIcon from '@/components/ProxyIcon'
 import { useRouter, useGetData } from '@/hooks'
-import { ProxyType, CallbackVoid } from '@/types'
+import { ProxyType, Callback } from '@/types'
 
-type TableHeaderProps = {reload: CallbackVoid}
-type ItemActionsProps = {proxy: ProxyType, reload: CallbackVoid}
-type ProxyRenderProps = {proxy: ProxyType}
-
-function ProxyProtocol ({ proxy }: ProxyRenderProps) {
+function ProxyProtocol ({ proxy }: { proxy: ProxyType }) {
   return (
     <Tag>{proxy.type}</Tag>
   )
 }
 
-function ProxyAddress ({ proxy }: ProxyRenderProps) {
+function ProxyAddress ({ proxy }: { proxy: ProxyType }) {
   return (<Typography.Text code>{proxy.host}:{proxy.port}</Typography.Text>)
 }
 
-function TableHeader ({ reload }: TableHeaderProps) {
+function TableHeader ({ reload }: { reload: Callback }) {
   const router = useRouter()
 
   return (
@@ -40,7 +36,7 @@ function TableHeader ({ reload }: TableHeaderProps) {
   )
 }
 
-function ItemActions ({ proxy, reload }: ItemActionsProps) {
+function ItemActions ({ proxy, reload }: { proxy: ProxyType, reload: Callback }) {
   const router = useRouter()
   const proxyId = proxy._id
   const names = [proxy].map(x => x.name)
@@ -71,16 +67,33 @@ function ItemActions ({ proxy, reload }: ItemActionsProps) {
   )
 }
 
-export default function ListProxies (): React.ReactNode {
+export default function ListProxies () {
   const [data, loading, reload] = useGetData<ProxyType[]>(async () => (await backend.proxies.list()).proxies)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
   const columns: ColumnsType<ProxyType> = [
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Type', render (proxy: ProxyType) { return <ProxyProtocol proxy={proxy} /> } },
-    { title: 'Address', render (proxy) { return <ProxyAddress proxy={proxy} /> } },
-    { title: 'Country', render (proxy) { return <ProxyIcon proxy={proxy} /> }, align: 'center' },
-    { title: 'Action', render (proxy) { return <ItemActions proxy={proxy} reload={reload} /> }, width: 100 },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+    },
+    {
+      title: 'Type',
+      render (proxy) { return <ProxyProtocol proxy={proxy} /> },
+    },
+    {
+      title: 'Address',
+      render (proxy) { return <ProxyAddress proxy={proxy} /> },
+    },
+    {
+      title: 'Country',
+      align: 'center',
+      render (proxy) { return <ProxyIcon proxy={proxy} /> },
+    },
+    {
+      title: 'Action',
+      width: 100,
+      render (proxy) { return <ItemActions proxy={proxy} reload={reload} /> },
+    },
   ]
 
   return (
@@ -95,7 +108,7 @@ export default function ListProxies (): React.ReactNode {
         showSorterTooltip={false}
         title={() => <TableHeader reload={reload} />}
         loading={loading}
-      />
+      ></Table>
     </Layout>
   )
 }

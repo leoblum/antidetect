@@ -1,13 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
+// @ts-expect-error
 import dark from '@/theme-dark.theme.less'
+// @ts-expect-error
 import light from '@/theme-light.theme.less'
+import { Callback } from '@/types'
 import storage from '@/utils/storage'
 
-const themes = { dark, light }
+interface Theme { use: Callback, unuse: Callback }
+interface MapOfThemes { [key: string]: Theme }
+
+const themes: MapOfThemes = { dark, light }
 const LSKey = 'app-theme'
 
-function setLessTheme (name) {
+function setLessTheme (name: string) {
   const body = document.body
   const disabled = Object.keys(themes).filter(x => x !== name)
 
@@ -25,14 +31,17 @@ function setLessTheme (name) {
 const themeContext = createContext(null)
 const useTheme = () => useContext(themeContext)
 
-function Provide ({ children }) {
+function useProvideTheme () {
   const [theme, setTheme] = useState(storage.get(LSKey, 'light'))
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light')
 
   useEffect(() => setLessTheme(theme), [theme])
+  return { theme, toggleTheme }
+}
 
-  const context = { theme, toggleTheme, setTheme }
-  return <themeContext.Provider value={context}>{children}</themeContext.Provider>
+function Provide ({ children }: { children: JSX.Element }) {
+  const theme = useProvideTheme()
+  return <themeContext.Provider value={theme}>{children}</themeContext.Provider>
 }
 
 useTheme.Provide = Provide
