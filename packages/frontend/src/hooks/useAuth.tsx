@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 
 import backend from '@/backend'
 
-const authContext = createContext(null)
+const authContext = createContext(false)
 const useAuth = () => useContext(authContext)
 
 function useProvideAuth () {

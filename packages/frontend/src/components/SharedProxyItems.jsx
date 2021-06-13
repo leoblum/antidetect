@@ -1,7 +1,8 @@
 import React from 'react'
 
 import { Cols, FormRadio, FormInput, FormSelect } from './FormItems'
-import { If } from './react-utils'
+
+import { If } from '@/utils/react'
 
 export function ProfileProxy ({ prefix = 'proxy', state, ...props }) {
   const options = [

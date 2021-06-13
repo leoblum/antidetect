@@ -32,6 +32,7 @@ module.exports = {
     plugins: ['@typescript-eslint'],
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
 
       'comma-dangle': 'off',
       '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],

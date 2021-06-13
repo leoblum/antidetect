@@ -1,7 +1,7 @@
 import { Modal } from 'antd'
 import React from 'react'
 
-import { reactJoin } from '@/components/react-utils'
+import { reactJoin } from '@/utils/react'
 
 function ConfirmMessage ({ names }: { names: string[] }) {
   const children = reactJoin(names, x => <u>{x}</u>, () => ', ')
@@ -22,6 +22,6 @@ export default function confirmDelete (names: string[], onConfirm: Callback | As
     okText: 'Yes',
     okType: 'danger',
     cancelText: 'No',
-    onOk: onConfirm
+    onOk: onConfirm,
   })
 }

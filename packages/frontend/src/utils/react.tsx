@@ -12,13 +12,7 @@ export function reactJoin<T extends El> (items: T[], itemRender: Render<T>, sepa
   }, [])
 }
 
-export function reactChildrenNormalize (children: El): El {
-  if (!children) children = []
-  if (!Array.isArray(children)) children = [children]
-  return children
-}
-
-type IfProps = {children: El, condition: boolean}
+type IfProps = { children: El, condition: boolean }
 export function If ({ children, condition }: IfProps): El {
   return (condition ? children : <></>)
 }

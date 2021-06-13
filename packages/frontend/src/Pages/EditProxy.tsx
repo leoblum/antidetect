@@ -6,21 +6,26 @@ import { FormButton, FormRadio, Cols, FormInput } from '@/components/FormItems'
 import Layout from '@/components/Layout'
 import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
+import { ProxyType } from '@/types'
 
-async function getInitialState (proxyId: string) {
-  const proxy = proxyId ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
+async function getInitialState (proxyId: string | null) {
+  const proxy: ProxyType = proxyId !== null ? (await backend.proxies.get(proxyId)).proxy : { type: 'socks5' }
   return { proxy }
 }
 
+type StateData = { proxy: ProxyType }
 export default function EditProxy () {
-  const [state, setState] = useState(null)
+  const [state, setState] = useState<StateData>()
   const router = useRouter()
   const [form] = Form.useForm()
 
-  const { proxyId } = router.params
-  useEffect(async () => await getInitialState(proxyId).then(setState), [proxyId])
+  const { proxyId = null } = router.params
 
-  if (!state) return <Skeleton active />
+  useEffect(() => {
+    getInitialState(proxyId).then(setState).catch(() => null)
+  }, [proxyId])
+
+  if (state == null) return <Skeleton active />
 
   async function onFinish (values) {
     values.port = parseInt(values.port, 10)
@@ -28,13 +33,14 @@ export default function EditProxy () {
     const rep = await backend.proxies.save({ proxyId, ...values })
     if (!rep.success) return await Notify.error('Proxy not saved. Try again.')
 
-    Notify.success('Proxy saved!')
+    // Notify.success('Proxy saved!')
     router.replace('/proxies')
   }
 
   const initialValues = state.proxy
   const typeOptions = [{ value: 'socks5', title: 'SOCKS5' }, { value: 'http', title: 'HTTP' }]
   const rules = {
+    name: [{ required: true }],
     host: [{ required: true }],
     port: [{ required: true, pattern: /^[0-9]+$/, message: 'Should be number.' }],
   }
@@ -43,7 +49,7 @@ export default function EditProxy () {
 
   return (
     <Layout.Form name="proxy-edit" layout="vertical" {...props}>
-      <FormInput name="name" label="Proxy Name" placeholder="Enter proxy name" rules={[{ required: true }]} />
+      <FormInput name="name" label="Proxy Name" placeholder="Enter proxy name" rules={rules.name} />
       <FormRadio name="type" label="Protocol" options={typeOptions} />
 
       <Cols>
@@ -57,8 +63,8 @@ export default function EditProxy () {
       </Cols>
 
       <Cols style={{ textAlign: 'right' }}>
-        <FormButton style={{ marginBottom: 0, marginTop: '10px' }}>
-          {proxyId ? 'Save Proxy' : 'Create Proxy'}
+        <FormButton style={{ marginBottom: '-2px', marginTop: '8px' }}>
+          {proxyId != null ? 'Save Proxy' : 'Create Proxy'}
         </FormButton>
       </Cols>
     </Layout.Form>

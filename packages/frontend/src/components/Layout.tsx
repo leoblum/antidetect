@@ -15,14 +15,15 @@ function AppLogo () {
         🎭
       </div>
       <div style={{ textAlign: 'center', marginTop: '2px' }}>
-        <div style={{ fontSize: '18px', lineHeight: '16px', fontWeight: '500', letterSpacing: '2px' }}>YANUS</div>
+        <div style={{ fontSize: '18px', lineHeight: '16px', fontWeight: 500, letterSpacing: '2px' }}>YANUS</div>
         <div style={{ fontSize: '11px', lineHeight: '10px' }}>antidetect</div>
       </div>
     </div>
   )
 }
 
-function AppHeader ({ links }) {
+type LinkType = { to: string, title: string, icon: JSX.Element }
+function AppHeader ({ links }: { links: LinkType[] }) {
   const router = useRouter()
   const selectedKeys = links.map((el, idx) => [el.to === router.pathname, idx])
     .filter(el => el[0]).map(el => el[1].toString())
@@ -51,13 +52,13 @@ function AppHeader ({ links }) {
         </div>
       </div>
       <div>
-        <Button onClick={() => backend.auth.logout()}>Logout</Button>
+        <Button onClick={async () => await backend.auth.logout()}>Logout</Button>
       </div>
     </Layout.Content>
   )
 }
 
-function AppLayout ({ children }) {
+function AppLayout ({ children }: { children: JSX.Element }) {
   const Links = [
     { to: '/profiles', title: 'Profiles', icon: <LaptopOutlined /> },
     { to: '/proxies', title: 'Proxies', icon: <ApiOutlined /> },
@@ -75,7 +76,7 @@ function AppLayout ({ children }) {
   )
 }
 
-function FormLayout ({ children, ...props }) {
+function FormLayout ({ children, ...props }: { children: JSX.Element, props: any[] }) {
   return (
     <AppLayout>
       <Card>

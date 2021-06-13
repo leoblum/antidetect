@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import axios from 'axios'
 
 import createEmitter from '@/utils/emitter'

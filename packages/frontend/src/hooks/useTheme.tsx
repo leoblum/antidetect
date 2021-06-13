@@ -28,7 +28,10 @@ function setLessTheme (name: string) {
   storage.set(LSKey, name)
 }
 
-const themeContext = createContext(null)
+type ThemeContext = { theme: string, toggleTheme: Callback }
+const defaultContext = { theme: 'none', toggleTheme: () => console.log('ThemeContext is not set!') }
+
+const themeContext = createContext<ThemeContext>(defaultContext)
 const useTheme = () => useContext(themeContext)
 
 function useProvideTheme () {

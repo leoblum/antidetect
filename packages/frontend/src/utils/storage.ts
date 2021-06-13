@@ -1,5 +1,5 @@
 const storage = {
-  get (key: string, defaultValue = null) {
+  get<T> (key: string, defaultValue: T | null = null) {
     try {
       const item = window.localStorage.getItem(key)
       return item !== null ? JSON.parse(item) : defaultValue

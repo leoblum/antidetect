@@ -1,10 +1,11 @@
+import { RoutesCfg } from '@/components/Router'
 import { SingIn, SingUp, ResetPassword } from '@/pages/Auth'
 import EditProfile from '@/pages/EditProfile'
 import EditProxy from '@/pages/EditProxy'
 import ListProfiles from '@/pages/ListProfiles'
 import ListProxies from '@/pages/ListProxies'
 
-const Routes = {
+const Routes: RoutesCfg = {
   publicOnly: [
     { path: '/auth/login', component: SingIn },
     { path: '/auth/create', component: SingUp },
@@ -21,7 +22,7 @@ const Routes = {
     { path: '/proxies', component: ListProxies },
   ],
 
-  default: '/profiles',
+  defaultRedirect: '/profiles',
 }
 
 export default Routes

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Button, Col, Form, Input, InputNumber, Radio, Row, Select, Space, Switch } from 'antd'
 import React from 'react'
@@ -9,47 +8,30 @@ type Option = { value: string, title: string }
 type Options = Option[]
 type OneOrManyJSX = JSX.Element | JSX.Element[]
 
-// function isObject (value: any) {
-// if (Object.prototype.toString.call(value) !== '[object Object]') return false
-//
-// const prototype = Object.getPrototypeOf(value)
-// return prototype === null || prototype === Object.prototype
-// }
-
-// function normalizeReactChildren (children) {
-// if (!children) children = []
-// if (!Array.isArray(children)) children = [children]
-// return children
-// }
-
 type ColsProps = { children: OneOrManyJSX, label?: string, condition?: boolean, style?: React.CSSProperties }
 export function Cols ({ children, label, condition = true, style }: ColsProps) {
   if (!condition) return <></>
 
-  // children = normalizeReactChildren(children)
-  // const props = []
-  // for (let i = 0; i < children.length; ++i) {
-  //   const marginLeft = i === 0 ? 0 : '4px'
-  //   const marginRight = i === children.length - 1 ? 0 : '4px'
-  //   const flex = children[i].props.flex || 1
-  //   // delete children[i].props.flex
-  //   props.push({ style: { marginLeft, marginRight }, flex })
-  // }
-
+  const count = React.Children.count(children)
   return (
     <Form.Item label={label} style={{ marginBottom: 0 }}>
       <Row style={style}>
-        {React.Children.map(children, (child, idx) => <Col key={idx}>{child}</Col>)}
-        {/* {children.map((el, idx) => <Col key={idx} {...props[idx]} >{el}</Col>)} */}
+        {React.Children.map(children, (child, idx) => {
+          const style: React.CSSProperties = {
+            marginLeft: idx === 0 ? 0 : '4px',
+            marginRight: idx === count - 1 ? 0 : '4px',
+          }
+          return <Col key={idx} flex="1" style={style}>{child}</Col>
+        })}
       </Row>
     </Form.Item>
   )
 }
 
-type FormInputProps = { name: string, label: string, placeholder: string }
-export function FormInput ({ name, label, placeholder }: FormInputProps) {
+type FormInputProps = { name: string, label: string, placeholder: string, rules?: any[] }
+export function FormInput ({ name, label, placeholder, rules }: FormInputProps) {
   return (
-    <Form.Item name={name} label={label}>
+    <Form.Item name={name} label={label} rules={rules}>
       <Input placeholder={placeholder} />
     </Form.Item>
   )
@@ -111,10 +93,10 @@ export function FormRadio ({ name, label, options }: FormRadioProps) {
   )
 }
 
-type FormButtonProps = { children: React.ReactNode, icon?: React.ReactNode }
-export function FormButton ({ children, icon }: FormButtonProps) {
+type FormButtonProps = { children: React.ReactNode, icon?: React.ReactNode, style?: React.CSSProperties }
+export function FormButton ({ children, icon, style }: FormButtonProps) {
   return (
-    <Form.Item>
+    <Form.Item style={style}>
       <Button type="primary" htmlType="submit" icon={icon}>
         {children}
       </Button>
