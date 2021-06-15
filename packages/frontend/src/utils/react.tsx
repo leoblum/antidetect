@@ -11,8 +11,3 @@ export function reactJoin<T extends El> (items: T[], itemRender: Render<T>, sepa
     return prev
   }, [])
 }
-
-type IfProps = { children: El, condition: boolean }
-export function If ({ children, condition }: IfProps): El {
-  return (condition ? children : <></>)
-}

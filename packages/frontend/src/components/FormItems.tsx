@@ -2,13 +2,12 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons'
 import { Button, Col, Form, Input, InputNumber, Radio, Row, Select, Space, Switch } from 'antd'
 import React from 'react'
 
-import { Callback } from '@/types'
+type Options = { [key: string]: string }
+type JSXS = JSX.Element | JSX.Element[]
 
-type Option = { value: string, title: string }
-type Options = Option[]
-type OneOrManyJSX = JSX.Element | JSX.Element[]
+type FormItem = { name: string | string[], label?: string, placeholder?: string, rules?: any[] }
 
-type ColsProps = { children: OneOrManyJSX, label?: string, condition?: boolean, style?: React.CSSProperties }
+type ColsProps = { children: JSXS, label?: string, condition?: boolean, style?: React.CSSProperties }
 export function Cols ({ children, label, condition = true, style }: ColsProps) {
   if (!condition) return <></>
 
@@ -28,7 +27,7 @@ export function Cols ({ children, label, condition = true, style }: ColsProps) {
   )
 }
 
-type FormInputProps = { name: string, label: string, placeholder: string, rules?: any[] }
+type FormInputProps = FormItem
 export function FormInput ({ name, label, placeholder, rules }: FormInputProps) {
   return (
     <Form.Item name={name} label={label} rules={rules}>
@@ -37,7 +36,7 @@ export function FormInput ({ name, label, placeholder, rules }: FormInputProps) 
   )
 }
 
-type FormNumberProps = { name: string, label: string, min: number, max: number }
+type FormNumberProps = FormItem & { min: number, max: number }
 export function FormNumber ({ name, label, min = 0, max = 100 }: FormNumberProps) {
   return (
     <Form.Item name={name} label={label}>
@@ -46,7 +45,7 @@ export function FormNumber ({ name, label, min = 0, max = 100 }: FormNumberProps
   )
 }
 
-type FormTextAreaProps = { name: string, label: string, rows: number }
+type FormTextAreaProps = FormItem & { rows?: number }
 export function FormTextArea ({ name, label, rows = 2 }: FormTextAreaProps) {
   return (
     <Form.Item name={name} label={label}>
@@ -55,38 +54,38 @@ export function FormTextArea ({ name, label, rows = 2 }: FormTextAreaProps) {
   )
 }
 
-type FormSwitchProps = { name: string, label: string, onChange: Callback }
-export function FormSwitch ({ name, label, onChange }: FormSwitchProps) {
+type FormSwitchProps = FormItem
+export function FormSwitch ({ name, label }: FormSwitchProps) {
   return (
     <Space>
       <Form.Item name={name} valuePropName="checked" noStyle>
-        <Switch size="small" checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} onChange={onChange} />
+        <Switch size="small" checkedChildren={<CheckOutlined />} unCheckedChildren={<CloseOutlined />} />
       </Form.Item>
       {label}
     </Space>
   )
 }
 
-type FormSelectProps = { name: string, label: string, options: Options, placeholder: string }
-export function FormSelect ({ name, label, options, placeholder, ...props }: FormSelectProps) {
+type FormSelectProps = FormItem & { options: Options }
+export function FormSelect ({ name, label, options = {}, placeholder, ...props }: FormSelectProps) {
   return (
     <Form.Item name={name} label={label} {...props}>
       <Select showSearch placeholder={placeholder}>
-        {options.map((x, idx) => (
-          <Select.Option key={idx} value={x.value}>{x.title}</Select.Option>
+        {Object.entries(options).map((x, idx) => (
+          <Select.Option key={idx} value={x[0]}>{x[1]}</Select.Option>
         ))}
       </Select>
     </Form.Item>
   )
 }
 
-type FormRadioProps = { name: string, label: string, options: Options, placeholder?: string }
-export function FormRadio ({ name, label, options }: FormRadioProps) {
+type FormRadioProps = FormItem & { options: Options }
+export function FormRadio ({ name, label, options = {} }: FormRadioProps) {
   return (
     <Form.Item name={name} label={label}>
       <Radio.Group style={{ display: 'flex', width: '100%' }}>
-        {options.map((x, idx) => (
-          <Radio.Button key={idx} value={x.value} style={{ flex: 1, textAlign: 'center' }}>{x.title}</Radio.Button>
+        {Object.entries(options).map((x, idx) => (
+          <Radio.Button key={idx} value={x[0]} style={{ flex: 1, textAlign: 'center' }}>{x[1]}</Radio.Button>
         ))}
       </Radio.Group>
     </Form.Item>

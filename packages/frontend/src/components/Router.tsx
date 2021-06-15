@@ -12,20 +12,20 @@ export type RoutesCfg = { publicOnly: BaseRoute[], authOnly: BaseRoute[], defaul
 
 export function flattenRoutes (routes: RoutesCfg) {
   const result: FlatRoute[] = []
-  const defaults = { component: BlankComponent, publicOnly: false, authOnly: false, redirect: null }
+  const defaults = { publicOnly: false, authOnly: false, redirect: null }
   for (const r of routes.publicOnly) result.push({ ...r, ...defaults, publicOnly: true })
   for (const r of routes.authOnly) result.push({ ...r, ...defaults, authOnly: true })
-  result.push({ ...defaults, path: '*', redirect: routes.defaultRedirect ?? '/' })
+  result.push({ ...defaults, path: '*', component: BlankComponent, redirect: routes.defaultRedirect ?? '/' })
   return result
 }
 
 export type SuperRouteProps = FlatRoute
-export function SuperRoute ({ component, publicOnly, authOnly, redirect }: SuperRouteProps) {
+export function SuperRoute ({ path, component, publicOnly, authOnly, redirect }: SuperRouteProps) {
   const auth = useAuth()
   if (publicOnly && auth) return <Redirect to="/" />
   if (authOnly && !auth) return <Redirect to="/auth/login" />
   if (redirect !== null) return <Redirect to={redirect} />
-  return <Route component={component} />
+  return <Route path={path} component={component}></Route>
 }
 
 export type LinkProps = { children: JSX.Element, to: string }

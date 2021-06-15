@@ -6,18 +6,18 @@ import natsort from 'natsort'
 import React, { useState } from 'react'
 
 import backend from '@/backend'
-import Layout from '@/components/Layout'
+import { withBaseLayout } from '@/components/layout'
 import confirmDelete from '@/components/modals/confirmDelete'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
-import { Callback, ProfileType, ProxyType } from '@/types'
+import { Callback, iProfile, iProxy } from '@/types'
 
 function byKey (key: string, desc = false) {
   const sorter = natsort({ desc })
   return (a: any, b: any) => sorter(a[key], b[key])
 }
 
-function ProfileName ({ profile }: { profile: ProfileType }) {
+function ProfileName ({ profile }: { profile: iProfile }) {
   return (
     <div>
       <span style={{ marginRight: '6px' }}>
@@ -28,11 +28,11 @@ function ProfileName ({ profile }: { profile: ProfileType }) {
   )
 }
 
-function LastActive ({ profile }: { profile: ProfileType }) {
+function LastActive ({ profile }: { profile: iProfile }) {
   return (<TimeAgo date={profile.updatedAt} />)
 }
 
-function ProfileProxy ({ profile, proxies }: { profile: ProfileType, proxies: ProxyType[] }) {
+function ProfileProxy ({ profile, proxies }: { profile: iProfile, proxies: iProxy[] }) {
   const proxy = proxies.find(x => x._id === profile.proxy)
 
   const name = (proxy != null) ? proxy.name : 'None'
@@ -67,7 +67,7 @@ function TableHeader ({ reload }: { reload: Callback }) {
   )
 }
 
-function ItemActions ({ profile, reload }: { profile: ProfileType, reload: () => void }) {
+function ItemActions ({ profile, reload }: { profile: iProfile, reload: () => void }) {
   const profileId = profile._id
   const router = useRouter()
   const names = [profile].map(x => x.name)
@@ -75,7 +75,7 @@ function ItemActions ({ profile, reload }: { profile: ProfileType, reload: () =>
   const onEdit = () => router.replace(`/profiles/edit/${profileId}`)
   const onClone = () => console.log(`clone profile: ${profileId}`)
   const onDelete = () => confirmDelete(names, async function () {
-    await backend.profiles.delete(profileId)
+    await backend.profiles.delete([profileId])
     reload()
   })
 
@@ -99,22 +99,22 @@ function ItemActions ({ profile, reload }: { profile: ProfileType, reload: () =>
   )
 }
 
-interface StateData { profiles: ProfileType[], proxies: ProxyType[] }
+interface StateData { profiles: iProfile[], proxies: iProxy[] }
 
 async function loadStateData (): Promise<StateData> {
-  const profiles = (await backend.profiles.list()).profiles
-  const proxies = (await backend.proxies.list()).proxies
+  const profiles = await backend.profiles.list()
+  const proxies = await backend.proxies.list()
   return { profiles, proxies }
 }
 
-export default function ListProfiles () {
+function ListProfiles () {
   const [data, loading, reload] = useGetData(loadStateData)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
   const profiles = data?.profiles
   const proxies = data?.proxies
 
-  const columns: ColumnsType<ProfileType> = [
+  const columns: ColumnsType<iProfile> = [
     {
       title: 'Name',
       sorter: byKey('name'),
@@ -128,7 +128,7 @@ export default function ListProfiles () {
     },
     {
       title: 'Proxy',
-      render (profile) { return <ProfileProxy profile={profile} proxies={proxies as ProxyType[]} /> },
+      render (profile) { return <ProfileProxy profile={profile} proxies={proxies as iProxy[]} /> },
     },
     {
       title: 'Action',
@@ -138,18 +138,18 @@ export default function ListProfiles () {
   ]
 
   return (
-    <Layout>
-      <Table
-        rowKey="_id"
-        rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
-        dataSource={profiles}
-        columns={columns}
-        pagination={{ defaultPageSize: 25, size: 'default' }}
-        size="small"
-        showSorterTooltip={false}
-        title={() => <TableHeader reload={reload} />}
-        loading={loading}
+    <Table
+      rowKey="_id"
+      rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
+      dataSource={profiles}
+      columns={columns}
+      pagination={{ defaultPageSize: 25, size: 'default' }}
+      size="small"
+      showSorterTooltip={false}
+      title={() => <TableHeader reload={reload} />}
+      loading={loading}
       ></Table>
-    </Layout>
   )
 }
+
+export default withBaseLayout(ListProfiles)

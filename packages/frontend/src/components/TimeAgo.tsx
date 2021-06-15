@@ -11,7 +11,7 @@ function isString (str) {
   return (typeof str === 'string' || str instanceof String)
 }
 
-export default function TimeAgo ({ date }) {
+export default function TimeAgo ({ date }: { date: any }) {
   if (isString(date)) date = new Date(date)
   return <ReactTimeAgo date={date} />
 }

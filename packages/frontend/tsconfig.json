@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
@@ -8,6 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "strictNullChecks": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",

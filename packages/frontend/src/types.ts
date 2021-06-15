@@ -1,24 +1,79 @@
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+/* eslint-disable @typescript-eslint/no-invalid-void-type */
 export type Callback<T = void> = () => T
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type AsyncCallback<T = void> = () => Promise<T>
 
-export interface ProfileType {
-  _id: string
-  name: string
-  createdAt: Date
-  updatedAt: Date
-  fingerprint: {
-    os: 'win' | 'mac'
-  }
-  proxy: null | 'string'
+export interface iFingerprintOS {
+  cpu: number[]
+  ram: number[]
+  screen: string[]
+  renderer: string[]
+  fonts: string[]
 }
 
-export interface ProxyType {
-  _id: string
+export interface iFingerprintOptions {
+  win: iFingerprintOS
+  mac: iFingerprintOS
+}
+
+export interface iFingerprintItem {
+  userAgent: string
+  cpu: number
+  ram: number
+  screen: string
+  render: string
+}
+
+export type PossibleOS = 'win' | 'mac'
+
+export interface iFingerprint {
+  os: PossibleOS
+  win: iFingerprintItem
+  mac: iFingerprintItem
+  noiseWebGl: boolean
+  noiseCanvas: boolean
+  noiseAudio: boolean
+  deviceCameras: number
+  deviceMicrophones: number
+  deviceSpeakers: number
+  languages: {
+    mode: string
+    value: string
+  }
+  timezone: {
+    mode: string
+    value: string
+  }
+  geolocation: {
+    mode: string
+  }
+}
+
+export type iProfileBase = {
   name: string
-  type: 'socks5' | 'http'
+  fingerprint: iFingerprint
+  proxy: null | string
+}
+
+export type iProfile = iProfileBase & {
+  _id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type iProxyProtocol = 'socks5' | 'http'
+
+export type iProxyBase = {
+  name: string
+  type: iProxyProtocol
   host: string
   port: number
-  country: string
+  username: string
+  password: string
 }
+
+export type iProxy = iProxyBase & {
+  _id: string
+  country: string | null
+}
+
+export type iProfileSave = Partial<Omit<iProxy, '_id'>>

@@ -10,11 +10,11 @@ const messages: MapOfString = {
 }
 
 function success (message: string) {
-  return Msg.success(message)
+  Promise.all([Msg.success(message)]).catch(console.error)
 }
 
 function error (message: string) {
-  return Msg.error(message)
+  Promise.all([Msg.error(message)]).catch(console.error)
 }
 
 type notifyByApiCodeProps = { success: boolean, message: string, props: any[] }
@@ -22,7 +22,7 @@ function notifyByApiCode ({ success, message: code, ...props }: notifyByApiCodeP
   const handler = Msg[success ? 'success' : 'error']
   const message = messages[code] ?? null
   if (!success && message === null) console.warn('unknown message', code, props)
-  return message === null ? handler(message) : null
+  if (message !== null) Promise.all([handler(message)]).catch(console.error)
 }
 
 const Notify = { notifyByApiCode, success, error }

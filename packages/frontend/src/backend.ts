@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import { iFingerprint, iProfile, iProxy, iProxyBase, iFingerprintOptions } from '@/types'
 import createEmitter from '@/utils/emitter'
 import storage from '@/utils/storage'
 
@@ -7,16 +8,16 @@ type Method = 'get' | 'post'
 type Url = string
 type Config = { data?: any }
 type FinalConfig = Config & { method: Method, url: Url }
-type ApiRep = { success: boolean, [key: string]: any }
+type iApiReplay = { success: boolean, [key: string]: any }
 
 const http = axios.create({
   baseURL: 'http://127.0.0.1:3030',
   validateStatus: status => status < 500,
 })
 
-export async function request ({ method, url, ...config }: FinalConfig): Promise<ApiRep> {
+export async function request ({ method, url, ...config }: FinalConfig): Promise<iApiReplay> {
   const data = (await http.request({ method, url, ...config })).data
-  console.log(`api\t${method}\t${url}\nreq`, config.data, '\nrep', data)
+  console.info(`${method} ${url}`, config.data, data)
   return data
 }
 
@@ -65,24 +66,56 @@ export const users = {
 }
 
 export const fingerprint = {
-  get: async () => await get('/fingerprint'),
-  variants: async () => await get('/fingerprint/options'),
+  async get () {
+    const rep = await get('/fingerprint')
+    return (rep.fingerprint) as iFingerprint
+  },
+
+  async variants () {
+    const rep = await get('/fingerprint/options')
+    const res: iFingerprintOptions = { win: rep.win, mac: rep.mac }
+    return res
+  },
 }
 
-type ProfilesSave = { profileId: string }
 export const profiles = {
-  list: async () => await get('/profiles'),
-  get: async (profileId: string) => await get('/profiles/' + profileId),
-  save: async ({ profileId, ...values }: ProfilesSave) => await post('/profiles/save', { _id: profileId, ...values }),
-  delete: async (ids: string[]) => await post('/profiles/delete', { ids }),
+  async list () {
+    const rep = await get('/profiles')
+    return (rep.profiles) as iProfile[]
+  },
+
+  async get (profileId: string) {
+    const rep = await get('/profiles/' + profileId)
+    return (rep.profile) as iProfile
+  },
+
+  async save (values: iProfile, profileId?: string) {
+    return await post('/profiles/save', { ...values, _id: profileId })
+  },
+
+  async delete (ids: string[]) {
+    return await post('/profiles/delete', { ids })
+  },
 }
 
-type ProxySave = { proxyId: string }
 export const proxies = {
-  list: async () => await get('/proxies'),
-  get: async (proxyId: string) => await get('/proxies/' + proxyId),
-  save: async ({ proxyId, ...values }: ProxySave) => await post('/proxies/save', { _id: proxyId, ...values }),
-  delete: async (ids: string[]) => await post('/proxies/delete', { ids }),
+  async list () {
+    const rep = await get('/proxies')
+    return (rep.proxies) as iProxy[]
+  },
+
+  async get (proxyId: string) {
+    const rep = await get('/proxies/' + proxyId)
+    return (rep.proxy) as iProxy
+  },
+
+  async save (values: iProxyBase, proxyId?: string) {
+    return await post('/proxies/save', { ...values, _id: proxyId })
+  },
+
+  async delete (ids: string[]) {
+    return await post('/proxies/delete', { ids })
+  },
 }
 
 auth._setAuthToken(storage.get('authToken'))

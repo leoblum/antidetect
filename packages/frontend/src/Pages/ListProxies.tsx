@@ -4,19 +4,19 @@ import { ColumnsType } from 'antd/es/table'
 import React, { useState } from 'react'
 
 import backend from '@/backend'
-import Layout from '@/components/Layout'
+import { withBaseLayout } from '@/components/layout'
 import confirmDelete from '@/components/modals/confirmDelete'
 import ProxyIcon from '@/components/ProxyIcon'
 import { useRouter, useGetData } from '@/hooks'
-import { ProxyType, Callback } from '@/types'
+import { iProxy, Callback } from '@/types'
 
-function ProxyProtocol ({ proxy }: { proxy: ProxyType }) {
+function ProxyProtocol ({ proxy }: { proxy: iProxy }) {
   return (
     <Tag>{proxy.type}</Tag>
   )
 }
 
-function ProxyAddress ({ proxy }: { proxy: ProxyType }) {
+function ProxyAddress ({ proxy }: { proxy: iProxy }) {
   return (<Typography.Text code>{proxy.host}:{proxy.port}</Typography.Text>)
 }
 
@@ -36,14 +36,14 @@ function TableHeader ({ reload }: { reload: Callback }) {
   )
 }
 
-function ItemActions ({ proxy, reload }: { proxy: ProxyType, reload: Callback }) {
+function ItemActions ({ proxy, reload }: { proxy: iProxy, reload: Callback }) {
   const router = useRouter()
   const proxyId = proxy._id
   const names = [proxy].map(x => x.name)
 
   const onEdit = () => router.replace(`/proxies/edit/${proxyId}`)
   const onDelete = () => confirmDelete(names, async function () {
-    await backend.proxies.delete(proxyId)
+    await backend.proxies.delete([proxyId])
     reload()
   })
 
@@ -67,11 +67,11 @@ function ItemActions ({ proxy, reload }: { proxy: ProxyType, reload: Callback })
   )
 }
 
-export default function ListProxies () {
-  const [data, loading, reload] = useGetData<ProxyType[]>(async () => (await backend.proxies.list()).proxies)
+function ListProxies () {
+  const [data, loading, reload] = useGetData(backend.proxies.list)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
-  const columns: ColumnsType<ProxyType> = [
+  const columns: ColumnsType<iProxy> = [
     {
       title: 'Name',
       dataIndex: 'name',
@@ -97,18 +97,18 @@ export default function ListProxies () {
   ]
 
   return (
-    <Layout>
-      <Table
-        rowKey="_id"
-        rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
-        dataSource={data}
-        columns={columns}
-        pagination={{ defaultPageSize: 25, size: 'default' }}
-        size="small"
-        showSorterTooltip={false}
-        title={() => <TableHeader reload={reload} />}
-        loading={loading}
+    <Table
+      rowKey="_id"
+      rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
+      dataSource={data}
+      columns={columns}
+      pagination={{ defaultPageSize: 25, size: 'default' }}
+      size="small"
+      showSorterTooltip={false}
+      title={() => <TableHeader reload={reload} />}
+      loading={loading}
       ></Table>
-    </Layout>
   )
 }
+
+export default withBaseLayout(ListProxies)
