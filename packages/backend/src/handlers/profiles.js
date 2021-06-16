@@ -1,4 +1,4 @@
-const { Profile, Proxy, createOrUpdate } = require('../models')
+const { Profile, Proxy, createOrUpdate, existsById } = require('../models')
 
 async function list (req, rep) {
   const { team } = req.user
@@ -20,6 +20,8 @@ async function save (req, rep) {
 
     const proxy = await Proxy.create({ ...proxyCreate, team })
     req.body.proxy = proxy._id.toString()
+  } else if (req.body.proxy) {
+    if (!await existsById(Proxy, req.body.proxy)) req.body.proxy = null
   }
 
   const profile = await createOrUpdate(Profile, { team, ...req.body })
@@ -28,7 +30,9 @@ async function save (req, rep) {
 
 async function remove (req, rep) {
   const { ids } = req.body
-  await Promise.all(ids.map(id => Profile.findByIdAndRemove(id)))
+  try {
+    await Promise.all(ids.map(id => Profile.findByIdAndRemove(id)))
+  } catch (e) {}
   return rep.done()
 }
 

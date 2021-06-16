@@ -69,6 +69,12 @@ async function createOrUpdate (Model, fields) {
   else return await Model.create(fields)
 }
 
+async function existsById (Model, Id) {
+  try {
+    return await Model.exists({ _id: Id })
+  } catch (e) { return false }
+}
+
 module.exports = {
   User: model('User', userSchema),
   Team: model('Team', teamSchema),
@@ -76,4 +82,5 @@ module.exports = {
   Proxy: model('Proxy', proxySchema),
   LinkToken: model('LinkToken', linkTokenSchema),
   createOrUpdate,
+  existsById,
 }

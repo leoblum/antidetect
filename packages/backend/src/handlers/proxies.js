@@ -18,7 +18,9 @@ async function save (req, rep) {
 
 async function remove (req, rep) {
   const { ids } = req.body
-  await Promise.all(ids.map(id => Proxy.findByIdAndRemove(id)))
+  try {
+    await Promise.all(ids.map(id => Proxy.findByIdAndRemove(id)))
+  } catch (e) {}
   return rep.done()
 }
 

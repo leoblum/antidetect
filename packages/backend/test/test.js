@@ -1,17 +1,18 @@
+/* eslint-disable import/order */
 /* eslint no-unused-expressions: "off" */
 
-// eslint-disable-next-line import/order
-const config = require('../src/config')
-config.MONGODB_URI = 'mongodb://127.0.0.1:27017/yanus-test'
-
+const { MongoMemoryServer } = require('mongodb-memory-server')
 const expect = require('chai').expect
 const { ObjectId } = require('mongoose').Types
 
+const config = require('../src/config')
 const buildApp = require('../src/app').build
 
-function fill (length, value = null) {
-  return new Array(length).fill(value)
-}
+const mongod = new MongoMemoryServer()
+
+const fill = (length, value = null) => new Array(length).fill(value)
+const blankId = () => ObjectId().toString()
+const invalidId = () => '1234'
 
 function createClient (app) {
   const DefaultHeaders = {}
@@ -66,6 +67,10 @@ function createClient (app) {
 
 describe('backend app', function () {
   let [app, api] = [null, null]
+
+  before(async function () {
+    config.MONGODB_URI = await mongod.getUri('yanus-test')
+  })
 
   beforeEach(async function () {
     console.log('~', new Date())
@@ -370,7 +375,11 @@ describe('backend app', function () {
     it('should delete with success=true on invalid id', async function () {
       let rep = null
 
-      rep = await api.profiles.delete({ ids: ['1234'] })
+      rep = await api.profiles.delete({ ids: [blankId()] })
+      expect(rep.statusCode).to.equal(200)
+      expect(rep.data.success).to.be.true
+
+      rep = await api.profiles.delete({ ids: [invalidId()] })
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
     })
@@ -495,12 +504,13 @@ describe('backend app', function () {
     it('should delete with success=true on invalid id', async function () {
       let rep = null
 
-      rep = await api.proxies.delete({ ids: ['123456789012'] })
+      rep = await api.proxies.delete({ ids: [blankId()] })
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
 
-      // rep = await api.proxies.delete({ ids: ['1234'] })
-      // expect(rep.statusCode).to.equal(500)
+      rep = await api.proxies.delete({ ids: [invalidId()] })
+      expect(rep.statusCode).to.equal(200)
+      expect(rep.data.success).to.be.true
     })
 
     it('should delete by id from many', async function () {
@@ -534,16 +544,20 @@ describe('backend app', function () {
 
     it('should create profile with invalid proxyId', async function () {
       let rep = null
-      const invalidId = ObjectId().toString()
 
-      const profile = await fillProfile({ proxy: invalidId })
-      expect(profile.proxy).to.be.null // todo:
-
+      rep = await fillProfile({ proxy: blankId() })
+      expect(rep.proxy).to.be.null
       rep = await api.profiles.list()
-      expect(rep.data.profiles).to.have.lengthOf(1)
-
+      expect(rep.data.profiles).to.have.lengthOf(1, 'blankId.profiles')
       rep = await api.proxies.list()
-      expect(rep.data.proxies).to.have.lengthOf(0)
+      expect(rep.data.proxies).to.have.lengthOf(0, 'blankId.proxies')
+
+      rep = await fillProfile({ proxy: invalidId() })
+      expect(rep.proxy).to.be.null
+      rep = await api.profiles.list()
+      expect(rep.data.profiles).to.have.lengthOf(2, 'invalidId.profiles')
+      rep = await api.proxies.list()
+      expect(rep.data.proxies).to.have.lengthOf(0, 'invalidId.proxies')
     })
 
     it('should create profile with new proxy and save to proxies list', async function () {

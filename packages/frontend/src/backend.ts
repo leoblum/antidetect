@@ -11,13 +11,19 @@ type FinalConfig = Config & { method: Method, url: Url }
 
 const http = axios.create({
   baseURL: 'http://127.0.0.1:3030',
-  validateStatus: status => status < 500,
+  validateStatus: status => status < 400,
 })
 
 export async function request ({ method, url, ...config }: FinalConfig): Promise<iApiReplay> {
-  const data = (await http.request({ method, url, ...config })).data
-  console.info(`${method} ${url}`, config.data, data)
-  return data
+  try {
+    const data = (await http.request({ method, url, ...config })).data
+    console.info(`${method} ${url}`, config.data, data)
+    return data
+  } catch (e) {
+    const rep = e.response
+    const msg = rep.status < 500 ? rep.data : null
+    console.log(Object.entries(e))
+  }
 }
 
 export async function get (url: string, config: Config = {}) {
