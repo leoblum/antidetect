@@ -1,5 +1,6 @@
 import { Form, Tabs, Skeleton, Button } from 'antd'
 import { getAllTimezones } from 'countries-and-timezones'
+import { flatten } from 'flat'
 import { merge } from 'lodash/fp'
 import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
@@ -10,7 +11,7 @@ import { withFormLayout } from '@/components/layout'
 import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
 import { iFingerprintOptions, iProfileBase, iProxy, iProxyBase, PossibleOS } from '@/types'
-import { toString, arrToObj, Stringify } from '@/utils/object'
+import { toString, arrToObj, Stringify, entries } from '@/utils/object'
 
 import { ProxyFields } from './EditProxy'
 
@@ -18,7 +19,12 @@ type ProfileInForm = Stringify<iProfileBase> & {
   proxyTab: string
   proxyCreate: Stringify<iProxyBase>
 }
-type State = { profile: iProfileBase, store: ProfileInForm, options: any }
+type State = {
+  profile: iProfileBase
+  store: ProfileInForm
+  options: any
+  activeKey: string | undefined
+}
 
 function getTimezones () {
   const sorter = natsort()
@@ -29,7 +35,7 @@ function getTimezones () {
   return timezones
 }
 
-function getOptions (p: iProxy[], variants: iFingerprintOptions) {
+function getOptions (p: iProxy[], opts: iFingerprintOptions) {
   const ip = { ip: 'Bases on IP', manual: 'Manual' }
   const os = { win: 'Windows', mac: 'MacOS' }
   const profileProxy = { none: 'No Proxy', saved: 'From List', manual: 'Manual' }
@@ -37,6 +43,15 @@ function getOptions (p: iProxy[], variants: iFingerprintOptions) {
 
   const proxies = arrToObj(p, x => [x._id, x.name])
   const timezones = arrToObj(getTimezones(), x => [x.name, `(${x.utcOffsetStr}) ${x.name}`])
+
+  type T = iFingerprintOptions
+  const variants = {} as { [K in keyof T]: { [J in keyof T[K]]: Record<string, string> } }
+  for (const [os, values] of entries(opts)) {
+    variants[os] = {} as any // todo: ???
+    for (const [k, v] of entries(values)) {
+      variants[os][k] = arrToObj(v.map(x => x.toString()), x => [x, x])
+    }
+  }
 
   console.info('FORM OPTIONS UPDATED')
   return { os, proxies, timezones, profileProxy, languages, timezone, geolocation, variants }
@@ -90,11 +105,19 @@ function EditProfile () {
   const randomize = async () => form.setFieldsValue(await getSingleFingerprint(os))
   const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
 
-  function onChange (value: any) {
-    setState(merge(state, { store: { ...value } }))
+  const updateState = (value: any) => setState(merge(state, value))
+  const updateStateOnKeys = [
+    'proxyTab',
+    'fingerprint.os',
+    'fingerprint.languages.mode',
+    'fingerprint.timezone.mode',
+    'fingerprint.geolocation.mode',
+  ]
+  const onChange = (value: any) => {
+    updateStateOnKeys.includes(Object.keys(flatten(value))[0]) && updateState({ store: { ...value } })
   }
 
-  async function submit (values: ProfileInForm) {
+  const submit = async (values: ProfileInForm) => {
     values = toString(values)
 
     if (values.proxyTab === 'none') merge(values, { proxy: null })
@@ -130,14 +153,28 @@ function EditProfile () {
     router.replace('/profiles')
   }
 
-  function ref (name: string, useOS = false) {
+  const ref = (name: string, useOS = false) => {
     return ['fingerprint', useOS ? os : '', name].join('.').split('.').filter(x => x.length > 0)
   }
 
+  console.log(Date.now(), store)
   const TabPane = Tabs.TabPane
   return (
-    <Form layout="vertical" form={form} initialValues={store} onValuesChange={onChange} onFinish={submit}>
-      <Tabs size="small" tabBarExtraContent={extraContent}>
+    <Form layout="vertical" form={form} initialValues={store}
+      onValuesChange={onChange} onFinish={submit}
+      scrollToFirstError={{
+        behavior: () => {
+          const fields = form.getFieldsError()
+          for (const field of fields) {
+            if (!field.errors.length) continue
+            const input = form.getFieldInstance(field.name)
+            const activeKey = input.input.closest('div[role=tabpanel]').id.split('-').reverse()[0]
+            return updateState({ activeKey })
+          }
+        },
+      }}
+    >
+      <Tabs size="small" tabBarExtraContent={extraContent} activeKey={state.activeKey}>
         <TabPane key="General" tab="General" forceRender={true}>
           <FormInput name="name" label="Profile Name" placeholder="Enter profile name" rules={[{ required: true }]} />
           <FormRadio name={ref('os')} label="Operation System" options={options.os} />
@@ -147,7 +184,7 @@ function EditProfile () {
         <TabPane key="Connection" tab="Connection" forceRender={true}>
           <FormRadio name="proxyTab" label="Proxy" options={options.profileProxy} />
           {store.proxyTab === 'manual' && (
-            <ProxyFields prefix="proxy" />
+            <ProxyFields prefix="proxyCreate" />
           )}
           {store.proxyTab === 'saved' && (
             <FormSelect name="proxy" options={options.proxies} placeholder="Tap to select" />
