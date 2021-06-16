@@ -45,8 +45,8 @@ function createClient (app) {
   const profiles = {
     list: async () => await get('/profiles'),
     get: async (profileId) => await get(`/profiles/${profileId}`),
-    save: async ({ profileId, name, fingerprint, proxy = null, createProxy = null }) => (
-      await post('/profiles/save', { _id: profileId, name, fingerprint, proxy, createProxy })
+    save: async ({ profileId, name, fingerprint, proxy = null, proxyCreate = null }) => (
+      await post('/profiles/save', { _id: profileId, name, fingerprint, proxy, proxyCreate })
     ),
     delete: async ({ ids = [] }) => await post('/profiles/delete', { ids }),
   }
@@ -68,6 +68,7 @@ describe('backend app', function () {
   let [app, api] = [null, null]
 
   beforeEach(async function () {
+    console.log('~', new Date())
     app = await buildApp()
     api = createClient(app)
     await app.db.dropDatabase()
@@ -94,9 +95,9 @@ describe('backend app', function () {
     await api.users.auth(email, password, true)
   }
 
-  async function fillProfile ({ name = '1234', os = 'mac', proxy, createProxy }) {
+  async function fillProfile ({ name = '1234', os = 'mac', proxy, proxyCreate }) {
     const fingerprint = await getFingerprint(os)
-    return (await api.profiles.save({ name, fingerprint, proxy, createProxy })).data.profile
+    return (await api.profiles.save({ name, fingerprint, proxy, proxyCreate })).data.profile
   }
 
   async function fillProxy ({ name = '1234', type = 'http', host = 'localhost', port = 8080, username, password }) {
@@ -473,7 +474,9 @@ describe('backend app', function () {
 
     it('should delete by id (bulk)', async function () {
       let rep = null
-      const [id1, id2, id3] = (await Promise.all(fill(3).map(name => fillProxy({ name })))).map(x => x._id)
+      const id1 = (await fillProxy({ name: '101' }))._id
+      const id2 = (await fillProxy({ name: '102' }))._id
+      const id3 = (await fillProxy({ name: '103' }))._id
 
       rep = await api.proxies.list()
       expect(rep.data.proxies).to.have.lengthOf(3)
@@ -482,17 +485,22 @@ describe('backend app', function () {
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
 
+      console.log(id1, id2, id3)
       rep = await api.proxies.list()
       expect(rep.data.proxies).to.have.lengthOf(1)
       expect(rep.data.proxies[0]._id).to.equal(id3)
+      console.log(rep.data.proxies.map(x => x._id))
     })
 
     it('should delete with success=true on invalid id', async function () {
       let rep = null
 
-      rep = await api.proxies.delete({ ids: ['1234'] })
+      rep = await api.proxies.delete({ ids: ['123456789012'] })
       expect(rep.statusCode).to.equal(200)
       expect(rep.data.success).to.be.true
+
+      // rep = await api.proxies.delete({ ids: ['1234'] })
+      // expect(rep.statusCode).to.equal(500)
     })
 
     it('should delete by id from many', async function () {
@@ -500,12 +508,17 @@ describe('backend app', function () {
       const ids = (await Promise.all(fill(10).map(name => fillProxy({ name })))).map(x => x._id)
 
       rep = await api.proxies.list()
+      expect(rep.data.proxies).to.have.length(10)
       expect(rep.data.proxies.map(x => x._id)).to.have.all.members(ids)
 
-      const toDelete = ids.unshift()
+      const toDelete = ids.pop()
+      expect(ids).to.have.length(9)
+      expect(ids).to.not.include(toDelete)
       rep = await api.proxies.delete({ ids: [toDelete] })
 
       rep = await api.proxies.list()
+      expect(rep.data.proxies).to.have.length(9)
+      expect(rep.data.proxies.map(x => x._id)).to.not.include(toDelete)
       expect(rep.data.proxies.map(x => x._id)).to.have.all.members(ids)
     })
   })
@@ -524,7 +537,7 @@ describe('backend app', function () {
       const invalidId = ObjectId().toString()
 
       const profile = await fillProfile({ proxy: invalidId })
-      // expect(profile.proxy).to.be.null // todo:
+      expect(profile.proxy).to.be.null // todo:
 
       rep = await api.profiles.list()
       expect(rep.data.profiles).to.have.lengthOf(1)
@@ -536,16 +549,26 @@ describe('backend app', function () {
     it('should create profile with new proxy and save to proxies list', async function () {
       let rep = null
 
-      const createProxy = { ...Proxy }
-      const profile = await fillProfile({ createProxy })
+      const proxyCreate = { ...Proxy }
+      const profile = await fillProfile({ proxyCreate })
       expect(profile.proxy).to.be.a('string')
-
-      rep = await api.profiles.list()
-      expect(rep.data.profiles).to.have.lengthOf(1)
+      expect(profile).to.not.have.property('proxyCreate')
 
       rep = await api.proxies.list()
       expect(rep.data.proxies).to.have.lengthOf(1)
       expect(rep.data.proxies[0]._id).to.equal(profile.proxy)
+
+      const profileId = profile._id
+      rep = await api.profiles.save({ profileId, proxyCreate })
+      expect(rep.data.profile._id).to.be.equal(profileId)
+      expect(rep.data.proxy).to.be.not.equal(profile.proxy)
+
+      rep = await api.proxies.list()
+      expect(rep.data.proxies).to.have.lengthOf(2)
+
+      rep = await api.profiles.save({ profileId, proxy: null })
+      expect(rep.data.profile._id).to.be.equal(profileId)
+      expect(rep.data.profile.proxy).to.be.null
     })
   })
 })

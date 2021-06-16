@@ -14,12 +14,12 @@ async function get (req, rep) {
 async function save (req, rep) {
   const { team } = req.user
 
-  if (req.body.createProxy) {
-    const { createProxy } = req.body
-    delete req.body.createProxy
+  if (req.body.proxyCreate) {
+    const { proxyCreate } = req.body
+    delete req.body.proxyCreate
 
-    const proxy = await Proxy.create({ ...createProxy, team })
-    req.body.proxy = proxy._id
+    const proxy = await Proxy.create({ ...proxyCreate, team })
+    req.body.proxy = proxy._id.toString()
   }
 
   const profile = await createOrUpdate(Profile, { team, ...req.body })
@@ -28,7 +28,7 @@ async function save (req, rep) {
 
 async function remove (req, rep) {
   const { ids } = req.body
-  await Promise.all(ids.map(id => Profile.findOneAndDelete(id)))
+  await Promise.all(ids.map(id => Profile.findByIdAndRemove(id)))
   return rep.done()
 }
 
