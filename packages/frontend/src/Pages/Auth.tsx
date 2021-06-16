@@ -11,7 +11,7 @@ const emailItemProps = {
   name: 'email',
   rules: [
     { required: true, message: 'Please input your email!' },
-    { type: 'email', message: 'The input is not valid email!' },
+    // { type: 'email', message: 'The input is not valid email!' },
   ],
 }
 
@@ -25,7 +25,7 @@ const passwordItemProps = {
 function SingInForm () {
   const router = useRouter()
 
-  async function onFinish (values) {
+  async function onFinish (values: any) {
     const response = await backend.auth.login(values)
     notifyByApiCode(response)
     return response.success ? router.replace('/') : null
@@ -62,7 +62,7 @@ function SingInForm () {
 function SingUpForm () {
   const router = useRouter()
 
-  async function onFinish (values) {
+  async function onFinish (values: any) {
     const response = await backend.users.create(values)
     notifyByApiCode(response)
     return response.success ? router.push('/auth/login') : null
@@ -99,7 +99,7 @@ function SingUpForm () {
 function ResetForm () {
   const router = useRouter()
 
-  async function onFinish (values) {
+  async function onFinish (values: any) {
     const response = await backend.users.resetPassword(values)
     notifyByApiCode(response)
     router.push('/auth/login')
@@ -129,11 +129,11 @@ function ResetForm () {
   )
 }
 
-function PageLayout ({ content }) {
+function PageLayout ({ content }: { content: JSX.Element }) {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Layout.Content>
-        <Row type="flex" justify="center" align="middle" style={{ minHeight: '100vh' }}>
+        <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
           <Col style={{ width: '350px' }}>
             <Card>
               {content}

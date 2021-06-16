@@ -8,7 +8,7 @@ type LayoutProps = { children: JSX.Element }
 const LayoutBase = ({ children }: LayoutProps) => (
   <Layout style={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
     <div style={{ maxWidth: '1240px', width: '100%', padding: '0 8px' }}>
-      <Header/>
+      <Header />
       <Layout.Content style={{ padding: '8px 0' }}>
         {children}
       </Layout.Content>
@@ -33,7 +33,7 @@ function getDisplayName (Component: ComponentType, defaultName: string) {
 export function withLayout (Component: ComponentType, Layout: ComponentType) {
   const ComponentWithLayout = () => (
     <Layout>
-      <Component/>
+      <Component />
     </Layout>
   )
 

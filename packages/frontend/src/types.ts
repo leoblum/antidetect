@@ -2,6 +2,8 @@
 export type Callback<T = void> = () => T
 export type AsyncCallback<T = void> = () => Promise<T>
 
+export type iApiReplay = { success: boolean, [key: string]: any }
+
 export interface iFingerprintOS {
   cpu: number[]
   ram: number[]
@@ -26,7 +28,8 @@ export interface iFingerprintItem {
 export type PossibleOS = 'win' | 'mac'
 
 export interface iFingerprint {
-  os: PossibleOS
+  // os: PossibleOS
+  os: string
   win: iFingerprintItem
   mac: iFingerprintItem
   noiseWebGl: boolean

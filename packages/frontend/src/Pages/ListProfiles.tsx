@@ -148,7 +148,7 @@ function ListProfiles () {
       showSorterTooltip={false}
       title={() => <TableHeader reload={reload} />}
       loading={loading}
-      ></Table>
+    ></Table>
   )
 }
 

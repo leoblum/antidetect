@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { iFingerprint, iProfile, iProxy, iProxyBase, iFingerprintOptions } from '@/types'
+import { iFingerprint, iProfile, iProxy, iProxyBase, iFingerprintOptions, iApiReplay } from '@/types'
 import createEmitter from '@/utils/emitter'
 import storage from '@/utils/storage'
 
@@ -8,7 +8,6 @@ type Method = 'get' | 'post'
 type Url = string
 type Config = { data?: any }
 type FinalConfig = Config & { method: Method, url: Url }
-type iApiReplay = { success: boolean, [key: string]: any }
 
 const http = axios.create({
   baseURL: 'http://127.0.0.1:3030',

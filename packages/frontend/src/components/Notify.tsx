@@ -1,5 +1,7 @@
 import { message as Msg } from 'antd'
 
+import { iApiReplay } from '@/types'
+
 type MapOfString = { [key: string]: string | undefined }
 const messages: MapOfString = {
   email_already_used: 'Email already used.',
@@ -17,11 +19,10 @@ function error (message: string) {
   Promise.all([Msg.error(message)]).catch(console.error)
 }
 
-type notifyByApiCodeProps = { success: boolean, message: string, props: any[] }
-function notifyByApiCode ({ success, message: code, ...props }: notifyByApiCodeProps) {
+function notifyByApiCode ({ success, message: code }: iApiReplay) {
   const handler = Msg[success ? 'success' : 'error']
   const message = messages[code] ?? null
-  if (!success && message === null) console.warn('unknown message', code, props)
+  if (!success && message === null) console.warn('unknown message', code)
   if (message !== null) Promise.all([handler(message)]).catch(console.error)
 }
 

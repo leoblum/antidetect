@@ -1,4 +1,3 @@
-import queryString from 'query-string'
 import { useMemo } from 'react'
 import { useParams, useLocation, useHistory, useRouteMatch } from 'react-router-dom'
 
@@ -14,7 +13,6 @@ export default function useRouter () {
       push: history.push,
       replace: history.replace,
       pathname: location.pathname,
-      query: { ...queryString.parse(location.search), ...params },
       params,
       match,
       location,

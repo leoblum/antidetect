@@ -1,9 +1,7 @@
 import { Form, Tabs, Skeleton, Button } from 'antd'
 import { getAllTimezones } from 'countries-and-timezones'
-import { merge } from 'lodash/fp'
 import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
-// import merge from 'ts-deepmerge'
 
 import backend from '@/backend'
 import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '@/components/FormItems'
@@ -11,18 +9,13 @@ import { withFormLayout } from '@/components/layout'
 // import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
 import { iFingerprintOptions, iProfileBase, iProxy, PossibleOS } from '@/types'
+import merge from '@/utils/merge'
 import { toString, arrToObj, Stringify } from '@/utils/object'
 
 import { ProxyFields } from './EditProxy'
 
 type ProfileInForm = Stringify<iProfileBase>
-type State = { profile: ProfileInForm, options: any }
-
-type UseSetState<T> = React.Dispatch<React.SetStateAction<T | undefined>>
-
-function load<A, B extends UseSetState<A>> (promise: Promise<A>, setState: B) {
-  Promise.resolve(promise).then(setState).catch(console.error)
-}
+type State = { profile: iProfileBase, store: ProfileInForm, options: any }
 
 function getTimezones () {
   const sorter = natsort()
@@ -33,7 +26,7 @@ function getTimezones () {
   return timezones
 }
 
-function getOptions (p: iProxy[], v: iFingerprintOptions) {
+function getOptions (p: iProxy[], variants: iFingerprintOptions) {
   const ip = { ip: 'Bases on IP', manual: 'Manual' }
   const os = { win: 'Windows', mac: 'MacOS' }
   const profileProxy = { none: 'No Proxy', saved: 'From List', manual: 'Manual' }
@@ -42,26 +35,20 @@ function getOptions (p: iProxy[], v: iFingerprintOptions) {
   const proxies = arrToObj(p, x => [x._id, x.name])
   const timezones = arrToObj(getTimezones(), x => [x.name, `(${x.utcOffsetStr}) ${x.name}`])
 
-  const variants: Record<string, any> = {}
-  for (const [os, obj] of Object.entries(v)) {
-    variants[os] = {}
-    for (const [k, v] of Object.entries(obj)) variants[os][k] = arrToObj(v, x => [x, x])
-  }
-
   console.info('FORM OPTIONS UPDATED')
   return { os, proxies, timezones, profileProxy, languages, timezone, geolocation, variants }
 }
 
-async function loadState (profileId?: string) {
+const getInitialState = async (profileId?: string) => {
   const [remote, fingerprint, variants, proxies] = await Promise.all([
-    profileId != null ? await backend.profiles.get(profileId) : undefined,
+    profileId !== undefined ? await backend.profiles.get(profileId) : undefined,
     backend.fingerprint.get(),
     backend.fingerprint.variants(),
     backend.proxies.list(),
   ])
 
   let profile: iProfileBase = { fingerprint, name: '', proxy: null }
-  if (remote != null) {
+  if (remote !== undefined) {
     // remove proxyId from profile if proxyId not in proxies
     if (remote.proxy != null && (proxies.find(x => x._id === remote.proxy) != null)) remote.proxy = null
     profile = merge(profile, remote)
@@ -74,8 +61,9 @@ async function loadState (profileId?: string) {
   // if (store.proxy === null) store.proxy = proxies.length > 0 ? proxies[0]._id : null
 
   const options = getOptions(proxies, variants)
-  const store: State = { profile: toString(profile), options }
-  return store
+  const store = toString(profile)
+  const state: State = { profile, store, options }
+  return state
 }
 
 async function getSingleFingerprint (os: PossibleOS) {
@@ -90,17 +78,15 @@ function EditProfile () {
   const [state, setState] = useState<State>()
   const [form] = Form.useForm()
 
-  useEffect(() => { load(loadState(profileId), setState) }, [profileId])
-  useEffect(() => { (state != null) && form.resetFields() }, [state?.profile?.fingerprint?.os])
+  useEffect(() => { getInitialState(profileId).then(setState) }, [profileId])
+  useEffect(() => { (state !== undefined) && form.resetFields() }, [state?.profile.fingerprint.os])
 
   if (state === undefined) return <Skeleton active />
 
-  const { profile, options } = state
-  const fp = profile.fingerprint
+  const { store, options } = state
+  const fp = store.fingerprint
   const os = fp.os as PossibleOS
-
   const variants = options.variants[os]
-  console.log(state)
 
   const randomize = async () => form.setFieldsValue(await getSingleFingerprint(os))
   const extraContent = <Button size="small" onClick={randomize}>Randomize</Button>
@@ -112,6 +98,36 @@ function EditProfile () {
   async function submit (values: ProfileInForm) {
     values = toString(values)
     console.log(values)
+
+    const data: iProfileBase = merge(values, {
+      fingerprint: {
+        [values.fingerprint.os as PossibleOS]: {
+          cpu: parseInt(values.fingerprint.win.cpu, 10),
+          ram: parseInt(values.fingerprint.win.ram, 10),
+        },
+        noiseWebGl: values.fingerprint.noiseWebGl === 'true',
+        noiseCanvas: values.fingerprint.noiseCanvas === 'true',
+        noiseAudio: values.fingerprint.noiseAudio === 'true',
+        deviceCameras: parseInt(values.fingerprint.deviceCameras, 10),
+        deviceMicrophones: parseInt(values.fingerprint.deviceMicrophones, 10),
+        deviceSpeakers: parseInt(values.fingerprint.deviceSpeakers, 10),
+      },
+    })
+
+    console.log(data)
+
+    // {
+    //   [values.fingerprint.os as PossibleOS]: {
+    //     cpu: parseInt(values.fingerprint.win.cpu, 10),
+    //     ram: parseInt(values.fingerprint.win.ram, 10),
+    //   },
+    //   // noiseWebGl: values.fingerprint.noiseWebGl === 'true',
+    //   noiseCanvas: values.fingerprint.noiseCanvas === 'true',
+    //   noiseAudio: values.fingerprint.noiseAudio === 'true',
+    //   deviceCameras: parseInt(values.fingerprint.deviceCameras, 10),
+    //   deviceMicrophones: parseInt(values.fingerprint.deviceMicrophones, 10),
+    //   deviceSpeakers: parseInt(values.fingerprint.deviceSpeakers, 10),
+    // }
 
     // const proxyType = values.proxyType
     // delete values.proxyType
@@ -134,7 +150,7 @@ function EditProfile () {
 
   const TabPane = Tabs.TabPane
   return (
-    <Form layout="vertical" form={form} initialValues={profile} onValuesChange={onChange} onFinish={submit}>
+    <Form layout="vertical" form={form} initialValues={store} onValuesChange={onChange} onFinish={submit}>
       <Tabs size="small" tabBarExtraContent={extraContent}>
         <TabPane key="General" tab="General" forceRender={true}>
           <FormInput name="name" label="Profile Name" placeholder="Enter profile name" rules={[{ required: true }]} />
@@ -189,9 +205,9 @@ function EditProfile () {
           </Cols>
 
           <Cols label="Media Devices">
-            <FormNumber name={ref('deviceCameras')} label="Cameras" min={0} max={4}/>
-            <FormNumber name={ref('deviceMicrophones')} label="Microphones" min={0} max={4}/>
-            <FormNumber name={ref('deviceSpeakers')} label="Speakers" min={0} max={4}/>
+            <FormNumber name={ref('deviceCameras')} label="Cameras" min={0} max={4} />
+            <FormNumber name={ref('deviceMicrophones')} label="Microphones" min={0} max={4} />
+            <FormNumber name={ref('deviceSpeakers')} label="Speakers" min={0} max={4} />
           </Cols>
         </TabPane>
 

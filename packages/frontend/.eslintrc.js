@@ -1,13 +1,22 @@
+// https://github.com/standard/eslint-config-standard/blob/master/eslintrc.json
+// https://www.npmjs.com/package/@typescript-eslint/eslint-plugin
+
 module.exports = {
-  env: { browser: true, es2021: true },
+  root: true,
   extends: [
-    'eslint:recommended',
+    'standard',
     'plugin:react/recommended',
-    'eslint-config-standard-with-typescript',
+    'plugin:react-hooks/recommended',
   ],
-  parserOptions: { project: './tsconfig.json' },
+  settings: {
+    react: { version: 'detect' },
+    'import/resolver': { alias: { map: [['@', './src']], extensions: ['.js', '.jsx', '.ts', '.tsx'] } },
+  },
   rules: {
+    'comma-dangle': ['error', 'always-multiline'],
+    'object-curly-spacing': ['error', 'always'],
     'import/no-unresolved': 'error',
+    'import/no-named-as-default-member': 'off',
     'import/order': ['error', {
       'newlines-between': 'always',
       alphabetize: { order: 'asc', caseInsensitive: true },
@@ -16,24 +25,36 @@ module.exports = {
 
     'react/jsx-indent': ['error', 2],
     'react/jsx-indent-props': ['error', 2],
-
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/consistent-type-definitions': 'off',
-
-    'comma-dangle': 'off',
-    '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
-
-    'object-curly-spacing': 'off',
-    '@typescript-eslint/object-curly-spacing': ['error', 'always'],
-  },
-  settings: {
-    'import/resolver': { alias: { map: [['@', './src']], extensions: ['.js', '.jsx', '.ts', '.tsx'] } },
-    react: { version: 'detect' },
+    'react/jsx-tag-spacing': ['error', { beforeSelfClosing: 'always' }],
+    'react/jsx-uses-react': 'error',
+    'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
+    'react-hooks/exhaustive-deps': 'off',
   },
   overrides: [{
-    files: ['**/*.js', '**/*.jsx'],
+    files: ['**/*.ts', '**/*.tsx'],
+    parser: '@typescript-eslint/parser',
+    parserOptions: { project: './tsconfig.json' },
+    extends: [
+      'plugin:@typescript-eslint/recommended',
+      // 'plugin:import/typescript',
+    ],
     rules: {
-      'comma-dangle': ['error', 'always-multiline'],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+
+      indent: 'off',
+      '@typescript-eslint/indent': ['error', 2],
+
+      'comma-dangle': 'off',
+      '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
+
+      'object-curly-spacing': 'off',
+      '@typescript-eslint/object-curly-spacing': ['error', 'always'],
+
+      'no-use-before-define': 'off',
+      '@typescript-eslint/no-use-before-define': ['error'],
     },
   }],
 }

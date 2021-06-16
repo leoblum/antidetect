@@ -28,7 +28,7 @@ export function SuperRoute ({ path, component, publicOnly, authOnly, redirect }:
   return <Route path={path} component={component}></Route>
 }
 
-export type LinkProps = { children: JSX.Element, to: string }
+export type LinkProps = { children: React.ReactNode, to: string }
 export function Link ({ children, to }: LinkProps) {
   return <BaseLink to={to} component={Typography.Link}>{children}</BaseLink>
 }

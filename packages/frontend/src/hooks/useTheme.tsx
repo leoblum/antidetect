@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-// @ts-expect-error
+// @ts-expect-error no types for less theme
 import dark from '@/theme-dark.theme.less'
-// @ts-expect-error
+// @ts-expect-error no types for less theme
 import light from '@/theme-light.theme.less'
 import { Callback } from '@/types'
 import storage from '@/utils/storage'
