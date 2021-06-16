@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { iFingerprint, iProfile, iProxy, iProxyBase, iFingerprintOptions, iApiReplay } from '@/types'
+import { iFingerprint, iProfile, iProxy, iProxyBase, iFingerprintOptions, iApiReplay, iProfileBase } from '@/types'
 import createEmitter from '@/utils/emitter'
 import storage from '@/utils/storage'
 
@@ -88,7 +88,7 @@ export const profiles = {
     return (rep.profile) as iProfile
   },
 
-  async save (values: iProfile, profileId?: string) {
+  async save (values: iProfileBase, profileId?: string) {
     return await post('/profiles/save', { ...values, _id: profileId })
   },
 

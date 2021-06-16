@@ -13,6 +13,7 @@ module.exports = {
     'import/resolver': { alias: { map: [['@', './src']], extensions: ['.js', '.jsx', '.ts', '.tsx'] } },
   },
   rules: {
+    curly: 'off',
     'comma-dangle': ['error', 'always-multiline'],
     'object-curly-spacing': ['error', 'always'],
     'import/no-unresolved': 'error',

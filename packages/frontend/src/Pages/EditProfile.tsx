@@ -1,20 +1,23 @@
 import { Form, Tabs, Skeleton, Button } from 'antd'
 import { getAllTimezones } from 'countries-and-timezones'
+import { merge } from 'lodash/fp'
 import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
 
 import backend from '@/backend'
 import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '@/components/FormItems'
 import { withFormLayout } from '@/components/layout'
-// import Notify from '@/components/Notify'
+import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
-import { iFingerprintOptions, iProfileBase, iProxy, PossibleOS } from '@/types'
-import merge from '@/utils/merge'
+import { iFingerprintOptions, iProfileBase, iProxy, iProxyBase, PossibleOS } from '@/types'
 import { toString, arrToObj, Stringify } from '@/utils/object'
 
 import { ProxyFields } from './EditProxy'
 
-type ProfileInForm = Stringify<iProfileBase>
+type ProfileInForm = Stringify<iProfileBase> & {
+  proxyTab: string
+  proxyCreate: Stringify<iProxyBase>
+}
 type State = { profile: iProfileBase, store: ProfileInForm, options: any }
 
 function getTimezones () {
@@ -48,22 +51,18 @@ const getInitialState = async (profileId?: string) => {
   ])
 
   let profile: iProfileBase = { fingerprint, name: '', proxy: null }
-  if (remote !== undefined) {
-    // remove proxyId from profile if proxyId not in proxies
-    if (remote.proxy != null && (proxies.find(x => x._id === remote.proxy) != null)) remote.proxy = null
+  let proxyTab = 'none'
+
+  if (remote) {
     profile = merge(profile, remote)
+    if (!proxies.find(x => x._id === profile.proxy)) profile.proxy = proxies.length > 0 ? proxies[0]._id : null
+    else proxyTab = 'saved'
   }
 
-  // if (profile?.proxy && !(profile.proxy in proxies)) profile.proxy = null
-  // const proxyType = (profile != null) && profile.proxy ? 'saved' : 'none'
-  // const createProxy = { type: 'socks5' }
-
-  // if (store.proxy === null) store.proxy = proxies.length > 0 ? proxies[0]._id : null
-
+  const proxyCreate = { type: 'socks5' }
   const options = getOptions(proxies, variants)
-  const store = toString(profile)
-  const state: State = { profile, store, options }
-  return state
+  const store = Object.assign(toString(profile), { proxyTab, proxyCreate })
+  return { profile, store, options } as State
 }
 
 async function getSingleFingerprint (os: PossibleOS) {
@@ -97,13 +96,21 @@ function EditProfile () {
 
   async function submit (values: ProfileInForm) {
     values = toString(values)
-    console.log(values)
 
-    const data: iProfileBase = merge(values, {
+    if (values.proxyTab === 'none') merge(values, { proxy: null })
+    if (values.proxyTab === 'manual') merge(values, {
+      proxy: null,
+      proxyCreate: {
+        port: parseInt(values.proxyCreate.port, 10),
+      },
+    })
+
+    const os = values.fingerprint.os as PossibleOS
+    const profile = merge(values, {
       fingerprint: {
-        [values.fingerprint.os as PossibleOS]: {
-          cpu: parseInt(values.fingerprint.win.cpu, 10),
-          ram: parseInt(values.fingerprint.win.ram, 10),
+        [os]: {
+          cpu: parseInt(values.fingerprint[os].cpu, 10),
+          ram: parseInt(values.fingerprint[os].ram, 10),
         },
         noiseWebGl: values.fingerprint.noiseWebGl === 'true',
         noiseCanvas: values.fingerprint.noiseCanvas === 'true',
@@ -112,36 +119,15 @@ function EditProfile () {
         deviceMicrophones: parseInt(values.fingerprint.deviceMicrophones, 10),
         deviceSpeakers: parseInt(values.fingerprint.deviceSpeakers, 10),
       },
-    })
+    }) as iProfileBase
 
-    console.log(data)
-
-    // {
-    //   [values.fingerprint.os as PossibleOS]: {
-    //     cpu: parseInt(values.fingerprint.win.cpu, 10),
-    //     ram: parseInt(values.fingerprint.win.ram, 10),
-    //   },
-    //   // noiseWebGl: values.fingerprint.noiseWebGl === 'true',
-    //   noiseCanvas: values.fingerprint.noiseCanvas === 'true',
-    //   noiseAudio: values.fingerprint.noiseAudio === 'true',
-    //   deviceCameras: parseInt(values.fingerprint.deviceCameras, 10),
-    //   deviceMicrophones: parseInt(values.fingerprint.deviceMicrophones, 10),
-    //   deviceSpeakers: parseInt(values.fingerprint.deviceSpeakers, 10),
-    // }
-
-    // const proxyType = values.proxyType
-    // delete values.proxyType
-
-    // const proxy = proxyType === 'saved' ? values.proxy : null
-    // const createProxy = proxyType === 'manual' ? values.createProxy : null
-    // merge(values, { createProxy, proxy })
-
-    // const rep = await backend.profiles.save(profileId, values)
+    console.log(profile)
+    const rep = await backend.profiles.save(profile, profileId)
 
     // todo:
-    // if (!rep.success) return Notify.error('Profile not saved. Try again.')
-    // Notify.success('Profile saved!')
-    // router.replace('/profiles')
+    if (!rep.success) return Notify.error('Profile not saved. Try again.')
+    Notify.success('Profile saved!')
+    router.replace('/profiles')
   }
 
   function ref (name: string, useOS = false) {
@@ -159,14 +145,13 @@ function EditProfile () {
         </TabPane>
 
         <TabPane key="Connection" tab="Connection" forceRender={true}>
-          <ProxyFields prefix="proxy" />
-          {/* <FormRadio name="proxyType" label="Proxy" options={options.profileProxy} />
-          {profile.proxyType === 'manual' && (
-            <ProxyFields/>
+          <FormRadio name="proxyTab" label="Proxy" options={options.profileProxy} />
+          {store.proxyTab === 'manual' && (
+            <ProxyFields prefix="proxy" />
           )}
-          {profile.proxyType === 'saved' && (
+          {store.proxyTab === 'saved' && (
             <FormSelect name="proxy" options={options.proxies} placeholder="Tap to select" />
-          )} */}
+          )}
         </TabPane>
 
         <TabPane key="Navigator" tab="Navigator" forceRender={true}>
