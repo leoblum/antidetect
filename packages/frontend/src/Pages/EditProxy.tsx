@@ -6,9 +6,10 @@ import { FormButton, FormRadio, Cols, FormInput } from '@/components/FormItems'
 import { withFormLayout } from '@/components/layout'
 import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
-import { iProxyBase, iProxyProtocol } from '@/types'
+import { iProxyBase } from '@/types'
+import { toString, Stringify } from '@/utils/object'
 
-type Store = { [Key in keyof iProxyBase]: string } & { type: iProxyProtocol }
+type State = Stringify<iProxyBase>
 
 export function ProxyFields ({ prefix = '' }: { prefix?: string }) {
   const protocolOptions = { socks5: 'SOCKS5', http: 'HTTP' }
@@ -38,34 +39,25 @@ export function ProxyFields ({ prefix = '' }: { prefix?: string }) {
   )
 }
 
-function toString (obj: { [key: string]: any }) {
-  for (const [k, v] of Object.entries(obj)) {
-    obj[k] = v != null ? v.toString() : ''
-  }
-  return obj
-}
-
-async function getInitialStore (proxyId?: string) {
+async function getInitialState (proxyId?: string) {
   const proxy = { type: 'socks5' }
   if (proxyId != null) Object.assign(proxy, await backend.proxies.get(proxyId))
-  return toString(proxy) as Store
+  return toString(proxy) as State
 }
 
 function EditProxy () {
-  const [store, setStore] = useState<Store>()
+  const [state, setState] = useState<State>()
   const [form] = Form.useForm()
 
   const router = useRouter()
   const proxyId = router.params?.proxyId
 
-  useEffect(() => {
-    getInitialStore(proxyId).then(setStore).catch(console.error)
-  }, [proxyId])
+  useEffect(() => { getInitialState(proxyId).then(setState) }, [proxyId])
 
-  if (store == null) return <Skeleton active />
+  if (!state) return <Skeleton active />
 
-  async function onFinish (values: Store) {
-    const data: iProxyBase = { ...values, port: parseInt(values.port, 10) }
+  const submit = async (values: State) => {
+    const data = { ...toString(values), port: parseInt(values.port, 10) } as iProxyBase
     const rep = await backend.proxies.save(data, proxyId)
 
     // todo: put to wripper
@@ -75,7 +67,7 @@ function EditProxy () {
   }
 
   return (
-    <Form layout="vertical" form={form} initialValues={store} onFinish={onFinish}>
+    <Form layout="vertical" form={form} initialValues={state} onFinish={submit}>
       <ProxyFields />
 
       <Cols style={{ textAlign: 'right' }}>

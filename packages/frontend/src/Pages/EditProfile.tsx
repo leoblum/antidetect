@@ -95,7 +95,7 @@ function EditProfile () {
   useEffect(() => { getInitialState(profileId).then(setState) }, [profileId])
   useEffect(() => { (state !== undefined) && form.resetFields() }, [state?.profile.fingerprint.os])
 
-  if (state === undefined) return <Skeleton active />
+  if (!state) return <Skeleton active />
 
   const { store, options } = state
   const fp = store.fingerprint

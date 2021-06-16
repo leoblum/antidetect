@@ -1,5 +1,5 @@
 import { ReloadOutlined, DeleteOutlined, EditOutlined, MoreOutlined, CopyOutlined } from '@ant-design/icons'
-import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag } from 'antd'
+import { Table, Space, Button, Input, Dropdown, Menu, Typography, Tag, Divider } from 'antd'
 import { ColumnsType } from 'antd/es/table'
 import React, { useState } from 'react'
 
@@ -10,18 +10,32 @@ import ProxyIcon from '@/components/ProxyIcon'
 import { useRouter, useGetData } from '@/hooks'
 import { iProxy, Callback } from '@/types'
 
-function ProxyProtocol ({ proxy }: { proxy: iProxy }) {
-  return (
-    <Tag>{proxy.type}</Tag>
-  )
-}
+import { getSorter, filter } from './ListCommon'
 
-function ProxyAddress ({ proxy }: { proxy: iProxy }) {
-  return (<Typography.Text code>{proxy.host}:{proxy.port}</Typography.Text>)
-}
+const ProxyProtocol = ({ proxy }: { proxy: iProxy }) => (
+  <Tag>{proxy.type}</Tag>
+)
 
-function TableHeader ({ reload }: { reload: Callback }) {
+const ProxyAddress = ({ proxy }: { proxy: iProxy }) => (
+  <Typography.Text code>{proxy.host}:{proxy.port}</Typography.Text>
+)
+
+type TableHeaderProps = { selected: iProxy[], reload: Callback }
+const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   const router = useRouter()
+  const remove = () => {
+    const names = selected.map(x => x.name)
+    confirmDelete(names, async () => {
+      await backend.proxies.delete(selected.map(x => x._id))
+      reload()
+    })
+  }
+
+  const menu = (
+    <Menu style={{ minWidth: '100px' }}>
+      <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={remove}>Delete</Menu.Item>
+    </Menu>
+  )
 
   return (
     <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -29,6 +43,14 @@ function TableHeader ({ reload }: { reload: Callback }) {
         <Input.Search placeholder="Enter Name" onSearch={() => null} style={{ width: 200 }} />
       </Space>
       <Space>
+        {selected.length > 0 && (
+          <div>
+            <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+              <Button type="default">Bulk Actions</Button>
+            </Dropdown>
+            <Divider type="vertical" style={{ fontSize: '24px', top: 0, marginLeft: '16px' }} />
+          </div>
+        )}
         <Button type="primary" onClick={() => router.replace('/proxies/add')}>Create Proxy</Button>
         <Button type="default" onClick={reload} icon={<ReloadOutlined />} />
       </Space>
@@ -36,7 +58,7 @@ function TableHeader ({ reload }: { reload: Callback }) {
   )
 }
 
-function ItemActions ({ proxy, reload }: { proxy: iProxy, reload: Callback }) {
+const ItemActions = ({ proxy, reload }: { proxy: iProxy, reload: Callback }) => {
   const router = useRouter()
   const proxyId = proxy._id
   const names = [proxy].map(x => x.name)
@@ -67,13 +89,14 @@ function ItemActions ({ proxy, reload }: { proxy: iProxy, reload: Callback }) {
   )
 }
 
-function ListProxies () {
-  const [data, loading, reload] = useGetData(backend.proxies.list)
+const ListProxies = () => {
+  const [proxies, loading, reload] = useGetData(backend.proxies.list)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
   const columns: ColumnsType<iProxy> = [
     {
       title: 'Name',
+      sorter: getSorter('name'),
       dataIndex: 'name',
     },
     {
@@ -99,13 +122,16 @@ function ListProxies () {
   return (
     <Table
       rowKey="_id"
-      rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
-      dataSource={data}
+      rowSelection={{
+        selectedRowKeys,
+        onChange: s => setSelectedRowKeys(filter(proxies, s.map(x => x.toString())).map(x => x._id)),
+      }}
+      dataSource={proxies}
       columns={columns}
       pagination={{ defaultPageSize: 25, size: 'default' }}
       size="small"
       showSorterTooltip={false}
-      title={() => <TableHeader reload={reload} />}
+      title={() => <TableHeader reload={reload} selected={filter(proxies, selectedRowKeys)} />}
       loading={loading}
     ></Table>
   )

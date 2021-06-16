@@ -11,7 +11,7 @@ const emailItemProps = {
   name: 'email',
   rules: [
     { required: true, message: 'Please input your email!' },
-    // { type: 'email', message: 'The input is not valid email!' },
+    { type: 'email' as const, message: 'The input is not valid email!' },
   ],
 }
 
@@ -69,7 +69,7 @@ function SingUpForm () {
   }
 
   return (
-    <Form name="sign-up" initialValues={{ remember: true }} onFinish={onFinish} layout="vertical">
+    <Form name="sign-up" onFinish={onFinish} layout="vertical">
       <Divider>Create Account</Divider>
 
       <Form.Item {...emailItemProps}>
@@ -106,7 +106,7 @@ function ResetForm () {
   }
 
   return (
-    <Form name="reset-password" initialValues={{ remember: true }} onFinish={onFinish} layout="vertical">
+    <Form name="reset-password" onFinish={onFinish} layout="vertical">
       <Divider>Reset Password</Divider>
       <Typography.Text style={{ fontSize: '13px', textAlign: 'center', display: 'block', marginBottom: '12px' }}>
         Please provide your email address and we’ll send you instructions on how to change your password.

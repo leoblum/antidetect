@@ -1,43 +1,37 @@
 import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
-import { Table, Button, Space, Dropdown, Menu, Input } from 'antd'
+import { Table, Button, Space, Dropdown, Menu, Input, Divider } from 'antd'
 import { ColumnsType } from 'antd/es/table'
-import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import natsort from 'natsort'
 import React, { useState } from 'react'
 
 import backend from '@/backend'
 import { withBaseLayout } from '@/components/layout'
 import confirmDelete from '@/components/modals/confirmDelete'
+import ProxyIcon from '@/components/ProxyIcon'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
 import { Callback, iProfile, iProxy } from '@/types'
 
-function byKey (key: string, desc = false) {
-  const sorter = natsort({ desc })
-  return (a: any, b: any) => sorter(a[key], b[key])
-}
+import { getSorter, filter } from './ListCommon'
 
-function ProfileName ({ profile }: { profile: iProfile }) {
-  return (
-    <div>
-      <span style={{ marginRight: '6px' }}>
-        {profile.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
-      </span>
-      {profile.name}
-    </div>
-  )
-}
+const ProfileName = ({ profile }: { profile: iProfile }) => (
+  <div>
+    <span style={{ marginRight: '6px' }}>
+      {profile.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
+    </span>
+    {profile.name}
+  </div>
+)
 
-function LastActive ({ profile }: { profile: iProfile }) {
-  return (<TimeAgo date={profile.updatedAt} />)
-}
+const LastActive = ({ profile }: { profile: iProfile }) => (
+  <TimeAgo date={profile.updatedAt} />
+)
 
-function ProfileProxy ({ profile, proxies }: { profile: iProfile, proxies: iProxy[] }) {
+const ProfileProxy = ({ profile, proxies }: { profile: iProfile, proxies: iProxy[] }) => {
   const proxy = proxies.find(x => x._id === profile.proxy)
 
-  const name = (proxy != null) ? proxy.name : 'None'
-  const addr = (proxy != null) ? `${proxy.host}:${proxy.port}` : 'Direct Conection'
-  const flag = (proxy != null) ? (proxy.country !== null ? getUnicodeFlagIcon(proxy.country) : '🌍') : '🚫'
+  const name = proxy?.name ?? 'None'
+  const addr = proxy ? `${proxy.host}:${proxy.port}` : 'Direct Conection'
+  const flag = <ProxyIcon proxy={proxy} />
 
   // todo: do not forget change color of text when change theme
   return (
@@ -51,8 +45,22 @@ function ProfileProxy ({ profile, proxies }: { profile: iProfile, proxies: iProx
   )
 }
 
-function TableHeader ({ reload }: { reload: Callback }) {
+type TableHeaderProps = { selected: iProfile[], reload: Callback }
+const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   const router = useRouter()
+  const remove = () => {
+    const names = selected.map(x => x.name)
+    confirmDelete(names, async () => {
+      await backend.profiles.delete(selected.map(x => x._id))
+      reload()
+    })
+  }
+
+  const menu = (
+    <Menu style={{ minWidth: '100px' }}>
+      <Menu.Item key="delete" icon={<DeleteOutlined />} danger onClick={remove}>Delete</Menu.Item>
+    </Menu>
+  )
 
   return (
     <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -60,6 +68,14 @@ function TableHeader ({ reload }: { reload: Callback }) {
         <Input.Search placeholder="Enter Name" onSearch={() => null} style={{ width: 200 }} />
       </Space>
       <Space>
+        {selected.length > 0 && (
+          <div>
+            <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+              <Button type="default">Bulk Actions</Button>
+            </Dropdown>
+            <Divider type="vertical" style={{ fontSize: '24px', top: 0, marginLeft: '16px' }} />
+          </div>
+        )}
         <Button type="primary" onClick={() => router.replace('/profiles/add')}>Create Profile</Button>
         <Button type="default" onClick={reload} icon={<ReloadOutlined />} />
       </Space>
@@ -67,14 +83,14 @@ function TableHeader ({ reload }: { reload: Callback }) {
   )
 }
 
-function ItemActions ({ profile, reload }: { profile: iProfile, reload: () => void }) {
+const ItemActions = ({ profile, reload }: { profile: iProfile, reload: () => void }) => {
   const profileId = profile._id
   const router = useRouter()
   const names = [profile].map(x => x.name)
 
   const onEdit = () => router.replace(`/profiles/edit/${profileId}`)
   const onClone = () => console.log(`clone profile: ${profileId}`)
-  const onDelete = () => confirmDelete(names, async function () {
+  const onDelete = () => confirmDelete(names, async () => {
     await backend.profiles.delete([profileId])
     reload()
   })
@@ -99,17 +115,21 @@ function ItemActions ({ profile, reload }: { profile: iProfile, reload: () => vo
   )
 }
 
-interface StateData { profiles: iProfile[], proxies: iProxy[] }
-
-async function loadStateData (): Promise<StateData> {
-  const profiles = await backend.profiles.list()
-  const proxies = await backend.proxies.list()
+const loadStateData = async () => {
+  const [profiles, proxies] = await Promise.all([
+    await backend.profiles.list(),
+    await backend.proxies.list(),
+  ])
   return { profiles, proxies }
 }
 
-function ListProfiles () {
-  const [data, loading, reload] = useGetData(loadStateData)
+const ListProfiles = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
+  const [data, loading, reload] = useGetData(async () => {
+    const data = await loadStateData()
+    setSelectedRowKeys(filter(data.profiles, selectedRowKeys).map(x => x._id))
+    return data
+  })
 
   const profiles = data?.profiles
   const proxies = data?.proxies
@@ -117,12 +137,12 @@ function ListProfiles () {
   const columns: ColumnsType<iProfile> = [
     {
       title: 'Name',
-      sorter: byKey('name'),
+      sorter: getSorter('name'),
       render (profile) { return <ProfileName profile={profile} /> },
     },
     {
       title: 'Last Active',
-      sorter: byKey('updatedAt', true),
+      sorter: getSorter('updatedAt', true),
       defaultSortOrder: 'ascend',
       render (profile) { return <LastActive profile={profile} /> },
     },
@@ -140,13 +160,16 @@ function ListProfiles () {
   return (
     <Table
       rowKey="_id"
-      rowSelection={{ selectedRowKeys, onChange: keys => setSelectedRowKeys(keys.map(x => x.toString())) }}
+      rowSelection={{
+        selectedRowKeys,
+        onChange: s => setSelectedRowKeys(filter(profiles, s.map(x => x.toString())).map(x => x._id)),
+      }}
       dataSource={profiles}
       columns={columns}
       pagination={{ defaultPageSize: 25, size: 'default' }}
       size="small"
       showSorterTooltip={false}
-      title={() => <TableHeader reload={reload} />}
+      title={() => <TableHeader reload={reload} selected={filter(profiles, selectedRowKeys)} />}
       loading={loading}
     ></Table>
   )

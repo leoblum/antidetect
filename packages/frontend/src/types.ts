@@ -59,8 +59,8 @@ export type iProfileBase = {
 
 export type iProfile = iProfileBase & {
   _id: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
 export type iProxyProtocol = 'socks5' | 'http'

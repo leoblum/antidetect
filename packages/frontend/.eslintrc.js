@@ -14,6 +14,7 @@ module.exports = {
   },
   rules: {
     curly: 'off',
+    'no-template-curly-in-string': 'off',
     'comma-dangle': ['error', 'always-multiline'],
     'object-curly-spacing': ['error', 'always'],
     'import/no-unresolved': 'error',
