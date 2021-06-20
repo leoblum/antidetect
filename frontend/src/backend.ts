@@ -15,15 +15,9 @@ const http = axios.create({
 })
 
 export async function request ({ method, url, ...config }: FinalConfig): Promise<iApiReplay> {
-  try {
-    const data = (await http.request({ method, url, ...config })).data
-    console.info(`${method} ${url}`, config.data, data)
-    return data
-  } catch (e) {
-    const rep = e.response
-    const msg = rep.status < 500 ? rep.data : null
-    console.log(Object.entries(e))
-  }
+  const data = (await http.request({ method, url, ...config })).data
+  console.info(`${method} ${url}`, config.data, data)
+  return data
 }
 
 export async function get (url: string, config: Config = {}) {

@@ -6,13 +6,13 @@ const webpack = require('webpack')
 
 module.exports = {
   mode: 'development',
-  output: { publicPath: '/' },
   entry: './src/index.tsx',
+  output: { publicPath: '/' },
   module: {
     rules: [
       {
         test: /\.(ts|js)x?$/i,
-        exclude: /node_modules/,
+        include: /src/,
         use: ['babel-loader'],
       },
       {

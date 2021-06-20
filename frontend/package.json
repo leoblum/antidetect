@@ -11,25 +11,28 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.0-rc.0",
     "antd": "^4.16.2",
     "axios": "^0.21.1",
     "countries-and-timezones": "^2.4.0",
     "country-flag-icons": "^1.2.10",
+    "flat": "^5.0.2",
     "lodash": "^4.17.21",
     "natsort": "^2.0.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0",
-    "react-time-ago": "^6.2.2"
+    "react-time-ago": "^6.2.2",
+    "recoil": "^0.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.14.3",
     "@babel/preset-env": "^7.14.4",
     "@babel/preset-react": "^7.13.13",
     "@babel/preset-typescript": "^7.13.0",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
     "@types/countries-and-timezones": "^2.0.3",
     "@types/country-flag-icons": "^1.2.0",
+    "@types/flat": "^5.0.1",
     "@types/javascript-time-ago": "^2.0.2",
     "@types/lodash": "^4.14.170",
     "@types/react": "^17.0.9",
@@ -53,7 +56,6 @@
     "style-loader": "^2.0.0",
     "typescript": "^4.3.2",
     "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2",
-    "webpack-dev-server": "^3.11.2"
+    "webpack-cli": "^4.7.2"
   }
 }

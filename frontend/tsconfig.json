@@ -4,6 +4,7 @@
       "ESNext",
       "DOM"
     ],
+    "target": "ES5",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,

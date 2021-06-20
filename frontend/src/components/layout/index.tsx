@@ -26,11 +26,11 @@ const LayoutForm = ({ children }: LayoutProps) => (
   </LayoutBase>
 )
 
-function getDisplayName (Component: ComponentType, defaultName: string) {
+const getDisplayName = (Component: ComponentType, defaultName: string) => {
   return Component?.displayName ?? Component?.name ?? defaultName
 }
 
-export function withLayout (Component: ComponentType, Layout: ComponentType) {
+export const withLayout = (Component: ComponentType, Layout: ComponentType) => {
   const ComponentWithLayout = () => (
     <Layout>
       <Component />

@@ -9,6 +9,7 @@ import confirmDelete from '@/components/modals/confirmDelete'
 import ProxyIcon from '@/components/ProxyIcon'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
+import native from '@/native-api'
 import { Callback, iProfile, iProxy } from '@/types'
 
 import { getSorter, filter } from './ListCommon'
@@ -83,6 +84,18 @@ const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   )
 }
 
+const StartButton = () => {
+  // const onStart = () => native.init()
+  const [loading, setLoading] = useState(false)
+  const onStart = () => setLoading(true)
+
+  return (
+    <Button type="primary" icon={<CaretRightOutlined />} onClick={onStart} loading={loading}>
+      {loading ? 'Loading' : 'Run'}
+    </Button>
+  )
+}
+
 const ItemActions = ({ profile, reload }: { profile: iProfile, reload: () => void }) => {
   const profileId = profile._id
   const router = useRouter()
@@ -107,7 +120,7 @@ const ItemActions = ({ profile, reload }: { profile: iProfile, reload: () => voi
 
   return (
     <Space>
-      <Button type="primary" icon={<CaretRightOutlined />}>Run</Button>
+      <StartButton />
       <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
         <Button icon={<MoreOutlined />} />
       </Dropdown>

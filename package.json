@@ -6,12 +6,9 @@
     "test": "lerna run test --stream",
     "lint": "lerna run lint --stream",
     "lint:fix": "lerna run lint:fix --stream",
-    "cloc": "cloc --exclude-dir=.idea,node_modules --not-match-f='(package.json|package-lock.json)' ."
+    "loc": "loc --exclude '(json|html|txt|md|markdown|xml|yml|yaml)$'"
   },
   "devDependencies": {
     "lerna": "^4.0.0"
-  },
-  "dependencies": {
-    "flat": "^5.0.2"
   }
 }
