@@ -1,7 +1,10 @@
-import { ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined, EditOutlined, CopyOutlined, DeleteOutlined } from '@ant-design/icons'
+import {
+  ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined,
+  EditOutlined, CopyOutlined, DeleteOutlined, PoweroffOutlined,
+} from '@ant-design/icons'
 import { Table, Button, Space, Dropdown, Menu, Input, Divider } from 'antd'
 import { ColumnsType } from 'antd/es/table'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import backend from '@/backend'
 import { withBaseLayout } from '@/components/layout'
@@ -84,14 +87,26 @@ const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   )
 }
 
-const StartButton = () => {
-  // const onStart = () => native.init()
+const StartButton = ({ profile }: { profile: iProfile }) => {
   const [loading, setLoading] = useState(false)
-  const onStart = () => setLoading(true)
+  useEffect(() => {
+    setLoading(false)
+  }, [profile])
+
+  const onClick = async () => {
+    setLoading(true)
+    await native.chrome_start(profile._id)
+  }
+
+  const danger = false
 
   return (
-    <Button type="primary" icon={<CaretRightOutlined />} onClick={onStart} loading={loading}>
-      {loading ? 'Loading' : 'Run'}
+    <Button
+      type="primary" onClick={onClick} loading={loading}
+      icon={profile.isActive ? <PoweroffOutlined /> : <CaretRightOutlined />}
+      danger={danger}
+    >
+      Run
     </Button>
   )
 }
@@ -120,7 +135,7 @@ const ItemActions = ({ profile, reload }: { profile: iProfile, reload: () => voi
 
   return (
     <Space>
-      <StartButton />
+      <StartButton profile={profile} />
       <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
         <Button icon={<MoreOutlined />} />
       </Dropdown>

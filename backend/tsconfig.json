@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext"],
     "target": "es2016",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -13,11 +13,10 @@
     "strictNullChecks": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     },
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }

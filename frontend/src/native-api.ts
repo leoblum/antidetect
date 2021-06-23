@@ -1,3 +1,5 @@
+window.addEventListener('pywebviewready', () => console.log(12))
+
 declare global {
   interface Window {
     pywebview: {
@@ -6,16 +8,9 @@ declare global {
   }
 }
 
-window.addEventListener('pywebviewready', () => console.log(12))
+export default {
+  get api () { return window?.pywebview?.api },
 
-const api = {
-  get api () {
-    return window?.pywebview?.api ?? {}
-  },
-
-  async init () {
-    console.log(await this.api.init(12))
-  },
+  async chrome_start (profileId: string) { return await this.api.chrome_start(profileId) },
+  async chrome_stop (profileId: string) { return await this.api.chrome_stop(profileId) },
 }
-
-export default api

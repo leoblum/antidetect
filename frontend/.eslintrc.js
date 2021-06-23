@@ -3,11 +3,7 @@
 
 module.exports = {
   root: true,
-  extends: [
-    'standard',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
-  ],
+  extends: ['standard', 'plugin:react/recommended', 'plugin:react-hooks/recommended'],
   settings: {
     react: { version: 'detect' },
     'import/resolver': { alias: { map: [['@', './src']], extensions: ['.js', '.jsx', '.ts', '.tsx'] } },

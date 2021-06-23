@@ -1,0 +1,65 @@
+export type OS = 'win' | 'mac'
+export type ProxyProtocol = 'http' | 'socks5'
+
+export type MongoDefaults = {
+  _id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type OSFingerprint = {
+  cpu: number
+  ram: number
+  screen: string
+  render: string
+  userAgent: string
+}
+
+export type Fingerprint = {
+  os: OS
+  win: OSFingerprint
+  mac: OSFingerprint
+  noiseWebGl: boolean
+  noiseCanvas: boolean
+  noiseAudio: boolean
+  deviceCameras: number
+  deviceMicrophones: number
+  deviceSpeakers: number
+  languages: { mode: string; value: string }
+  timezone: { mode: string; value: string }
+  geolocation: { mode: string }
+}
+
+export type ProxyBase = {
+  name: string
+  type: ProxyProtocol
+  host: string
+  port: number
+  username: string
+  password: string
+}
+
+export type ProxyUpdate = Partial<ProxyBase> & {
+  _id?: string
+}
+
+export type Proxy = ProxyBase & MongoDefaults & {
+  country: string | null
+}
+
+export type ProfileBase = {
+  name: string
+  fingerprint: Fingerprint
+  proxy: string | null
+}
+
+export type ProfileUpdate = Partial<Omit<ProfileBase, 'fingerprint'>> & {
+  _id?: string
+  fingerprint?: Partial<Fingerprint>
+  proxyCreate?: ProxyBase
+}
+
+export type Profile = ProfileBase & MongoDefaults & {
+  isActive: boolean
+  currentUser: string
+}
