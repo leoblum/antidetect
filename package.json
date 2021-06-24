@@ -9,6 +9,11 @@
     "loc": "loc --exclude '(json|html|txt|md|markdown|xml|yml|yaml)$'"
   },
   "devDependencies": {
+    "bson-schema-to-typescript": "^0.0.26",
+    "dotenv": "^10.0.0",
     "lerna": "^4.0.0"
+  },
+  "dependencies": {
+    "flat": "^5.0.2"
   }
 }

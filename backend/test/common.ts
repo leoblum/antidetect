@@ -1,10 +1,13 @@
-import { FastifyInstance } from 'fastify'
+import chai from 'chai'
+import chaiAsPromised from 'chai-as-promised'
+import type { FastifyInstance } from 'fastify'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 
 import buildApp from '@/app'
 import config from '@/config'
-import { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
+import type { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
+chai.use(chaiAsPromised)
 
 const ObjectId = mongoose.Types.ObjectId
 
@@ -27,7 +30,7 @@ export function createClient () {
     const headers = { ...DefaultHeaders, ...opts.headers }
     const rep = await app.inject({ ...opts, method, url, headers })
     Object.defineProperty(rep, 'data', { get: () => rep.json() })
-    // if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.json()))
+    if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.json()))
     return rep
   }
 

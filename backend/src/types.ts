@@ -7,6 +7,15 @@ export type MongoDefaults = {
   updatedAt: Date
 }
 
+export type Team = {
+  name: string
+}
+
+export type LinkToken = {
+  user: string
+  action: 'create' | 'reset'
+}
+
 export type OSFingerprint = {
   cpu: number
   ram: number

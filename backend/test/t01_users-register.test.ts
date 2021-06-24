@@ -33,13 +33,12 @@ describe('users registration', function () {
   })
 
   it('should be error on wrong email format', async function () {
-    let rep = null
+    const rep = null
 
     const wrongEmails = [12124124, true, null, { a: 1, b: 2 }, 'asfasfasfa']
     for (const email of wrongEmails) {
       // @ts-expect-error test wrong email types
-      rep = await api.users.create(email, password)
-      expect(rep.statusCode).to.equal(400)
+      await expect(api.users.create(email, password)).to.be.rejected
     }
   })
 })

@@ -1,58 +1,236 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import fp from 'fastify-plugin'
-import type { FromSchema } from 'json-schema-to-ts'
+import bcrypt from 'bcrypt'
 
-import { users } from './models'
+import { pubHandler, pvtHandler } from './abc'
+import { UserModel, TeamModel, ProxyModel, createOrUpdate, ProfileModel, existsById } from './models'
+import fingerprints from './~fingerprints.json'
 
-type Func<B, P> = (req: FastifyRequest<{ Body: FromSchema<B>, Params: FromSchema<P> }>, rep: FastifyReply) => void
-type Opts<B, P> = { body?: B, params?: P }
-
-const router = (srv: FastifyInstance) => {
-  const req = async <B, P>(method: 'GET' | 'POST', url: string, handler: Func<B, P>, opts?: Opts<B, P>) => {
-    const schema = { body: opts?.body, params: opts?.params }
-    return srv.route({ method, url, handler, schema })
-  }
-
-  const get = async <B, P>(url: string, handler: Func<B, P>, opts?: Opts<B, P>) => req('GET', url, handler, opts)
-  const post = async <B, P>(url: string, handler: Func<B, P>, opts?: Opts<B, P>) => req('POST', url, handler, opts)
-
-  return { get, post }
+const S = <T>(properties: T) => {
+  const required = Object.keys(properties) as Array<keyof T>
+  return { type: 'object', properties, required, additionalProperties: false } as const
 }
 
-const UserCreate = {
-  type: 'object',
-  properties: {
-    email: { type: 'string', format: 'email' },
-    password: { type: 'string' },
-  },
-  required: ['email', 'password'],
-  additionalProperties: false,
-} as const
+function randomChoice<T> (arr: T[]) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
 
-const UserParams = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-  },
-  required: ['id'],
-  additionalProperties: false,
-} as const
+function randomHardware (os: 'win' | 'mac') {
+  const values = fingerprints[os]
 
-export default fp(async (srv) => {
-  const { get, post } = router(srv)
+  return {
+    userAgent: randomChoice(values.ua),
+    screen: randomChoice(values.screen),
+    cpu: randomChoice(values.cpu),
+    ram: randomChoice(values.ram),
+    renderer: randomChoice(values.renderer),
+  }
+}
 
-  // Create new user
-  post('/users', async (req, rep) => {
-    const email = req.body.email
-    const password = await bcrypt.hash(req.body.password, 10)
+// async function sendConfirmationLink (user: typeof UserModel) {
+// const token = await LinkTokenModel.create({ user, action: 'create' })
+// await mailer.confirmEmail({ email: user.email, token: token._id })
+// }
 
-    if (await users.coll.findOne({ email })) return
+const UsersCreate = S({
+  email: { type: 'string', format: 'email' },
+  password: { type: 'string' },
+} as const)
 
-    const createdAt = new Date()
-    const updatedAt = new Date()
+const UsersAuth = S({
+  email: { type: 'string', format: 'email' },
+  password: { type: 'string' },
+} as const)
 
-    const user = await users.coll.insertOne({ email, password, createdAt, updatedAt })
+const UsersCheckEmail = S({
+  email: { type: 'string', format: 'email' },
+} as const)
 
-    // if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 412)
-  }, { body: UserCreate })
+const UsersResetPassword = S({
+  email: { type: 'string', format: 'email' },
+} as const)
+
+const UsersConfirmEmail = S({
+  email: { type: 'string', format: 'email' },
+} as const)
+
+const ProxyUpdate = S({
+  name: { type: 'string' },
+  type: { type: 'string' },
+  host: { type: 'string' },
+  port: { type: 'number' },
+  username: { type: 'string' },
+  password: { type: 'string' },
+} as const)
+
+const ProxyDelete = S({
+  ids: { type: 'array', items: { type: 'string' } },
+} as const)
+
+const ProxyGetParams = S({
+  proxyId: { type: 'string' },
+} as const)
+
+const Fingerprint = S({
+
+} as const)
+
+const ProfileUpdate = S({
+  name: { type: 'string' },
+  proxy: { type: ['string', 'null'] },
+  proxyCreate: { anyOf: [ProxyUpdate, { type: 'null' }] },
+  fingerprint: Fingerprint,
+} as const)
+
+const ProfileDelete = S({
+  ids: { type: 'array', items: { type: 'string' } },
+} as const)
+
+const ProfileGetParams = S({
+  profileId: { type: 'string' },
+} as const)
+
+export const usersCreate = pubHandler({ body: UsersCreate }, async (req, rep) => {
+  const email = req.body.email
+  const password = await bcrypt.hash(req.body.password, 10)
+
+  if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 412)
+
+  const team = await TeamModel.create({ name: email })
+  const user = await UserModel.create({ email, password, team })
+  // await sendConfirmationLink(user)
+  return rep.done({ message: 'confirmation_link_sent' }, 201)
+})
+
+export const usersAuth = pubHandler({ body: UsersAuth }, async (req, rep) => {
+  const { email, password } = req.body
+
+  const user = await UserModel.findOne({ email })
+  if (!user) return rep.fail('user_not_found', 401)
+  if (!user.emailConfirmed) return rep.fail('email_not_confirmed', 401)
+  if (!await bcrypt.compare(password, user.password)) return rep.fail('wrong_password', 401)
+
+  const token = await rep.jwtSign({ user: user._id, team: user.team })
+  return rep.done({ token })
+})
+
+export const usersCheckEmail = pubHandler({ body: UsersCheckEmail }, async (req, rep) => {
+  const user = await UserModel.findOne({ email: req.body.email })
+  const exists = user !== null
+  return rep.done({ exists })
+})
+
+export const usersResetPassword = pubHandler({ body: UsersResetPassword }, async (req, rep) => {
+  // const email = req.body.email
+  return rep.done({ message: 'reset_link_sent' })
+})
+
+export const usersConfirmEmail = pubHandler({ body: UsersConfirmEmail }, async (req, rep) => {
+  const email = req.body.email
+
+  const user = await UserModel.findOne({ email })
+  if (!user) return rep.fail('user_not_found', 409)
+  if (user.emailConfirmed) return rep.fail('email_already_confirmed', 409)
+
+  user.emailConfirmed = true
+  await user.save()
+  return rep.done()
+})
+
+export const usersCheckToken = pvtHandler(null, async (req, rep) => {
+  return rep.done()
+})
+
+export const fingerprintGet = pvtHandler(null, async (req, rep) => {
+  const acceptLanguage = (req.headers['accept-language'] || '')
+    .split(',').map(x => x.split(';')[0]).filter(x => x.length > 0).join(',') || null
+
+  const fingerprint = {
+    os: randomChoice(['win', 'mac']),
+
+    win: randomHardware('win'),
+    mac: randomHardware('mac'),
+
+    noiseWebGl: true,
+    noiseCanvas: false,
+    noiseAudio: true,
+
+    deviceCameras: 1,
+    deviceMicrophones: 1,
+    deviceSpeakers: 1,
+
+    languages: { mode: 'ip', value: acceptLanguage },
+    timezone: { mode: 'ip' },
+    geolocation: { mode: 'ip' },
+  }
+
+  return rep.done({ fingerprint })
+})
+
+export const fingerprintOptions = pvtHandler(null, async (req, rep) => {
+  return rep.done(fingerprints)
+})
+
+export const proxyGetAll = pvtHandler(null, async (req, rep) => {
+  const proxies = await ProxyModel.find({ team: req.user.team })
+  return rep.done({ proxies })
+})
+
+export const proxyGet = pvtHandler({ params: ProxyGetParams }, async (req, rep) => {
+  const proxy = await ProxyModel.findById(req.params.proxyId)
+  return proxy ? rep.done({ proxy }) : rep.fail('not_found', 404)
+})
+
+export const proxyUpdate = pvtHandler({ body: ProxyUpdate }, async (req, rep) => {
+  const { team } = req.user
+  console.log(req.body)
+  const proxy = await createOrUpdate(ProxyModel, { team, ...req.body })
+  return rep.done({ proxy })
+})
+
+export const proxyDelete = pvtHandler({ body: ProxyDelete }, async (req, rep) => {
+  const { ids } = req.body
+  try {
+    await Promise.all(ids.map(id => ProxyModel.findByIdAndRemove(id)))
+  } catch (e) {}
+  return rep.done()
+})
+
+export const profileGetAll = pvtHandler(null, async (req, rep) => {
+  const { team } = req.user
+  const profiles = await ProfileModel.find({ team })
+  return rep.done({ profiles })
+})
+
+export const profileGet = pvtHandler({ params: ProfileGetParams }, async (req, rep) => {
+  const profile = await ProfileModel.findById(req.params.profileId)
+  return profile ? rep.done({ profile }) : rep.fail('not_found', 404)
+})
+
+export const profileUpdate = pvtHandler({ body: ProfileUpdate }, async (req, rep) => {
+  const { team } = req.user
+
+  const validateProxy = async (proxyId: string | null) => {
+    if (!proxyId || !proxyId.length) return null
+    return await existsById(ProxyModel, proxyId) ? proxyId : null
+  }
+
+  req.body.proxy = await validateProxy(req.body.proxy)
+
+  if (req.body.proxyCreate) {
+    const { proxyCreate } = req.body
+    req.body.proxyCreate = null
+
+    const proxy = await ProxyModel.create({ ...proxyCreate, team })
+    req.body.proxy = proxy._id.toString()
+  }
+
+  const profile = await createOrUpdate(ProfileModel, { team, ...req.body })
+  return rep.done({ profile })
+})
+
+export const profileDelete = pvtHandler({ body: ProfileDelete }, async (req, rep) => {
+  const { ids } = req.body
+  try {
+    await Promise.all(ids.map(id => ProfileModel.findByIdAndRemove(id)))
+  } catch (e) {}
+  return rep.done()
 })

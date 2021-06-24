@@ -1,23 +1,24 @@
 import fp from 'fastify-plugin'
-import mongo from 'mongodb'
+import mongoose from 'mongoose'
 
-let client: mongo.MongoClient
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: any
+  }
+}
 
 type Options = { uri: string }
 export default fp<Options>(async (srv, opts) => {
-  client = await mongo.connect(opts.uri, { useUnifiedTopology: true })
-  srv.addHook('onClose', async () => await client.close())
+  const instance = await mongoose.connect(opts.uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    serverSelectionTimeoutMS: 3000,
+    // returnOriginal: false,
+  })
+
+  srv.decorate('db', instance.connection)
+  srv.decorate('mongoose', instance)
+  srv.addHook('onClose', async () => await instance.disconnect())
 })
-
-export const createModel = <T>(name: string) => {
-  return {
-    get coll () {
-      return client.db().collection<T>(name)
-    },
-
-    async create (doc: T) {
-      // @ts-expect-error todo:
-      return await this.coll.insertOne(doc)
-    },
-  }
-}
