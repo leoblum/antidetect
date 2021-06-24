@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 
-import { Profile, Proxy, createOrUpdate, existsById } from './../models'
+import { Profile, Proxy, createOrUpdate, existsById } from '../_models'
+
 import { get, post } from './abc'
 import { ProxyUpdate } from './proxies'
 

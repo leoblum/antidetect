@@ -25,9 +25,10 @@ module.exports = {
     extends: ['plugin:@typescript-eslint/recommended'],
     rules: {
       '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
 
       indent: 'off',
       '@typescript-eslint/indent': ['error', 2],

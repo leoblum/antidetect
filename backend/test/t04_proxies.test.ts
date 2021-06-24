@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient, fill, blankId, invalidId } from './common'
+import { createClient, blankId, invalidId } from './common'
 import { Proxy } from '@/types'
 
 const PROXY = { name: '1234', type: 'http' as const, host: 'localhost', port: 8080, username: 'user', password: 'pass' }

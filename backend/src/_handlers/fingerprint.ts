@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 
-import fingerprints from './../data/fingerprints.json'
+import fingerprints from '../data/fingerprints.json'
+
 import { get } from './abc'
 
 function randomChoice<T> (arr: T[]) {

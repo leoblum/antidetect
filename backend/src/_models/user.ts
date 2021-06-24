@@ -1,11 +1,6 @@
 import { Schema, model } from 'mongoose'
 
-type User = {
-  team: string
-  email: string
-  password: string
-  emailConfirmed: boolean,
-}
+import type { User } from '@/types'
 
 const schema = new Schema<User>({
   team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
@@ -14,4 +9,9 @@ const schema = new Schema<User>({
   emailConfirmed: { type: Boolean, required: true, default: false },
 }, { timestamps: true })
 
-export default model<User>('User', schema)
+export const UserModel = model<User>('User', schema)
+
+// async function func () {
+// let u1 = await UserModel.findById()
+// u1.
+// }

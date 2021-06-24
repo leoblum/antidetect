@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 
-import { Proxy, createOrUpdate } from './../models'
+import { Proxy, createOrUpdate } from '../_models'
+
 import { get, post } from './abc'
 
 export const ProxyUpdate = {

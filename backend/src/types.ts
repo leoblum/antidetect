@@ -63,3 +63,12 @@ export type Profile = ProfileBase & MongoDefaults & {
   isActive: boolean
   currentUser: string
 }
+
+export type UserBase = {
+  team: string
+  email: string
+  password: string
+  emailConfirmed: boolean
+}
+
+export type User = UserBase & MongoDefaults

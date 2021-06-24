@@ -13,4 +13,5 @@ const schema = new Schema<Proxy>({
   country: { type: String, default: null },
 }, { timestamps: true })
 
-export default model<Proxy>('Proxy', schema)
+const Proxy = model<Proxy>('Proxy', schema)
+export { Proxy }

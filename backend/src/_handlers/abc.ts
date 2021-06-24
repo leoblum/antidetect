@@ -1,5 +1,5 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { FromSchema } from 'json-schema-to-ts'
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import type { FromSchema } from 'json-schema-to-ts'
 
 type CB<T> = (req: FastifyRequest<{ Body: FromSchema<T> }>, rep: FastifyReply) => void
 
@@ -7,7 +7,7 @@ async function checkAuth (req: FastifyRequest, rep: FastifyReply) {
   try {
     await req.jwtVerify()
   } catch (e) {
-    return rep.fail(401, 'invalid_auth_header')
+    return rep.fail('invalid_auth_header', 401)
   }
 }
 

@@ -12,6 +12,7 @@
     "fastify-jwt": "^2.4.0",
     "fastify-plugin": "^3.0.0",
     "flat": "^5.0.2",
+    "mongodb": "^3.6.9",
     "mongoose": "^5.12.8",
     "nodemailer": "^6.6.0"
   },

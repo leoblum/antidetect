@@ -10,4 +10,5 @@ const schema = new Schema<LinkToken>({
   action: { type: String, enum: ['create', 'reset'], required: true },
 }, { timestamps: true })
 
-export default model<LinkToken>('LinkToken', schema)
+const LinkToken = model<LinkToken>('LinkToken', schema)
+export { LinkToken }

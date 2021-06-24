@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
 import fp from 'fastify-plugin'
 
-import mailer from '@/mailer'
-import { User, Team, LinkToken } from '@/models'
+import mailer from '@/_mailer'
+import { UserModel, TeamModel, LinkToken } from '@/_models'
 
 import { get, post } from './abc'
 
@@ -26,7 +26,7 @@ const CheckEmail = {
 const UserLogin = UserCreate
 const ConfirmEmail = CheckEmail
 
-async function sendConfirmationLink (user) {
+async function sendConfirmationLink (user: User) {
   const token = await LinkToken.create({ user, action: 'create' })
   await mailer.confirmEmail({ email: user.email, token: token._id })
 }
@@ -36,16 +36,16 @@ export default fp(async srv => {
     const email = req.body.email
     const password = await bcrypt.hash(req.body.password, 10)
 
-    if (await User.findOne({ email })) return rep.fail(412, 'email_already_used')
+    if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 412)
 
     const team = await Team.create({ name: email })
-    const user = await User.create({ email, password, team })
+    const user = await UserModel.create({ email, password, team })
     await sendConfirmationLink(user)
-    return rep.done(201, { message: 'confirmation_link_sent' })
+    return rep.done({ message: 'confirmation_link_sent' }, 201)
   })
 
   post(srv, '/users/checkEmail', CheckEmail, async (req, rep) => {
-    const user = await User.findOne({ email: req.body.email })
+    const user = await UserModel.findOne({ email: req.body.email })
     const exists = user !== null
     return rep.done({ exists })
   })
@@ -53,10 +53,10 @@ export default fp(async srv => {
   post(srv, '/users/login', UserLogin, async (req, rep) => {
     const { email, password } = req.body
 
-    const user = await User.findOne({ email })
-    if (!user) return rep.fail(401, 'user_not_found')
-    if (!user.emailConfirmed) return rep.fail(401, 'email_not_confirmed')
-    if (!await bcrypt.compare(password, user.password)) return rep.fail(401, 'wrong_password')
+    const user = await UserModel.findOne({ email })
+    if (!user) return rep.fail('user_not_found', 401)
+    if (!user.emailConfirmed) return rep.fail('email_not_confirmed', 401)
+    if (!await bcrypt.compare(password, user.password)) return rep.fail('wrong_password', 401)
 
     const token = await rep.jwtSign({
       user: user._id,
@@ -74,9 +74,9 @@ export default fp(async srv => {
   post(srv, '/users/confirmEmail', ConfirmEmail, async (req, rep) => {
     const email = req.body.email
 
-    const user = await User.findOne({ email })
-    if (!user) return rep.fail(409, 'user_not_found')
-    if (user.emailConfirmed) return rep.fail(409, 'email_already_confirmed')
+    const user = await UserModel.findOne({ email })
+    if (!user) return rep.fail('user_not_found', 409)
+    if (user.emailConfirmed) return rep.fail('email_already_confirmed', 409)
 
     user.emailConfirmed = true
     await user.save()

@@ -1,12 +1,10 @@
 import flat from 'flat'
 
-import LinkToken from './link-token'
-import Profile from './profile'
-import Proxy from './proxy'
-import Team from './team'
-import User from './user'
-
-export { Proxy, LinkToken, Team, User, Profile }
+export { LinkToken } from './link-token'
+export { Profile } from './profile'
+export { Proxy } from './proxy'
+export { TeamModel } from './team'
+export { UserModel } from './user'
 
 export async function createOrUpdate (Model, fields) {
   const { _id } = fields

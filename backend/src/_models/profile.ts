@@ -34,4 +34,5 @@ const schema = new Schema<Profile>({
   },
 }, { timestamps: true })
 
-export default model<Profile>('Profile', schema)
+const Profile = model<Profile>('Profile', schema)
+export { Profile }
