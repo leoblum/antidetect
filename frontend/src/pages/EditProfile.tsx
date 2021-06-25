@@ -10,17 +10,19 @@ import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTe
 import { withFormLayout } from '@/components/layout'
 import Notify from '@/components/Notify'
 import { useRouter } from '@/hooks'
-import { iFingerprintOptions, iProfileBase, iProxy, iProxyBase, PossibleOS } from '@/types'
+import { ApiFingerprintOptions, Proxy, ProxyBase, OS, ProfileBase, Profile, ProfileUpdate2 } from '@/types'
 import { toString, arrToObj, Stringify, entries } from '@/utils/object'
+
+import { ProxyProtocol } from '../../../backend/src/types'
 
 import { ProxyFields } from './EditProxy'
 
-type ProfileInForm = Stringify<iProfileBase> & {
+type ProfileInForm = Stringify<Profile> & {
   proxyTab: string
-  proxyCreate: Stringify<iProxyBase>
+  proxyCreate: Stringify<ProxyBase>
 }
 type State = {
-  profile: iProfileBase
+  profile: Profile
   store: ProfileInForm
   options: any
   activeKey: string | undefined
@@ -35,7 +37,7 @@ function getTimezones () {
   return timezones
 }
 
-function getOptions (p: iProxy[], opts: iFingerprintOptions) {
+function getOptions (p: Proxy[], opts: ApiFingerprintOptions) {
   const ip = { ip: 'Bases on IP', manual: 'Manual' }
   const os = { win: 'Windows', mac: 'MacOS' }
   const profileProxy = { none: 'No Proxy', saved: 'From List', manual: 'Manual' }
@@ -44,7 +46,7 @@ function getOptions (p: iProxy[], opts: iFingerprintOptions) {
   const proxies = arrToObj(p, x => [x._id, x.name])
   const timezones = arrToObj(getTimezones(), x => [x.name, `(${x.utcOffsetStr}) ${x.name}`])
 
-  type T = iFingerprintOptions
+  type T = ApiFingerprintOptions
   const variants = {} as { [K in keyof T]: { [J in keyof T[K]]: Record<string, string> } }
   for (const [os, values] of entries(opts)) {
     variants[os] = {} as any // todo: ???
@@ -65,7 +67,7 @@ const getInitialState = async (profileId?: string) => {
     backend.proxies.list(),
   ])
 
-  let profile: iProfileBase = { fingerprint, name: '', proxy: null }
+  let profile: ProfileBase = { fingerprint, name: '', proxy: null }
   let proxyTab = 'none'
 
   if (remote) {
@@ -80,7 +82,7 @@ const getInitialState = async (profileId?: string) => {
   return { profile, store, options } as State
 }
 
-async function getSingleFingerprint (os: PossibleOS) {
+async function getSingleFingerprint (os: OS) {
   const data = await backend.fingerprint.get()
   return { fingerprint: { [os]: data[os] } }
 }
@@ -99,7 +101,7 @@ function EditProfile () {
 
   const { store, options } = state
   const fp = store.fingerprint
-  const os = fp.os as PossibleOS
+  const os = fp.os as OS
   const variants = options.variants[os]
 
   const randomize = async () => form.setFieldsValue(await getSingleFingerprint(os))
@@ -120,29 +122,45 @@ function EditProfile () {
   const submit = async (values: ProfileInForm) => {
     values = toString(values)
 
-    if (values.proxyTab === 'none') merge(values, { proxy: null })
-    if (values.proxyTab === 'manual') merge(values, {
-      proxy: null,
-      proxyCreate: {
-        port: parseInt(values.proxyCreate.port, 10),
-      },
-    })
+    let proxy: ProxyBase | null | string = values.proxy
+    if (values.proxyTab === 'none') proxy = null
+    if (values.proxyTab === 'manual') proxy = {
+      name: values.proxyCreate.name,
+      type: values.proxyCreate.type as ProxyProtocol,
+      host: values.proxyCreate.host,
+      port: parseInt(values.proxyCreate.port, 10),
+      username: values.proxyCreate.username,
+      password: values.proxyCreate.password,
+    }
 
-    const os = values.fingerprint.os as PossibleOS
-    const profile = merge(values, {
+    const osFields = (os: OS) => (values.fingerprint[os]
+      ? {
+        cpu: parseInt(values.fingerprint[os].cpu, 10),
+        ram: parseInt(values.fingerprint[os].ram, 10),
+        screen: values.fingerprint[os].screen,
+        render: values.fingerprint[os].render,
+        userAgent: values.fingerprint[os].userAgent,
+      }
+      : null)
+
+    const profile: ProfileUpdate2 = {
+      name: values.name,
       fingerprint: {
-        [os]: {
-          cpu: parseInt(values.fingerprint[os].cpu, 10),
-          ram: parseInt(values.fingerprint[os].ram, 10),
-        },
+        os: values.fingerprint.os as OS,
+        win: osFields('win'),
+        mac: osFields('mac'),
         noiseWebGl: values.fingerprint.noiseWebGl === 'true',
         noiseCanvas: values.fingerprint.noiseCanvas === 'true',
         noiseAudio: values.fingerprint.noiseAudio === 'true',
         deviceCameras: parseInt(values.fingerprint.deviceCameras, 10),
         deviceMicrophones: parseInt(values.fingerprint.deviceMicrophones, 10),
         deviceSpeakers: parseInt(values.fingerprint.deviceSpeakers, 10),
+        languages: values.fingerprint.languages,
+        timezone: values.fingerprint.languages,
+        geolocation: values.fingerprint.languages,
       },
-    }) as iProfileBase
+      proxy,
+    }
 
     console.log(profile)
     const rep = await backend.profiles.save(profile, profileId)

@@ -13,7 +13,7 @@ import ProxyIcon from '@/components/ProxyIcon'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
 import native from '@/native-api'
-import { Callback, iProfile, iProxy } from '@/types'
+import { Callback, iProfile, Proxy } from '@/types'
 
 import { getSorter, filter } from './ListCommon'
 
@@ -30,7 +30,7 @@ const LastActive = ({ profile }: { profile: iProfile }) => (
   <TimeAgo date={profile.updatedAt} />
 )
 
-const ProfileProxy = ({ profile, proxies }: { profile: iProfile, proxies: iProxy[] }) => {
+const ProfileProxy = ({ profile, proxies }: { profile: iProfile, proxies: Proxy[] }) => {
   const proxy = proxies.find(x => x._id === profile.proxy)
 
   const name = proxy?.name ?? 'None'
@@ -176,7 +176,7 @@ const ListProfiles = () => {
     },
     {
       title: 'Proxy',
-      render (profile) { return <ProfileProxy profile={profile} proxies={proxies as iProxy[]} /> },
+      render (profile) { return <ProfileProxy profile={profile} proxies={proxies as Proxy[]} /> },
     },
     {
       title: 'Action',

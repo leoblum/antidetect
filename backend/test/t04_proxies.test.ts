@@ -69,7 +69,7 @@ describe('proxies', function () {
     const proxyId = rep.data.proxy._id
     const name = 'test-rename'
 
-    rep = await api.proxies.save({ ...PROXY, _id: proxyId, name })
+    rep = await api.proxies.save({ ...PROXY, name }, proxyId)
     expect(rep.data.success).to.be.true
     expect(rep.data.proxy).to.be.an('object')
     expect(rep.data.proxy._id).to.equal(proxyId)

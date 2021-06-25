@@ -2,9 +2,11 @@
 export type Callback<T = void> = () => T
 export type AsyncCallback<T = void> = () => Promise<T>
 
-export type iApiReplay = { success: boolean, [key: string]: any }
+export * from '../../backend/src/types'
 
-export interface iFingerprintOS {
+export type ApiRep = { success: boolean, [key: string]: any }
+
+export type ApiFingerprintOS = {
   cpu: number[]
   ram: number[]
   screen: string[]
@@ -12,73 +14,63 @@ export interface iFingerprintOS {
   fonts: string[]
 }
 
-export interface iFingerprintOptions {
-  win: iFingerprintOS
-  mac: iFingerprintOS
+export type ApiFingerprintOptions = {
+  win: ApiFingerprintOS
+  mac: ApiFingerprintOS
 }
 
-export interface iFingerprintItem {
-  userAgent: string
-  cpu: number
-  ram: number
-  screen: string
-  render: string
-}
+// export interface Fingerprint {
+//   // os: PossibleOS
+//   os: string
+//   win: OSFingerprint
+//   mac: OSFingerprint
+//   noiseWebGl: boolean
+//   noiseCanvas: boolean
+//   noiseAudio: boolean
+//   deviceCameras: number
+//   deviceMicrophones: number
+//   deviceSpeakers: number
+//   languages: {
+//     mode: string
+//     value: string
+//   }
+//   timezone: {
+//     mode: string
+//     value: string
+//   }
+//   geolocation: {
+//     mode: string
+//   }
+// }
 
-export type PossibleOS = 'win' | 'mac'
+// export type iProfileBase = {
+//   name: string
+//   fingerprint: Fingerprint
+//   proxy: null | string
+// }
 
-export interface iFingerprint {
-  // os: PossibleOS
-  os: string
-  win: iFingerprintItem
-  mac: iFingerprintItem
-  noiseWebGl: boolean
-  noiseCanvas: boolean
-  noiseAudio: boolean
-  deviceCameras: number
-  deviceMicrophones: number
-  deviceSpeakers: number
-  languages: {
-    mode: string
-    value: string
-  }
-  timezone: {
-    mode: string
-    value: string
-  }
-  geolocation: {
-    mode: string
-  }
-}
+// export type iProfile = iProfileBase & {
+//   _id: string
+//   createdAt: string
+//   updatedAt: string,
+//   isActive: boolean,
+//   currentUser: string
+// }
 
-export type iProfileBase = {
-  name: string
-  fingerprint: iFingerprint
-  proxy: null | string
-}
+// export type ProxyProtocol = 'socks5' | 'http'
 
-export type iProfile = iProfileBase & {
-  _id: string
-  createdAt: string
-  updatedAt: string,
-  isActive: boolean,
-  currentUser: string
-}
+// export type ProxyBase = {
+//   name: string
+//   type: ProxyProtocol
+//   host: string
+//   port: number
+//   username: string
+//   password: string
+// }
 
-export type iProxyProtocol = 'socks5' | 'http'
+// export type Proxy = ProxyBase & {
+//   _id: string
+//   country: string | null
+// }
 
-export type iProxyBase = {
-  name: string
-  type: iProxyProtocol
-  host: string
-  port: number
-  username: string
-  password: string
-}
-
-export type iProxy = iProxyBase & {
-  _id: string
-  country: string | null
-}
-
-export type iProfileSave = Partial<Omit<iProxy, '_id'>>
+// export type iProfileSave = Partial<Omit<Proxy, '_id'>>

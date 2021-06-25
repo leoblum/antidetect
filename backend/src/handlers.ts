@@ -1,13 +1,8 @@
 import bcrypt from 'bcrypt'
 
-import { pubHandler, pvtHandler } from './abc'
+import { pubHandler, pvtHandler, S } from './abc'
 import { UserModel, TeamModel, ProxyModel, createOrUpdate, ProfileModel, existsById } from './models'
 import fingerprints from './~fingerprints.json'
-
-const S = <T>(properties: T) => {
-  const required = Object.keys(properties) as Array<keyof T>
-  return { type: 'object', properties, required, additionalProperties: false } as const
-}
 
 function randomChoice<T> (arr: T[]) {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -69,15 +64,23 @@ const ProxyGetParams = S({
   proxyId: { type: 'string' },
 } as const)
 
-const Fingerprint = S({
+// const Fingerprint = S({
+// os: { type: 'string' },
+// } as const)
 
-} as const)
+// const ProfileUpdate = S({
+//   name: { type: 'string' },
+//   // proxy: { type: ['string', 'null'] },
+//   // proxy: { type: ['string', 'null'] },
+//   proxy: { anyOf: [ProxyUpdate, { type: ['string', 'null'] }] },
+//   // fingerprint: Fingerprint,
+//   fingerprint: { type: 'object' },
+// } as const)
 
-const ProfileUpdate = S({
+const ProfileUpdate = S(null, {
   name: { type: 'string' },
-  proxy: { type: ['string', 'null'] },
-  proxyCreate: { anyOf: [ProxyUpdate, { type: 'null' }] },
-  fingerprint: Fingerprint,
+  proxy: { anyOf: [ProxyUpdate, { type: ['string', 'null'] }] },
+  fingerprint: { type: 'object' },
 } as const)
 
 const ProfileDelete = S({
@@ -95,6 +98,7 @@ export const usersCreate = pubHandler({ body: UsersCreate }, async (req, rep) =>
   if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 412)
 
   const team = await TeamModel.create({ name: email })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const user = await UserModel.create({ email, password, team })
   // await sendConfirmationLink(user)
   return rep.done({ message: 'confirmation_link_sent' }, 201)
@@ -179,10 +183,11 @@ export const proxyGet = pvtHandler({ params: ProxyGetParams }, async (req, rep) 
   return proxy ? rep.done({ proxy }) : rep.fail('not_found', 404)
 })
 
-export const proxyUpdate = pvtHandler({ body: ProxyUpdate }, async (req, rep) => {
+const ProxyUpdateParams = { type: 'object', properties: { proxyId: { type: 'string' } } } as const
+export const proxyUpdate = pvtHandler({ body: ProxyUpdate, params: ProxyUpdateParams }, async (req, rep) => {
   const { team } = req.user
-  console.log(req.body)
-  const proxy = await createOrUpdate(ProxyModel, { team, ...req.body })
+  const proxyId = req.params.proxyId
+  const proxy = await createOrUpdate(ProxyModel, { team, ...req.body, _id: proxyId })
   return rep.done({ proxy })
 })
 
@@ -205,25 +210,24 @@ export const profileGet = pvtHandler({ params: ProfileGetParams }, async (req, r
   return profile ? rep.done({ profile }) : rep.fail('not_found', 404)
 })
 
-export const profileUpdate = pvtHandler({ body: ProfileUpdate }, async (req, rep) => {
+const ProfileUpdateParams = { type: 'object', properties: { profileId: { type: 'string' } } } as const
+export const profileUpdate = pvtHandler({ body: ProfileUpdate, params: ProfileUpdateParams }, async (req, rep) => {
   const { team } = req.user
+  const { profileId } = req.params
 
   const validateProxy = async (proxyId: string | null) => {
     if (!proxyId || !proxyId.length) return null
     return await existsById(ProxyModel, proxyId) ? proxyId : null
   }
 
-  req.body.proxy = await validateProxy(req.body.proxy)
-
-  if (req.body.proxyCreate) {
-    const { proxyCreate } = req.body
-    req.body.proxyCreate = null
-
-    const proxy = await ProxyModel.create({ ...proxyCreate, team })
-    req.body.proxy = proxy._id.toString()
+  const proxy = req.body.proxy
+  if (typeof proxy === 'string' || proxy === null) req.body.proxy = await validateProxy(proxy)
+  else {
+    const doc = await ProxyModel.create({ ...proxy, team })
+    req.body.proxy = doc._id.toString()
   }
 
-  const profile = await createOrUpdate(ProfileModel, { team, ...req.body })
+  const profile = await createOrUpdate(ProfileModel, { team, ...req.body, _id: profileId })
   return rep.done({ profile })
 })
 

@@ -71,7 +71,7 @@ export const LinkTokenModel = model<LinkToken>('LinkToken', LinkTokenSchema)
 export const ProxyModel = model<Proxy>('Proxy', ProxySchema)
 export const ProfileModel = model<Profile>('Profile', ProfileSchema)
 
-export async function createOrUpdate (Model, fields) {
+export async function createOrUpdate (Model: any, fields: any) {
   const { _id } = fields
   delete fields._id
 
@@ -79,7 +79,7 @@ export async function createOrUpdate (Model, fields) {
   else return await Model.create(fields)
 }
 
-export async function existsById (Model, Id) {
+export async function existsById (Model: any, Id: string) {
   try {
     return await Model.exists({ _id: Id })
   } catch (e) { return false }

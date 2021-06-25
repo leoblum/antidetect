@@ -62,8 +62,8 @@ export function createClient () {
   const profiles = {
     list: async () => await get('/profiles'),
     get: async (profileId: string) => await get(`/profiles/${profileId}`),
-    save: async ({ _id, name, fingerprint, proxy, proxyCreate }: ProfileUpdate) => (
-      await post('/profiles/save', { _id, name, fingerprint, proxy, proxyCreate })
+    save: async ({ name, fingerprint, proxy = null }: ProfileUpdate, profileId?: string) => (
+      await post(profileId ? `/profiles/save/${profileId}` : '/profiles/save', { name, fingerprint, proxy })
     ),
     delete: async ({ ids = [] }: Ids) => await post('/profiles/delete', { ids }),
   }
@@ -71,8 +71,8 @@ export function createClient () {
   const proxies = {
     list: async () => await get('/proxies'),
     get: async (proxyId: string) => await get(`/proxies/${proxyId}`),
-    save: async ({ _id, name, type, host, port, username, password }: ProxyUpdate) => (
-      await post('/proxies/save', { _id, name, type, host, port, username, password })
+    save: async (opts: ProxyUpdate, proxyId?: string) => (
+      await post(proxyId ? `/proxies/save/${proxyId}` : '/proxies/save', opts)
     ),
     delete: async ({ ids = [] }: Ids) => await post('/proxies/delete', { ids }),
   }
@@ -100,9 +100,9 @@ export function createClient () {
       return data
     },
 
-    async profile ({ name = '1234', os = 'mac', proxy, proxyCreate }: ProfileUpdate & Partial<{ os: OS }>) {
+    async profile ({ name = '1234', os = 'mac', proxy = null }: ProfileUpdate & { os?: OS }) {
       const fingerprint = await this.fingerprint(os)
-      return (await profiles.save({ name, fingerprint, proxy, proxyCreate })).data.profile as Profile
+      return (await profiles.save({ name, fingerprint, proxy })).data.profile as Profile
     },
   }
 

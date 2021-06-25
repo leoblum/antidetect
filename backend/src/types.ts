@@ -48,9 +48,7 @@ export type ProxyBase = {
   password: string
 }
 
-export type ProxyUpdate = Partial<ProxyBase> & {
-  _id?: string
-}
+export type ProxyUpdate = Partial<ProxyBase>
 
 export type Proxy = ProxyBase & MongoDefaults & {
   country: string | null
@@ -62,10 +60,13 @@ export type ProfileBase = {
   proxy: string | null
 }
 
-export type ProfileUpdate = Partial<Omit<ProfileBase, 'fingerprint'>> & {
-  _id?: string
+export type ProfileUpdate = Partial<Omit<ProfileBase, 'fingerprint' | 'proxy'>> & {
   fingerprint?: Partial<Fingerprint>
-  proxyCreate?: ProxyBase
+  proxy?: string | null | ProxyBase
+}
+
+export type ProfileUpdate2 = Partial<Omit<ProfileBase,  'proxy'>> & {
+  proxy?: string | null | ProxyBase
 }
 
 export type Profile = ProfileBase & MongoDefaults & {

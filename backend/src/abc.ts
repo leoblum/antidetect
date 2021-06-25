@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply, RouteShorthandOptions } from 'fastify'
 import fp from 'fastify-plugin'
 import type { FromSchema } from 'json-schema-to-ts'
+import type { Merge } from 'ts-essentials'
 
 type AuthPayload = {
   user: {
@@ -63,3 +64,9 @@ export default fp(async (srv) => {
     return this.code(httpCode).send({ success: false, message })
   })
 })
+
+export const S = <R, O, Both = Merge<R, O>>(requiredProps: R | null, optionalProps: O | null = null) => {
+  const required = requiredProps ? Object.keys(requiredProps) as Array<keyof R> : []
+  const properties = { ...requiredProps as R, ...optionalProps as O } as unknown as Both
+  return { type: 'object', properties, required, additionalProperties: false } as const
+}

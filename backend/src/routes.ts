@@ -21,10 +21,12 @@ export default fp(async (srv) => {
   get('/proxies', h.proxyGetAll)
   get('/proxies/:proxyId', h.proxyGet)
   post('/proxies/save', h.proxyUpdate)
+  post('/proxies/save/:proxyId', h.proxyUpdate)
   post('/proxies/delete', h.proxyDelete)
 
   get('/profiles', h.profileGetAll)
   get('/profiles/:profileId', h.profileGet)
   post('/profiles/save', h.profileUpdate)
+  post('/profiles/save/:profileId', h.profileUpdate)
   post('/profiles/delete', h.profileDelete)
 })

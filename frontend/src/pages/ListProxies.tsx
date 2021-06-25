@@ -8,19 +8,19 @@ import { withBaseLayout } from '@/components/layout'
 import confirmDelete from '@/components/modals/confirmDelete'
 import ProxyIcon from '@/components/ProxyIcon'
 import { useRouter, useGetData } from '@/hooks'
-import { iProxy, Callback } from '@/types'
+import { Proxy, Callback } from '@/types'
 
 import { getSorter, filter } from './ListCommon'
 
-const ProxyProtocol = ({ proxy }: { proxy: iProxy }) => (
+const ProxyProtocol = ({ proxy }: { proxy: Proxy }) => (
   <Tag>{proxy.type}</Tag>
 )
 
-const ProxyAddress = ({ proxy }: { proxy: iProxy }) => (
+const ProxyAddress = ({ proxy }: { proxy: Proxy }) => (
   <Typography.Text code>{proxy.host}:{proxy.port}</Typography.Text>
 )
 
-type TableHeaderProps = { selected: iProxy[], reload: Callback }
+type TableHeaderProps = { selected: Proxy[], reload: Callback }
 const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   const router = useRouter()
   const remove = () => {
@@ -58,7 +58,7 @@ const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   )
 }
 
-const ItemActions = ({ proxy, reload }: { proxy: iProxy, reload: Callback }) => {
+const ItemActions = ({ proxy, reload }: { proxy: Proxy, reload: Callback }) => {
   const router = useRouter()
   const proxyId = proxy._id
   const names = [proxy].map(x => x.name)
@@ -93,7 +93,7 @@ const ListProxies = () => {
   const [proxies, loading, reload] = useGetData(backend.proxies.list)
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
 
-  const columns: ColumnsType<iProxy> = [
+  const columns: ColumnsType<Proxy> = [
     {
       title: 'Name',
       sorter: getSorter('name'),

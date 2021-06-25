@@ -55,7 +55,7 @@ describe('profiles', function () {
     const profileId = profile._id
     const fingerprint = { os: 'win' as const }
 
-    rep = await api.profiles.save({ _id: profileId, name, fingerprint })
+    rep = await api.profiles.save({ name, fingerprint }, profileId)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
     expect(rep.data.profile._id).to.be.equal(profileId)

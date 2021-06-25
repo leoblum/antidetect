@@ -34,7 +34,7 @@ describe('profiles & proxies', function () {
   it('should create profile with new proxy and save to proxies list', async function () {
     let rep = null
 
-    const profile = await api.fill.profile({ proxyCreate: PROXY })
+    const profile = await api.fill.profile({ proxy: PROXY })
     expect(profile.proxy).to.be.a('string')
     expect(profile).to.not.have.property('proxyCreate')
 
@@ -43,14 +43,14 @@ describe('profiles & proxies', function () {
     expect(rep.data.proxies[0]._id).to.equal(profile.proxy)
 
     const profileId = profile._id
-    rep = await api.profiles.save({ _id: profileId, proxyCreate: PROXY })
+    rep = await api.profiles.save({ proxy: PROXY }, profileId)
     expect(rep.data.profile._id).to.be.equal(profileId)
     expect(rep.data.proxy).to.be.not.equal(profile.proxy)
 
     rep = await api.proxies.list()
     expect(rep.data.proxies).to.have.lengthOf(2)
 
-    rep = await api.profiles.save({ _id: profileId, proxy: null })
+    rep = await api.profiles.save({ proxy: null }, profileId)
     expect(rep.data.profile._id).to.be.equal(profileId)
     expect(rep.data.profile.proxy).to.be.null
   })
