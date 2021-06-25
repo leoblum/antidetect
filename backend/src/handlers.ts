@@ -25,73 +25,21 @@ function randomHardware (os: 'win' | 'mac') {
 // await mailer.confirmEmail({ email: user.email, token: token._id })
 // }
 
-const UsersCreate = S({
-  email: { type: 'string', format: 'email' },
-  password: { type: 'string' },
-} as const)
-
-const UsersAuth = S({
-  email: { type: 'string', format: 'email' },
-  password: { type: 'string' },
-} as const)
-
-const UsersCheckEmail = S({
-  email: { type: 'string', format: 'email' },
-} as const)
-
-const UsersResetPassword = S({
-  email: { type: 'string', format: 'email' },
-} as const)
-
-const UsersConfirmEmail = S({
-  email: { type: 'string', format: 'email' },
-} as const)
-
-const ProxyUpdate = S({
+const ProxyFields = {
   name: { type: 'string' },
   type: { type: 'string' },
   host: { type: 'string' },
   port: { type: 'number' },
   username: { type: 'string' },
   password: { type: 'string' },
-} as const)
+} as const
 
-const ProxyDelete = S({
-  ids: { type: 'array', items: { type: 'string' } },
-} as const)
-
-const ProxyGetParams = S({
-  proxyId: { type: 'string' },
-} as const)
-
-// const Fingerprint = S({
-// os: { type: 'string' },
-// } as const)
-
-// const ProfileUpdate = S({
-//   name: { type: 'string' },
-//   // proxy: { type: ['string', 'null'] },
-//   // proxy: { type: ['string', 'null'] },
-//   proxy: { anyOf: [ProxyUpdate, { type: ['string', 'null'] }] },
-//   // fingerprint: Fingerprint,
-//   fingerprint: { type: 'object' },
-// } as const)
-
-const ProfileUpdate = S(null, {
-  name: { type: 'string' },
-  proxy: { anyOf: [ProxyUpdate, { type: ['string', 'null'] }] },
-  fingerprint: { type: 'object' },
-} as const)
-
-const ProfileDelete = S({
-  ids: { type: 'array', items: { type: 'string' } },
-} as const)
-
-const ProfileGetParams = S({
-  profileId: { type: 'string' },
-} as const)
-
-export const usersCreate = pubHandler({ body: UsersCreate }, async (req, rep) => {
+export const usersCreate = pubHandler({
+  body: S({
+    email: { type: 'string', format: 'email' },
+    password: { type: 'string' },
+  } as const),
+}, async (req, rep) => {
   const email = req.body.email
   const password = await bcrypt.hash(req.body.password, 10)
 
@@ -104,7 +52,12 @@ export const usersCreate = pubHandler({ body: UsersCreate }, async (req, rep) =>
   return rep.done({ message: 'confirmation_link_sent' }, 201)
 })
 
-export const usersAuth = pubHandler({ body: UsersAuth }, async (req, rep) => {
+export const usersAuth = pubHandler({
+  body: S({
+    email: { type: 'string', format: 'email' },
+    password: { type: 'string' },
+  } as const),
+}, async (req, rep) => {
   const { email, password } = req.body
 
   const user = await UserModel.findOne({ email })
@@ -116,18 +69,30 @@ export const usersAuth = pubHandler({ body: UsersAuth }, async (req, rep) => {
   return rep.done({ token })
 })
 
-export const usersCheckEmail = pubHandler({ body: UsersCheckEmail }, async (req, rep) => {
+export const usersCheckEmail = pubHandler({
+  body: S({
+    email: { type: 'string', format: 'email' },
+  } as const),
+}, async (req, rep) => {
   const user = await UserModel.findOne({ email: req.body.email })
   const exists = user !== null
   return rep.done({ exists })
 })
 
-export const usersResetPassword = pubHandler({ body: UsersResetPassword }, async (req, rep) => {
+export const usersResetPassword = pubHandler({
+  body: S({
+    email: { type: 'string', format: 'email' },
+  } as const),
+}, async (req, rep) => {
   // const email = req.body.email
   return rep.done({ message: 'reset_link_sent' })
 })
 
-export const usersConfirmEmail = pubHandler({ body: UsersConfirmEmail }, async (req, rep) => {
+export const usersConfirmEmail = pubHandler({
+  body: S({
+    email: { type: 'string', format: 'email' },
+  } as const),
+}, async (req, rep) => {
   const email = req.body.email
 
   const user = await UserModel.findOne({ email })
@@ -178,20 +143,28 @@ export const proxyGetAll = pvtHandler(null, async (req, rep) => {
   return rep.done({ proxies })
 })
 
-export const proxyGet = pvtHandler({ params: ProxyGetParams }, async (req, rep) => {
+export const proxyGet = pvtHandler({
+  params: S({ proxyId: { type: 'string' } } as const),
+}, async (req, rep) => {
   const proxy = await ProxyModel.findById(req.params.proxyId)
   return proxy ? rep.done({ proxy }) : rep.fail('not_found', 404)
 })
 
-const ProxyUpdateParams = { type: 'object', properties: { proxyId: { type: 'string' } } } as const
-export const proxyUpdate = pvtHandler({ body: ProxyUpdate, params: ProxyUpdateParams }, async (req, rep) => {
+export const proxyUpdate = pvtHandler({
+  body: S(ProxyFields),
+  params: S(null, { proxyId: { type: 'string' } } as const),
+}, async (req, rep) => {
   const { team } = req.user
   const proxyId = req.params.proxyId
   const proxy = await createOrUpdate(ProxyModel, { team, ...req.body, _id: proxyId })
   return rep.done({ proxy })
 })
 
-export const proxyDelete = pvtHandler({ body: ProxyDelete }, async (req, rep) => {
+export const proxyDelete = pvtHandler({
+  body: S({
+    ids: { type: 'array', items: { type: 'string' } },
+  } as const),
+}, async (req, rep) => {
   const { ids } = req.body
   try {
     await Promise.all(ids.map(id => ProxyModel.findByIdAndRemove(id)))
@@ -205,13 +178,25 @@ export const profileGetAll = pvtHandler(null, async (req, rep) => {
   return rep.done({ profiles })
 })
 
-export const profileGet = pvtHandler({ params: ProfileGetParams }, async (req, rep) => {
+export const profileGet = pvtHandler({
+  params: S({
+    profileId: { type: 'string' },
+  } as const),
+}, async (req, rep) => {
   const profile = await ProfileModel.findById(req.params.profileId)
   return profile ? rep.done({ profile }) : rep.fail('not_found', 404)
 })
 
-const ProfileUpdateParams = { type: 'object', properties: { profileId: { type: 'string' } } } as const
-export const profileUpdate = pvtHandler({ body: ProfileUpdate, params: ProfileUpdateParams }, async (req, rep) => {
+export const profileUpdate = pvtHandler({
+  body: S(null, {
+    name: { type: 'string' },
+    proxy: { anyOf: [S(ProxyFields), { type: ['string', 'null'] }] },
+    fingerprint: { type: 'object' },
+  } as const),
+  params: S(null, {
+    profileId: { type: 'string' },
+  } as const),
+}, async (req, rep) => {
   const { team } = req.user
   const { profileId } = req.params
 
@@ -231,7 +216,11 @@ export const profileUpdate = pvtHandler({ body: ProfileUpdate, params: ProfileUp
   return rep.done({ profile })
 })
 
-export const profileDelete = pvtHandler({ body: ProfileDelete }, async (req, rep) => {
+export const profileDelete = pvtHandler({
+  body: S({
+    ids: { type: 'array', items: { type: 'string' } },
+  } as const),
+}, async (req, rep) => {
   const { ids } = req.body
   try {
     await Promise.all(ids.map(id => ProfileModel.findByIdAndRemove(id)))
