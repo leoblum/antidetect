@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-import { Fingerprint, Profile, Proxy, ProxyBase, ApiFingerprintOptions, ApiRep, ProfileBase } from '@/types'
-import createEmitter from '@/utils/emitter'
-import storage from '@/utils/storage'
+import createEmitter from '@/common/emitter'
+import storage from '@/common/storage'
+import { Fingerprint, Profile, Proxy, ProxyBase, ApiFingerprintOptions, ApiRep } from '@/types'
 
 import { ProfileUpdate } from '../../backend/src/types'
 

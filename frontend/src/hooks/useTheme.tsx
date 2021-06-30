@@ -1,11 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-// @ts-expect-error no types for less theme
+import storage from '@/common/storage'
 import dark from '@/theme-dark.theme.less'
-// @ts-expect-error no types for less theme
 import light from '@/theme-light.theme.less'
 import { Callback } from '@/types'
-import storage from '@/utils/storage'
 
 interface Theme { use: Callback, unuse: Callback }
 interface MapOfThemes { [key: string]: Theme }

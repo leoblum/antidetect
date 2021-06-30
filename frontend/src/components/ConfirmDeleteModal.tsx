@@ -24,7 +24,7 @@ function ConfirmMessage ({ names }: { names: string[] }) {
 type Callback = () => void
 type AsyncCallback = () => Promise<void>
 
-export default function confirmDelete (names: string[], onConfirm: Callback | AsyncCallback) {
+export function confirmDelete (names: string[], onConfirm: Callback | AsyncCallback) {
   // todo: callback from Modal.cofirm is not used
   Modal.confirm({
     content: <ConfirmMessage names={names} />,

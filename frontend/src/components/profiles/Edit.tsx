@@ -6,16 +6,13 @@ import natsort from 'natsort'
 import React, { useEffect, useState } from 'react'
 
 import backend from '@/backend'
+import { toString, arrToObj, Stringify, entries } from '@/common/object'
 import { FormSwitch, FormSelect, FormNumber, FormButton, Cols, FormInput, FormTextArea, FormRadio } from '@/components/FormItems'
-import { withFormLayout } from '@/components/layout'
 import Notify from '@/components/Notify'
+import ProxyFields from '@/components/proxies/ProxyFields'
+import { withFormLayout } from '@/components/root'
 import { useRouter } from '@/hooks'
-import { ApiFingerprintOptions, Proxy, ProxyBase, OS, ProfileBase, Profile, ProfileUpdate2 } from '@/types'
-import { toString, arrToObj, Stringify, entries } from '@/utils/object'
-
-import { ProxyProtocol } from '../../../backend/src/types'
-
-import { ProxyFields } from './EditProxy'
+import { ApiFingerprintOptions, Proxy, ProxyBase, OS, ProfileBase, Profile, ProfileUpdate2, ProxyProtocol } from '@/types'
 
 type ProfileInForm = Stringify<Profile> & {
   proxyTab: string

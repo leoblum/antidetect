@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "target": "es2016",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -16,8 +19,12 @@
     "jsx": "react",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

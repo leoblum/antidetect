@@ -65,13 +65,15 @@ export type ProfileUpdate = Partial<Omit<ProfileBase, 'fingerprint' | 'proxy'>> 
   proxy?: string | null | ProxyBase
 }
 
-export type ProfileUpdate2 = Partial<Omit<ProfileBase,  'proxy'>> & {
+export type ProfileUpdate2 = Partial<Omit<ProfileBase, 'proxy'>> & {
   proxy?: string | null | ProxyBase
 }
 
 export type Profile = ProfileBase & MongoDefaults & {
   isActive: boolean
   currentUser: string
+  updatedAt: string
+  createdAt: string
 }
 
 export type UserBase = {

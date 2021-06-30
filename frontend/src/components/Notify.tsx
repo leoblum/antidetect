@@ -1,6 +1,6 @@
 import { message as Msg } from 'antd'
 
-import { iApiReplay } from '@/types'
+import { ApiRep } from '@/types'
 
 type MapOfString = { [key: string]: string | undefined }
 const messages: MapOfString = {
@@ -19,7 +19,7 @@ function error (message: string) {
   Promise.all([Msg.error(message)]).catch(console.error)
 }
 
-function notifyByApiCode ({ success, message: code }: iApiReplay) {
+function notifyByApiCode ({ success, message: code }: ApiRep) {
   const handler = Msg[success ? 'success' : 'error']
   const message = messages[code] ?? null
   if (!success && message === null) console.warn('unknown message', code)

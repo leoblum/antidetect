@@ -1,9 +1,9 @@
+import { SingIn, SingUp, ResetPassword } from '@/components/auth'
+import EditProfile from '@/components/profiles/Edit'
+import ListProfiles from '@/components/profiles/List'
+import EditProxy from '@/components/proxies/Edit'
+import ListProxies from '@/components/proxies/List'
 import { RoutesCfg } from '@/components/Router'
-import { SingIn, SingUp, ResetPassword } from '@/pages/Auth'
-import EditProfile from '@/pages/EditProfile'
-import EditProxy from '@/pages/EditProxy'
-import ListProfiles from '@/pages/ListProfiles'
-import ListProxies from '@/pages/ListProxies'
 
 const Routes: RoutesCfg = {
   publicOnly: [

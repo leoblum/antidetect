@@ -4,13 +4,12 @@ import { ColumnsType } from 'antd/es/table'
 import React, { useState } from 'react'
 
 import backend from '@/backend'
-import { withBaseLayout } from '@/components/layout'
-import confirmDelete from '@/components/modals/confirmDelete'
-import ProxyIcon from '@/components/ProxyIcon'
+import { getSorter, filter } from '@/common/sorter'
+import { confirmDelete } from '@/components/ConfirmDeleteModal'
+import ProxyIcon from '@/components/proxies/ProxyIcon'
+import { withBaseLayout } from '@/components/root'
 import { useRouter, useGetData } from '@/hooks'
 import { Proxy, Callback } from '@/types'
-
-import { getSorter, filter } from './ListCommon'
 
 const ProxyProtocol = ({ proxy }: { proxy: Proxy }) => (
   <Tag>{proxy.type}</Tag>

@@ -7,17 +7,16 @@ import { ColumnsType } from 'antd/es/table'
 import React, { useState, useEffect } from 'react'
 
 import backend from '@/backend'
-import { withBaseLayout } from '@/components/layout'
-import confirmDelete from '@/components/modals/confirmDelete'
-import ProxyIcon from '@/components/ProxyIcon'
+import { getSorter, filter } from '@/common/sorter'
+import { confirmDelete } from '@/components/ConfirmDeleteModal'
+import ProxyIcon from '@/components/proxies/ProxyIcon'
+import { withBaseLayout } from '@/components/root'
 import TimeAgo from '@/components/TimeAgo'
 import { useRouter, useGetData } from '@/hooks'
 import native from '@/native-api'
-import { Callback, iProfile, Proxy } from '@/types'
+import { Callback, Profile, Proxy } from '@/types'
 
-import { getSorter, filter } from './ListCommon'
-
-const ProfileName = ({ profile }: { profile: iProfile }) => (
+const ProfileName = ({ profile }: { profile: Profile }) => (
   <div>
     <span style={{ marginRight: '6px' }}>
       {profile.fingerprint.os === 'win' ? <WindowsOutlined /> : <AppleOutlined />}
@@ -26,11 +25,11 @@ const ProfileName = ({ profile }: { profile: iProfile }) => (
   </div>
 )
 
-const LastActive = ({ profile }: { profile: iProfile }) => (
+const LastActive = ({ profile }: { profile: Profile }) => (
   <TimeAgo date={profile.updatedAt} />
 )
 
-const ProfileProxy = ({ profile, proxies }: { profile: iProfile, proxies: Proxy[] }) => {
+const ProfileProxy = ({ profile, proxies }: { profile: Profile, proxies: Proxy[] }) => {
   const proxy = proxies.find(x => x._id === profile.proxy)
 
   const name = proxy?.name ?? 'None'
@@ -49,7 +48,7 @@ const ProfileProxy = ({ profile, proxies }: { profile: iProfile, proxies: Proxy[
   )
 }
 
-type TableHeaderProps = { selected: iProfile[], reload: Callback }
+type TableHeaderProps = { selected: Profile[], reload: Callback }
 const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   const router = useRouter()
   const remove = () => {
@@ -87,7 +86,7 @@ const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   )
 }
 
-const StartButton = ({ profile }: { profile: iProfile }) => {
+const StartButton = ({ profile }: { profile: Profile }) => {
   const [loading, setLoading] = useState(false)
   useEffect(() => {
     setLoading(false)
@@ -111,7 +110,7 @@ const StartButton = ({ profile }: { profile: iProfile }) => {
   )
 }
 
-const ItemActions = ({ profile, reload }: { profile: iProfile, reload: () => void }) => {
+const ItemActions = ({ profile, reload }: { profile: Profile, reload: () => void }) => {
   const profileId = profile._id
   const router = useRouter()
   const names = [profile].map(x => x.name)
@@ -162,7 +161,7 @@ const ListProfiles = () => {
   const profiles = data?.profiles
   const proxies = data?.proxies
 
-  const columns: ColumnsType<iProfile> = [
+  const columns: ColumnsType<Profile> = [
     {
       title: 'Name',
       sorter: getSorter('name'),
