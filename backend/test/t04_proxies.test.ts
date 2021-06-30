@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { createClient, blankId, invalidId } from './common'
-import type { Proxy } from '@/types'
+import { Proxy } from '@/types'
 
 const PROXY = { name: '1234', type: 'http' as const, host: 'localhost', port: 8080, username: 'user', password: 'pass' }
 
@@ -24,7 +24,7 @@ describe('proxies', function () {
     expect(rep.data.proxy).to.be.an('object')
 
     expect(rep.data.proxy._id).to.be.a('string')
-    expect(rep.data.proxy.team).to.be.a('string')
+    expect(rep.data.proxy.teamId).to.be.a('string')
     expect(rep.data.proxy.name).to.equal('1234')
     expect(rep.data.proxy.type).to.equal('http')
     expect(rep.data.proxy.port).to.equal(8080)

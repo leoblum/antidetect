@@ -28,7 +28,7 @@ module.exports = {
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/consistent-type-definitions': 'off',
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'no-type-imports' }],
 
       indent: 'off',
       '@typescript-eslint/indent': ['error', 2],

@@ -21,7 +21,7 @@ describe('profiles', function () {
     expect(rep.data.profile).to.be.an('object')
 
     expect(rep.data.profile).to.have.property('_id')
-    expect(rep.data.profile).to.have.property('team')
+    expect(rep.data.profile).to.have.property('teamId')
     expect(rep.data.profile).to.have.property('name')
     expect(rep.data.profile).to.have.property('fingerprint')
     expect(rep.data.profile).to.have.property('proxy')

@@ -1,5 +1,3 @@
-import fs from 'fs'
-
 import fastify from 'fastify'
 import cors from 'fastify-cors'
 import jwt from 'fastify-jwt'

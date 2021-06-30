@@ -33,8 +33,6 @@ describe('users registration', function () {
   })
 
   it('should be error on wrong email format', async function () {
-    const rep = null
-
     const wrongEmails = [12124124, true, null, { a: 1, b: 2 }, 'asfasfasfa']
     for (const email of wrongEmails) {
       // @ts-expect-error test wrong email types

@@ -12,7 +12,7 @@ export type Team = {
 }
 
 export type LinkToken = {
-  user: string
+  userId: string
   action: 'create' | 'reset'
 }
 
@@ -70,14 +70,14 @@ export type ProfileUpdate2 = Partial<Omit<ProfileBase, 'proxy'>> & {
 }
 
 export type Profile = ProfileBase & MongoDefaults & {
-  isActive: boolean
-  currentUser: string
+  activeStatus: boolean
+  activeUserId: string
   updatedAt: string
   createdAt: string
 }
 
 export type UserBase = {
-  team: string
+  teamId: string
   email: string
   password: string
   emailConfirmed: boolean

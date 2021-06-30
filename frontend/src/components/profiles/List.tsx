@@ -1,10 +1,12 @@
 import {
-  ReloadOutlined, MoreOutlined, CaretRightOutlined, WindowsOutlined, AppleOutlined,
-  EditOutlined, CopyOutlined, DeleteOutlined, PoweroffOutlined,
+  ReloadOutlined, MoreOutlined, WindowsOutlined, AppleOutlined,
+  EditOutlined, CopyOutlined, DeleteOutlined,
+  PoweroffOutlined, CaretRightOutlined,
 } from '@ant-design/icons'
 import { Table, Button, Space, Dropdown, Menu, Input, Divider } from 'antd'
 import { ColumnsType } from 'antd/es/table'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import create from 'zustand'
 
 import backend from '@/backend'
 import { getSorter, filter } from '@/common/sorter'
@@ -12,9 +14,47 @@ import { confirmDelete } from '@/components/ConfirmDeleteModal'
 import ProxyIcon from '@/components/proxies/ProxyIcon'
 import { withBaseLayout } from '@/components/root'
 import TimeAgo from '@/components/TimeAgo'
-import { useRouter, useGetData } from '@/hooks'
+import { useRouter } from '@/hooks'
 import native from '@/native-api'
-import { Callback, Profile, Proxy } from '@/types'
+import { Profile, Proxy } from '@/types'
+
+type Store = { loading: boolean, profiles: Profile[], proxies: Proxy[], fetch(): Promise<void> }
+const useStore = create<Store>(set => ({
+  loading: false,
+  profiles: [],
+  proxies: [],
+
+  fetch: async () => {
+    set({ loading: true })
+    const [profiles, proxies] = await Promise.all([
+      await backend.profiles.list(),
+      await backend.proxies.list(),
+    ])
+    set({ profiles, proxies, loading: false })
+  },
+}))
+
+const RunButton = ({ profile }: { profile: Profile }) => {
+  const [loading, setLoading] = useState(false)
+  const { fetch } = useStore()
+
+  const onClick = async () => {
+    setLoading(true)
+    // await native.chrome_start(profile._id)
+  }
+
+  const danger = false
+
+  return (
+    <Button
+      type="primary" onClick={onClick} loading={loading}
+      icon={profile.isActive ? <PoweroffOutlined /> : <CaretRightOutlined />}
+      danger={danger}
+    >
+      Run
+    </Button>
+  )
+}
 
 const ProfileName = ({ profile }: { profile: Profile }) => (
   <div>
@@ -48,8 +88,10 @@ const ProfileProxy = ({ profile, proxies }: { profile: Profile, proxies: Proxy[]
   )
 }
 
-type TableHeaderProps = { selected: Profile[], reload: Callback }
-const TableHeader = ({ selected, reload }: TableHeaderProps) => {
+const TableHeader = ({ selected }: { selected: Profile[] }) => {
+  const store = useStore()
+  const reload = () => store.fetch()
+
   const router = useRouter()
   const remove = () => {
     const names = selected.map(x => x.name)
@@ -86,31 +128,10 @@ const TableHeader = ({ selected, reload }: TableHeaderProps) => {
   )
 }
 
-const StartButton = ({ profile }: { profile: Profile }) => {
-  const [loading, setLoading] = useState(false)
-  useEffect(() => {
-    setLoading(false)
-  }, [profile])
+const ItemActions = ({ profile }: { profile: Profile }) => {
+  const store = useStore()
+  const reload = () => store.fetch()
 
-  const onClick = async () => {
-    setLoading(true)
-    await native.chrome_start(profile._id)
-  }
-
-  const danger = false
-
-  return (
-    <Button
-      type="primary" onClick={onClick} loading={loading}
-      icon={profile.isActive ? <PoweroffOutlined /> : <CaretRightOutlined />}
-      danger={danger}
-    >
-      Run
-    </Button>
-  )
-}
-
-const ItemActions = ({ profile, reload }: { profile: Profile, reload: () => void }) => {
   const profileId = profile._id
   const router = useRouter()
   const names = [profile].map(x => x.name)
@@ -134,7 +155,7 @@ const ItemActions = ({ profile, reload }: { profile: Profile, reload: () => void
 
   return (
     <Space>
-      <StartButton profile={profile} />
+      <RunButton profile={profile} />
       <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
         <Button icon={<MoreOutlined />} />
       </Dropdown>
@@ -142,24 +163,12 @@ const ItemActions = ({ profile, reload }: { profile: Profile, reload: () => void
   )
 }
 
-const loadStateData = async () => {
-  const [profiles, proxies] = await Promise.all([
-    await backend.profiles.list(),
-    await backend.proxies.list(),
-  ])
-  return { profiles, proxies }
-}
-
 const ListProfiles = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([])
-  const [data, loading, reload] = useGetData(async () => {
-    const data = await loadStateData()
-    setSelectedRowKeys(filter(data.profiles, selectedRowKeys).map(x => x._id))
-    return data
-  })
+  const { profiles, proxies, loading, fetch } = useStore()
 
-  const profiles = data?.profiles
-  const proxies = data?.proxies
+  useEffect(() => { fetch() }, [])
+  useEffect(() => { setSelectedRowKeys(filter(profiles, selectedRowKeys).map(x => x._id)) }, [profiles])
 
   const columns: ColumnsType<Profile> = [
     {
@@ -179,7 +188,7 @@ const ListProfiles = () => {
     },
     {
       title: 'Action',
-      render (profile) { return <ItemActions profile={profile} reload={reload} /> },
+      render (profile) { return <ItemActions profile={profile} /> },
       width: 100,
     },
   ]
@@ -196,7 +205,7 @@ const ListProfiles = () => {
       pagination={{ defaultPageSize: 25, size: 'default' }}
       size="small"
       showSorterTooltip={false}
-      title={() => <TableHeader reload={reload} selected={filter(profiles, selectedRowKeys)} />}
+      title={() => <TableHeader selected={filter(profiles, selectedRowKeys)} />}
       loading={loading}
     ></Table>
   )

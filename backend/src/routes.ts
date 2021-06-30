@@ -29,4 +29,6 @@ export default fp(async (srv) => {
   post('/profiles/save', h.profileUpdate)
   post('/profiles/save/:profileId', h.profileUpdate)
   post('/profiles/delete', h.profileDelete)
+
+  get('/profiles/lock/:profileId', h.profileLock)
 })

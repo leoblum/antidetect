@@ -1,12 +1,12 @@
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import type { FastifyInstance } from 'fastify'
+import { FastifyInstance } from 'fastify'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 
 import buildApp from '@/app'
 import config from '@/config'
-import type { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
+import { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
 chai.use(chaiAsPromised)
 
 const ObjectId = mongoose.Types.ObjectId

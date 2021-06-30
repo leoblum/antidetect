@@ -1,27 +1,27 @@
 import flat from 'flat'
 import { Schema, model } from 'mongoose'
 
-import type { LinkToken, User, Team, Proxy, Profile } from '@/types'
+import { LinkToken, User, Team, Proxy, Profile } from '@/types'
 
 const TeamSchema = new Schema<Team>({
   name: { type: String, required: true },
 }, { timestamps: true })
 
 const UserSchema = new Schema<User>({
-  team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
+  teamId: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true },
   emailConfirmed: { type: Boolean, required: true, default: false },
 }, { timestamps: true })
 
 const LinkTokenSchema = new Schema<LinkToken>({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   action: { type: String, enum: ['create', 'reset'], required: true },
 }, { timestamps: true })
 
 const ProxySchema = new Schema<Proxy>({
   name: String,
-  team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
+  teamId: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
   type: { type: String, enum: ['socks4', 'socks5', 'http', 'https', 'ssh'], required: true },
   host: { type: String, required: true },
   port: { type: Number, required: true },
@@ -45,10 +45,10 @@ const Hardware = {
 
 const ProfileSchema = new Schema<Profile>({
   name: { type: String, required: true },
-  team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
+  teamId: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
   proxy: { type: Schema.Types.ObjectId, ref: 'Proxy', default: null },
-  isActive: { type: Boolean, default: false },
-  currentUser: { type: Schema.Types.ObjectId, ref: 'User' },
+  activeStatus: { type: Boolean, default: false },
+  activeUserId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   fingerprint: {
     os: { type: String, enum: ['win', 'mac'], required: true },
     win: Hardware,

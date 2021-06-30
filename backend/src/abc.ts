@@ -1,12 +1,10 @@
-import type { FastifyRequest, FastifyReply, RouteShorthandOptions } from 'fastify'
+import { Static } from '@sinclair/typebox'
+import { FastifyRequest, FastifyReply, RouteShorthandOptions } from 'fastify'
 import fp from 'fastify-plugin'
-import type { FromSchema } from 'json-schema-to-ts'
-import type { Merge } from 'ts-essentials'
 
 type AuthPayload = {
-  user: {
-    team: string
-  }
+  userId: string
+  teamId: string
 }
 
 declare module 'fastify' {
@@ -23,6 +21,14 @@ declare module 'fastify' {
   }
 }
 
+declare module 'fastify-jwt' {
+  interface FastifyJWT {
+    payload: AuthPayload
+  }
+}
+
+type RouteData = { handler: (req: FastifyRequest, rep: FastifyReply) => void, opts: RouteShorthandOptions }
+
 async function checkAuth (req: FastifyRequest, rep: FastifyReply) {
   try {
     await req.jwtVerify()
@@ -31,25 +37,32 @@ async function checkAuth (req: FastifyRequest, rep: FastifyReply) {
   }
 }
 
-type Req<B, P> = FastifyRequest<{ Body: FromSchema<B>, Params: FromSchema<P> }>
+type Ops<B, P, Q> = { body?: B, params?: P, query?: Q }
+type Req<B, P, Q> = FastifyRequest<{ Body: B, Params: P, Querystring: Q }>
+type Rep = FastifyReply
 
-type Opts<B, P> = { body?: B, params?: P, auth?: boolean } | null
-type PubHandler<B, P> = (req: Req<B, P>, rep: FastifyReply) => void
-type PvtHandler<B, P> = (req: Req<B, P> & AuthPayload, rep: FastifyReply) => void
-type AnyHandler<B, P> = PubHandler<B, P> | PvtHandler<B, P>
+export const handlerFunc = <B, P, Q>(opts: Ops<B, P, Q> = {}) => {
+  type Body = Static<typeof opts.body>
+  type Query = Static<typeof opts.query>
+  type Params = Static<typeof opts.params>
 
-type RouteData = { handler: (req: FastifyRequest, rep: FastifyReply) => void, opts: RouteShorthandOptions }
+  type PubCb = (req: Req<Body, Params, Query>, rep: Rep) => void
+  type PvtCb = (req: Req<Body, Params, Query> & { user: AuthPayload }, rep: Rep) => void
+  type AnyCb = PubCb | PvtCb
 
-const handler = <B, P>(opts: Opts<B, P> = null, f: AnyHandler<B, P>) => {
-  const data: RouteShorthandOptions = {
-    schema: { body: opts?.body, params: opts?.params },
-    preValidation: opts?.auth ? [checkAuth] : [],
+  const f = (cb: AnyCb, auth = false) => {
+    const data: RouteShorthandOptions = {
+      schema: { body: opts?.body, params: opts?.params },
+      preValidation: auth ? [checkAuth] : [],
+    }
+    return { handler: cb, opts: data } as RouteData
   }
-  return { handler: f, opts: data } as RouteData
-}
 
-export const pubHandler = <B, P>(opts: Opts<B, P> = null, f: PubHandler<B, P>) => handler({ ...opts, auth: false }, f)
-export const pvtHandler = <B, P>(opts: Opts<B, P> = null, f: PvtHandler<B, P>) => handler({ ...opts, auth: true }, f)
+  return {
+    public: (cb: PubCb) => f(cb, false),
+    private: (cb: PvtCb) => f(cb, true),
+  }
+}
 
 export default fp(async (srv) => {
   const get = (url: string, data: RouteData) => srv.get(url, data.opts, data.handler)
@@ -64,9 +77,3 @@ export default fp(async (srv) => {
     return this.code(httpCode).send({ success: false, message })
   })
 })
-
-export const S = <R, O, Both = Merge<R, O>>(requiredProps: R | null, optionalProps: O | null = null) => {
-  const required = requiredProps ? Object.keys(requiredProps) as Array<keyof R> : []
-  const properties = { ...requiredProps as R, ...optionalProps as O } as unknown as Both
-  return { type: 'object', properties, required, additionalProperties: false } as const
-}
