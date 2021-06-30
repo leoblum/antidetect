@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient } from './common'
+import { createClient } from './helper'
 
 describe('fingerprints', function () {
   const api = createClient()

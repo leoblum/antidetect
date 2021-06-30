@@ -26,8 +26,8 @@ export type OSFingerprint = {
 
 export type Fingerprint = {
   os: OS
-  win: OSFingerprint
-  mac: OSFingerprint
+  win?: OSFingerprint
+  mac?: OSFingerprint
   noiseWebGl: boolean
   noiseCanvas: boolean
   noiseAudio: boolean
@@ -71,7 +71,7 @@ export type ProfileUpdate2 = Partial<Omit<ProfileBase, 'proxy'>> & {
 
 export type Profile = ProfileBase & MongoDefaults & {
   activeStatus: boolean
-  activeUserId: string
+  activeUserId: string | null
   updatedAt: string
   createdAt: string
 }

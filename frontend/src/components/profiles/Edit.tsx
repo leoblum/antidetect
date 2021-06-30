@@ -64,10 +64,14 @@ const getInitialState = async (profileId?: string) => {
     backend.proxies.list(),
   ])
 
+  fingerprint.os = window.navigator.platform === 'MacIntel' ? 'mac' : 'win'
   let profile: ProfileBase = { fingerprint, name: '', proxy: null }
   let proxyTab = 'none'
 
   if (remote) {
+    remote.fingerprint.win = remote.fingerprint.win ?? fingerprint.win
+    remote.fingerprint.mac = remote.fingerprint.mac ?? fingerprint.mac
+
     profile = merge(profile, remote)
     if (!proxies.find(x => x._id === profile.proxy)) profile.proxy = proxies.length > 0 ? proxies[0]._id : null
     else proxyTab = 'saved'
@@ -130,15 +134,17 @@ function EditProfile () {
       password: values.proxyCreate.password,
     }
 
-    const osFields = (os: OS) => (values.fingerprint[os]
-      ? {
-        cpu: parseInt(values.fingerprint[os].cpu, 10),
-        ram: parseInt(values.fingerprint[os].ram, 10),
-        screen: values.fingerprint[os].screen,
-        render: values.fingerprint[os].render,
-        userAgent: values.fingerprint[os].userAgent,
+    const osFields = (os: OS) => {
+      const fields = values.fingerprint[os]
+      if (!fields) return
+      return {
+        cpu: parseInt(fields.cpu, 10),
+        ram: parseInt(fields.ram, 10),
+        screen: fields.screen,
+        render: fields.render,
+        userAgent: fields.userAgent,
       }
-      : null)
+    }
 
     const profile: ProfileUpdate2 = {
       name: values.name,

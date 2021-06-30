@@ -235,12 +235,27 @@ export const profileLock = handlerFunc({
   params: Type.Object({ profileId: Type.String() }),
 }).private(async (req, rep) => {
   const profileId = req.params.profileId
-  const doc = await ProfileModel.findById(profileId)
-  if (doc === null) return rep.fail('profile_not_found', 404)
-  if (doc.isActive) return rep.fail('profile_alredy_started', 409)
+  const profile = await ProfileModel.findById(profileId)
+  if (profile === null) return rep.fail('profile_not_found', 404)
+  if (profile.activeStatus) return rep.fail('profile_alredy_started', 409)
 
-  doc.isActive = true
-  // doc.currentUser = req.user.email
+  profile.activeStatus = true
+  profile.activeUserId = req.user.userId
+  await profile.save()
 
-  return rep.done()
+  return rep.done({ profile })
+})
+
+export const profileUnlock = handlerFunc({
+  params: Type.Object({ profileId: Type.String() }),
+}).private(async (req, rep) => {
+  const profileId = req.params.profileId
+  const profile = await ProfileModel.findById(profileId)
+  if (profile === null) return rep.fail('profile_not_found', 404)
+
+  profile.activeStatus = false
+  profile.activeUserId = null
+  await profile.save()
+
+  return rep.done({ profile })
 })

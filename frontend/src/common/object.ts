@@ -9,7 +9,10 @@ export const isObject = <T>(t: T): t is T & object => typeof t === 'object' && t
 type Entries<T> = Array<{ [K in keyof T]: [K, T[K]] }[keyof T]>
 export const entries = <T>(obj: T): Entries<T> => Object.entries(obj) as any
 
-export type Stringify<T> = { [K in keyof T]: T[K] extends object ? Stringify<T[K]> : string }
+export type Stringify<T> = {
+  [K in keyof T]: T[K] extends object | null | undefined ? Stringify<T[K]> : string
+}
+
 export const toString = <T extends object> (obj: T): Stringify<T> => Object.fromEntries(Object.entries(obj)
   .map(([k, v]) => [k, isObject(v) ? toString(v) : (v == null ? '' : (v as any).toString())] as const)) as any
 

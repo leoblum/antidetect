@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient, blankId, invalidId } from './common'
+import { createClient, blankId, invalidId } from './helper'
 
 describe('profiles', function () {
   const api = createClient()

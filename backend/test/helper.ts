@@ -66,6 +66,8 @@ export function createClient () {
       await post(profileId ? `/profiles/save/${profileId}` : '/profiles/save', { name, fingerprint, proxy })
     ),
     delete: async ({ ids = [] }: Ids) => await post('/profiles/delete', { ids }),
+    lock: async (profileId: string) => await get(`/profiles/lock/${profileId}`),
+    unlock: async (profileId: string) => await get(`/profiles/unlock/${profileId}`),
   }
 
   const proxies = {

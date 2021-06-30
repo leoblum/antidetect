@@ -31,4 +31,5 @@ export default fp(async (srv) => {
   post('/profiles/delete', h.profileDelete)
 
   get('/profiles/lock/:profileId', h.profileLock)
+  get('/profiles/unlock/:profileId', h.profileUnlock)
 })

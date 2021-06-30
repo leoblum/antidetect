@@ -11,6 +11,7 @@ import create from 'zustand'
 import backend from '@/backend'
 import { getSorter, filter } from '@/common/sorter'
 import { confirmDelete } from '@/components/ConfirmDeleteModal'
+import { notifyByApiCode } from '@/components/Notify'
 import ProxyIcon from '@/components/proxies/ProxyIcon'
 import { withBaseLayout } from '@/components/root'
 import TimeAgo from '@/components/TimeAgo'
@@ -36,23 +37,30 @@ const useStore = create<Store>(set => ({
 
 const RunButton = ({ profile }: { profile: Profile }) => {
   const [loading, setLoading] = useState(false)
-  const { fetch } = useStore()
+  const { fetch: reload } = useStore()
 
   const onClick = async () => {
     setLoading(true)
-    // await native.chrome_start(profile._id)
-  }
 
-  const danger = false
+    if (profile.activeStatus) {
+      const rep = await backend.profiles.unlock(profile._id)
+      if (!rep.success) return notifyByApiCode(rep)
+    } else {
+      const rep = await backend.profiles.lock(profile._id)
+      if (!rep.success) return notifyByApiCode(rep)
+    }
+
+    setLoading(false)
+    await reload()
+  }
 
   return (
     <Button
       type="primary" onClick={onClick} loading={loading}
-      icon={profile.isActive ? <PoweroffOutlined /> : <CaretRightOutlined />}
-      danger={danger}
-    >
-      Run
-    </Button>
+      icon={profile.activeStatus ? <PoweroffOutlined /> : <CaretRightOutlined />}
+      danger={profile.activeStatus}
+      style={{ width: '100px' }}
+    >{profile.activeStatus ? 'Stop' : 'Run'}</Button>
   )
 }
 

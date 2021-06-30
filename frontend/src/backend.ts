@@ -79,6 +79,27 @@ export const fingerprint = {
   },
 }
 
+export const proxies = {
+  async list () {
+    const rep = await get('/proxies')
+    return (rep.proxies) as Proxy[]
+  },
+
+  async get (proxyId: string) {
+    const rep = await get('/proxies/' + proxyId)
+    return (rep.proxy) as Proxy
+  },
+
+  async save (values: ProxyBase, proxyId?: string) {
+    const url = proxyId ? `/proxies/save/${proxyId}` : '/proxies/save'
+    return await post(url, { ...values })
+  },
+
+  async delete (ids: string[]) {
+    return await post('/proxies/delete', { ids })
+  },
+}
+
 export const profiles = {
   async list () {
     const rep = await get('/profiles')
@@ -98,26 +119,13 @@ export const profiles = {
   async delete (ids: string[]) {
     return await post('/profiles/delete', { ids })
   },
-}
 
-export const proxies = {
-  async list () {
-    const rep = await get('/proxies')
-    return (rep.proxies) as Proxy[]
+  async lock (profileId: Profile['_id']) {
+    return await get(`/profiles/lock/${profileId}`)
   },
 
-  async get (proxyId: string) {
-    const rep = await get('/proxies/' + proxyId)
-    return (rep.proxy) as Proxy
-  },
-
-  async save (values: ProxyBase, proxyId?: string) {
-    const url = proxyId ? `/proxies/save/${proxyId}` : '/proxies/save'
-    return await post(url, { ...values })
-  },
-
-  async delete (ids: string[]) {
-    return await post('/proxies/delete', { ids })
+  async unlock (profileId: Profile['_id']) {
+    return await get(`/profiles/unlock/${profileId}`)
   },
 }
 
