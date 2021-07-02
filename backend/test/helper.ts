@@ -1,3 +1,4 @@
+import axios from 'axios'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { FastifyInstance } from 'fastify'
@@ -10,10 +11,20 @@ import { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
 chai.use(chaiAsPromised)
 
 const ObjectId = mongoose.Types.ObjectId
+const UseRemoteClient = false
+const TestDbName = 'yanus-test'
+axios.defaults.baseURL = 'http://127.0.0.1:9000'
+axios.defaults.validateStatus = () => true
 
 declare module 'light-my-request' {
   export interface Response {
     data: any
+  }
+}
+
+declare module 'axios' {
+  export interface AxiosResponse {
+    statusCode: number
   }
 }
 
@@ -28,10 +39,23 @@ export function createClient () {
 
   const request = async ({ method, url, ...opts }: ReqOps) => {
     const headers = { ...DefaultHeaders, ...opts.headers }
-    const rep = await app.inject({ ...opts, method, url, headers })
-    Object.defineProperty(rep, 'data', { get: () => rep.json() })
-    if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.json()))
-    return rep
+
+    if (UseRemoteClient) {
+      const reqOpts = { ...opts, method, url, headers, data: null }
+      reqOpts.data = reqOpts.payload
+      delete reqOpts.payload
+
+      const rep = await axios.request(reqOpts)
+      rep.statusCode = rep.status
+      console.log(rep.status, reqOpts, rep.data)
+      // if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.data))
+      return rep
+    } else {
+      const rep = await app.inject({ ...opts, method, url, headers })
+      Object.defineProperty(rep, 'data', { get: () => rep.json() })
+      // if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.json()))
+      return rep
+    }
   }
 
   const get = async (url: string, opts: ReqOps = {}) => {
@@ -80,7 +104,7 @@ export function createClient () {
   }
 
   const DefaultEmail = 'user@example.com'
-  const DefaultPassword = '1234'
+  const DefaultPassword = '123456'
 
   const fill = {
     async user (email = DefaultEmail, password = DefaultPassword) {
@@ -109,19 +133,34 @@ export function createClient () {
   }
 
   before(async () => {
-    config.MONGODB_URI = await mongod.getUri('yanus-test')
+    if (UseRemoteClient) return
+
+    config.MONGODB_URI = await mongod.getUri(TestDbName)
     app = await buildApp()
     if (!app.db.name.endsWith('-test')) throw new Error('Wrong DB name!')
   })
 
   after(async () => {
+    if (UseRemoteClient) return
+
     await app.close()
     await mongod.stop()
   })
 
   beforeEach(async () => {
     delete DefaultHeaders.Authorization
-    await app.db.dropDatabase()
+
+    if (UseRemoteClient) {
+      const instance = await mongoose.connect(`mongodb://127.0.0.1:27017/${TestDbName}`, {
+        useNewUrlParser: true,
+        useCreateIndex: true,
+        useUnifiedTopology: true,
+      })
+      await instance.connection.dropDatabase()
+      await instance.disconnect()
+    } else {
+      await app.db.dropDatabase()
+    }
   })
 
   return { headers: DefaultHeaders, request, get, post, users, fingerprint, profiles, proxies, fill }

@@ -37,7 +37,7 @@ export const usersCreate = handlerFunc({
   const email = req.body.email
   const password = await bcrypt.hash(req.body.password, 10)
 
-  if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 412)
+  if (await UserModel.findOne({ email })) return rep.fail('email_already_used', 400)
 
   const team = await TeamModel.create({ name: email })
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
