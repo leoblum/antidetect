@@ -1,12 +1,12 @@
 import { expect } from 'chai'
-import { createClient, blankId, invalidId } from './helper'
+import { createClient, blankId, invalidId, Rep } from './helper'
 
 describe('profiles', function () {
   const api = createClient()
   beforeEach(() => api.fill.user())
 
   it('should create profile', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.profiles.list()
     expect(rep.statusCode).to.equal(200)
@@ -41,7 +41,7 @@ describe('profiles', function () {
   // })
 
   it('should update by id', async function () {
-    let rep = null
+    let rep: Rep
 
     const profile = await api.fill.profile({ name: '1234', os: 'mac' })
     expect(profile).be.not.undefined
@@ -68,7 +68,7 @@ describe('profiles', function () {
   })
 
   it('should delete by id', async function () {
-    let rep = null
+    let rep: Rep
     const profileId = (await api.fill.profile({}))._id
 
     rep = await api.profiles.list()
@@ -88,7 +88,7 @@ describe('profiles', function () {
   })
 
   it('should delete by id (bulk)', async function () {
-    let rep = null
+    let rep: Rep
 
     const id1 = (await api.fill.profile({}))._id
     const id2 = (await api.fill.profile({}))._id
@@ -105,7 +105,7 @@ describe('profiles', function () {
   })
 
   it('should delete with success=true on invalid id', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.profiles.delete({ ids: [blankId()] })
     expect(rep.statusCode).to.equal(200)

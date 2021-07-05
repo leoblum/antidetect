@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient } from './helper'
+import { createClient, Rep } from './helper'
 
 describe('users authentication', function () {
   const api = createClient()
@@ -8,7 +8,7 @@ describe('users authentication', function () {
   const password = '123456'
 
   it('should authenticate by email & password', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
 
     rep = await api.users.confirmEmail(email)
@@ -22,7 +22,7 @@ describe('users authentication', function () {
   })
 
   it('should not authenticate when email not confirmed', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
 
     rep = await api.users.auth(email, password)
@@ -32,7 +32,7 @@ describe('users authentication', function () {
   })
 
   it('should not authenticate with wrong password', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
     await api.users.confirmEmail(email)
 
@@ -44,7 +44,7 @@ describe('users authentication', function () {
   })
 
   it('should access to protected api after authentication', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
     await api.users.confirmEmail(email)
     await api.users.auth(email, password)
@@ -55,7 +55,7 @@ describe('users authentication', function () {
   })
 
   it('should not access to protected api when not authenticated', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
     await api.users.confirmEmail(email)
 
@@ -66,7 +66,7 @@ describe('users authentication', function () {
   })
 
   it('should not access to protected api with bad auth header', async function () {
-    let rep = null
+    let rep: Rep
     await api.users.create(email, password)
     await api.users.confirmEmail(email)
     await api.users.auth(email, password)

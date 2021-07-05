@@ -6,10 +6,9 @@ describe('profiles actions', function () {
   beforeEach(() => api.fill.user())
 
   it('should lock profile', async function () {
-    let rep = null
     const profileId = (await api.fill.profile({ proxy: null }))._id
 
-    rep = await api.profiles.lock(profileId)
+    const rep = await api.profiles.lock(profileId)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
     expect(rep.data).to.have.property('profile')
@@ -18,10 +17,9 @@ describe('profiles actions', function () {
   })
 
   it('should unlock profile', async function () {
-    let rep = null
     const profileId = (await api.fill.profile({ proxy: null }))._id
 
-    rep = await api.profiles.lock(profileId)
+    let rep = await api.profiles.lock(profileId)
     expect(rep.statusCode).to.equal(200)
     expect(rep.data.success).to.be.true
 

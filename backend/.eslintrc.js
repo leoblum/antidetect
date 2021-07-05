@@ -7,6 +7,7 @@ module.exports = {
   },
   rules: {
     curly: 'off',
+    'prefer-const': 'off',
     'no-template-curly-in-string': 'off',
     'comma-dangle': ['error', 'always-multiline'],
     'object-curly-spacing': ['error', 'always'],
@@ -31,6 +32,7 @@ module.exports = {
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'no-type-imports' }],
 
       indent: 'off',
+      'prefer-const': 'off',
       '@typescript-eslint/indent': ['error', 2],
       'comma-dangle': 'off',
       '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],

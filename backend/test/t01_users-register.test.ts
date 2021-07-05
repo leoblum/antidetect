@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient } from './helper'
+import { createClient, Rep } from './helper'
 
 describe('users registration', function () {
   const api = createClient()
@@ -8,7 +8,7 @@ describe('users registration', function () {
   const password = '123456'
 
   it('should create user by email and password', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.users.create(email, password)
     expect(rep.statusCode).to.equal(201)
@@ -20,7 +20,7 @@ describe('users registration', function () {
   })
 
   it('should not create user on same email twice', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.users.create(email, password)
     expect(rep.statusCode).to.equal(201)

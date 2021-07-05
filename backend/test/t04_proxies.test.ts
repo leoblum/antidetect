@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient, blankId, invalidId } from './helper'
+import { createClient, blankId, invalidId, Rep } from './helper'
 import { Proxy } from '@/types'
 
 const PROXY = { name: '1234', type: 'http' as const, host: 'localhost', port: 8080, username: 'user', password: 'pass' }
@@ -9,7 +9,7 @@ describe('proxies', function () {
   beforeEach(() => api.fill.user())
 
   it('should create proxy', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.proxies.list()
     expect(rep.statusCode).to.equal(200)
@@ -37,7 +37,7 @@ describe('proxies', function () {
   })
 
   it('should create proxy with empty login & password', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.proxies.save({ ...PROXY, username: '', password: '' })
     expect(rep.statusCode).to.equal(200)
@@ -46,10 +46,13 @@ describe('proxies', function () {
     expect(rep.data.proxy).to.be.an('object')
     expect(rep.data.proxy.username).to.equal('')
     expect(rep.data.proxy.password).to.equal('')
+
+    rep = await api.proxies.list()
+    expect(rep.data.proxies).to.have.lengthOf(1)
   })
 
   it('should get proxy by id', async function () {
-    let rep = null
+    let rep: Rep
     const id1 = (await api.proxies.save(PROXY)).data.proxy._id
 
     rep = await api.proxies.list()
@@ -61,7 +64,7 @@ describe('proxies', function () {
   })
 
   it('should update by id', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.proxies.save(PROXY)
     expect(rep.data.success).to.be.true
@@ -80,7 +83,7 @@ describe('proxies', function () {
   })
 
   it('should delete by id', async function () {
-    let rep = null
+    let rep: Rep
 
     const id1 = (await api.proxies.save(PROXY)).data.proxy._id as string
 
@@ -98,7 +101,7 @@ describe('proxies', function () {
   })
 
   it('should delete by id (bulk)', async function () {
-    let rep = null
+    let rep: Rep
     const id1 = (await api.fill.proxy({ name: '101' }))._id
     const id2 = (await api.fill.proxy({ name: '102' }))._id
     const id3 = (await api.fill.proxy({ name: '103' }))._id
@@ -116,7 +119,7 @@ describe('proxies', function () {
   })
 
   it('should delete with success=true on invalid id', async function () {
-    let rep = null
+    let rep: Rep
 
     rep = await api.proxies.delete({ ids: [blankId()] })
     expect(rep.statusCode).to.equal(200)
@@ -131,7 +134,7 @@ describe('proxies', function () {
   const p = async (len: number) => await Promise.all(f(len).map(name => api.fill.proxy({ name })))
 
   it('should delete by id from many', async function () {
-    let rep = null
+    let rep: Rep
     const ids = (await p(10)).map(x => x._id)
 
     rep = await api.proxies.list()

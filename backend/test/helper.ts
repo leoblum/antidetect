@@ -1,5 +1,5 @@
 import axios from 'axios'
-import chai from 'chai'
+import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { FastifyInstance } from 'fastify'
 import { MongoMemoryServer } from 'mongodb-memory-server'
@@ -32,12 +32,18 @@ type StrObj = Record<string, string>
 type ReqOps = { method?: 'get' | 'post', url?: string, payload?: any, headers?: StrObj }
 type Ids = { ids: string[] }
 
+export type Rep = {
+  data: any
+  statusCode: number
+  expect: (val: any, msg?: string) => Chai.Assertion
+}
+
 export function createClient () {
   const DefaultHeaders: StrObj = {}
   const mongod = new MongoMemoryServer()
   let app: FastifyInstance
 
-  const request = async ({ method, url, ...opts }: ReqOps) => {
+  const R = async ({ method, url, ...opts }: ReqOps) => {
     const headers = { ...DefaultHeaders, ...opts.headers }
 
     if (UseRemoteClient) {
@@ -57,6 +63,17 @@ export function createClient () {
       Object.defineProperty(rep, 'data', { get: () => rep.json() })
       return rep
     }
+  }
+
+  const request = async (opts: ReqOps) => {
+    const rep: Rep = Object.assign(await R(opts), {
+      expect (val: any, msg?: string) {
+        if (msg) msg = `\n"${msg}"`
+        const fullMsg = `REP: ${rep.statusCode}\n${JSON.stringify(rep.data, null, 2)}\n${msg}`
+        return expect(val, fullMsg)
+      },
+    })
+    return rep
   }
 
   const get = async (url: string, opts: ReqOps = {}) => {

@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { createClient, blankId, invalidId } from './helper'
+import { createClient, blankId, invalidId, Rep } from './helper'
 
 const PROXY = { name: '1234', type: 'http' as const, host: 'localhost', port: 8080, username: '', password: '' }
 
@@ -14,17 +14,19 @@ describe('profiles & proxies', function () {
   })
 
   it('should create profile with invalid proxyId', async function () {
-    let rep = null
+    let rep: Rep
 
-    rep = await api.fill.profile({ proxy: blankId() })
-    expect(rep.proxy).to.be.null
+    let doc = await api.fill.profile({ proxy: blankId() })
+    expect(doc.proxy).to.be.null
+
     rep = await api.profiles.list()
     expect(rep.data.profiles).to.have.lengthOf(1, 'blankId.profiles')
     rep = await api.proxies.list()
     expect(rep.data.proxies).to.have.lengthOf(0, 'blankId.proxies')
 
-    rep = await api.fill.profile({ proxy: invalidId() })
-    expect(rep.proxy).to.be.null
+    doc = await api.fill.profile({ proxy: invalidId() })
+    expect(doc.proxy).to.be.null
+
     rep = await api.profiles.list()
     expect(rep.data.profiles).to.have.lengthOf(2, 'invalidId.profiles')
     rep = await api.proxies.list()
@@ -32,20 +34,20 @@ describe('profiles & proxies', function () {
   })
 
   it('should create profile with new proxy and save to proxies list', async function () {
-    let rep = null
+    let rep: Rep
 
-    const profile = await api.fill.profile({ proxy: PROXY })
-    expect(profile.proxy).to.be.a('string')
-    expect(profile).to.not.have.property('proxyCreate')
+    const doc = await api.fill.profile({ proxy: PROXY })
+    expect(doc.proxy).to.be.a('string')
+    expect(doc).to.not.have.property('proxyCreate')
 
     rep = await api.proxies.list()
     expect(rep.data.proxies).to.have.lengthOf(1)
-    expect(rep.data.proxies[0]._id).to.equal(profile.proxy)
+    expect(rep.data.proxies[0]._id).to.equal(doc.proxy)
 
-    const profileId = profile._id
+    const profileId = doc._id
     rep = await api.profiles.save({ proxy: PROXY }, profileId)
     expect(rep.data.profile._id).to.be.equal(profileId)
-    expect(rep.data.proxy).to.be.not.equal(profile.proxy)
+    expect(rep.data.proxy).to.be.not.equal(doc.proxy)
 
     rep = await api.proxies.list()
     expect(rep.data.proxies).to.have.lengthOf(2)
