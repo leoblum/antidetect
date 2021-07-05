@@ -10,21 +10,24 @@ import config from '@/config'
 import { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
 chai.use(chaiAsPromised)
 
-const ObjectId = mongoose.Types.ObjectId
 const UseRemoteClient = true
 const TestDbName = 'yanus-test'
 axios.defaults.baseURL = 'http://127.0.0.1:9000'
 axios.defaults.validateStatus = () => true
 
+const ObjectId = mongoose.Types.ObjectId
+
 declare module 'light-my-request' {
   export interface Response {
     data: any
+    Dump: () => string
   }
 }
 
 declare module 'axios' {
   export interface AxiosResponse {
     statusCode: number
+    Dump: () => string
   }
 }
 
@@ -36,6 +39,19 @@ export type Rep = {
   data: any
   statusCode: number
   expect: (val: any, msg?: string) => Chai.Assertion
+}
+
+type DumpHttpOpts = {
+  method: string, url: string, payload: any
+  status: number, statusText: string, data: any
+}
+const DumpHttp = (opts: DumpHttpOpts) => {
+  let { method, url, payload, status, statusText, data } = opts
+  method = method.toUpperCase()
+  payload = JSON.stringify(payload, null, 2)
+  data = JSON.stringify(data, null, 2)
+
+  return `${method} ${url}\n${payload}\n---\n${status} ${statusText}\n${data}\n`
 }
 
 export function createClient () {
@@ -56,21 +72,43 @@ export function createClient () {
       const data = rep.data.data
       delete rep.data.data
       rep.data = { ...rep.data, ...data }
-      // console.log(rep.status, reqOpts, rep.data)
+      rep.Dump = () => {
+        let method = rep.config.method?.toUpperCase() || ''
+        let url = rep.config.url || ''
+        let payload = opts.payload
+
+        let status = rep.statusCode
+        let statusText = rep.statusText
+        let data = rep.data
+
+        return DumpHttp({ method, url, payload, status, statusText, data })
+      }
       return rep
     } else {
       const rep = await app.inject({ ...opts, method, url, headers })
       Object.defineProperty(rep, 'data', { get: () => rep.json() })
+      rep.Dump = () => {
+        let method = rep.raw.req.method.toUpperCase()
+        let url = rep.raw.req.url
+        let payload = opts.payload
+
+        let status = rep.statusCode
+        let statusText = rep.statusMessage
+        let data = rep.data
+
+        return DumpHttp({ method, url, payload, status, statusText, data })
+      }
       return rep
     }
   }
 
   const request = async (opts: ReqOps) => {
-    const rep: Rep = Object.assign(await R(opts), {
+    const r = await R(opts)
+    const rep: Rep = Object.assign(r, {
       expect (val: any, msg?: string) {
-        if (msg) msg = `\n"${msg}"`
-        const fullMsg = `REP: ${rep.statusCode}\n${JSON.stringify(rep.data, null, 2)}\n${msg}`
-        return expect(val, fullMsg)
+        if (msg) msg = `---\n"${msg}"\n`
+        let fulMsg = `\n${r.Dump()}\n${msg}`
+        return expect(val, fulMsg)
       },
     })
     return rep

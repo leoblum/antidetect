@@ -1,4 +1,3 @@
-import { expect } from 'chai'
 import { createClient, Rep } from './helper'
 
 describe('users authentication', function () {
@@ -12,13 +11,13 @@ describe('users authentication', function () {
     await api.users.create(email, password)
 
     rep = await api.users.confirmEmail(email)
-    expect(rep.statusCode).to.equal(200)
-    expect(rep.data.success).to.be.true
+    rep.expect(rep.statusCode).to.equal(200)
+    rep.expect(rep.data.success).to.be.true
 
     rep = await api.users.auth(email, password)
-    expect(rep.statusCode).to.equal(200)
-    expect(rep.data.success).to.be.true
-    expect(rep.data).to.have.property('token')
+    rep.expect(rep.statusCode).to.equal(200)
+    rep.expect(rep.data.success).to.be.true
+    rep.expect(rep.data).to.have.property('token')
   })
 
   it('should not authenticate when email not confirmed', async function () {
@@ -26,9 +25,9 @@ describe('users authentication', function () {
     await api.users.create(email, password)
 
     rep = await api.users.auth(email, password)
-    expect(rep.statusCode).to.equal(401)
-    expect(rep.data.success).to.be.false
-    expect(rep.data.message).to.be.equal('email_not_confirmed')
+    rep.expect(rep.statusCode).to.equal(401)
+    rep.expect(rep.data.success).to.be.false
+    rep.expect(rep.data.message).to.be.equal('email_not_confirmed')
   })
 
   it('should not authenticate with wrong password', async function () {
@@ -38,9 +37,9 @@ describe('users authentication', function () {
 
     const wrongPassword = password + password
     rep = await api.users.auth(email, wrongPassword)
-    expect(rep.statusCode).to.equal(401)
-    expect(rep.data.success).to.be.false
-    expect(rep.data.message).to.be.equal('wrong_password')
+    rep.expect(rep.statusCode).to.equal(401)
+    rep.expect(rep.data.success).to.be.false
+    rep.expect(rep.data.message).to.be.equal('wrong_password')
   })
 
   it('should access to protected api after authentication', async function () {
@@ -50,8 +49,8 @@ describe('users authentication', function () {
     await api.users.auth(email, password)
 
     rep = await api.users.checkAuth()
-    expect(rep.statusCode).to.equal(200)
-    expect(rep.data.success).to.be.true
+    rep.expect(rep.statusCode).to.equal(200)
+    rep.expect(rep.data.success).to.be.true
   })
 
   it('should not access to protected api when not authenticated', async function () {
@@ -60,8 +59,8 @@ describe('users authentication', function () {
     await api.users.confirmEmail(email)
 
     rep = await api.users.checkAuth()
-    expect(rep.statusCode).to.equal(401)
-    expect(rep.data.success).to.be.false
+    rep.expect(rep.statusCode).to.equal(401)
+    rep.expect(rep.data.success).to.be.false
     // expect(rep.data.message).to.be.equal('invalid_auth_header')
   })
 
@@ -76,8 +75,8 @@ describe('users authentication', function () {
     api.headers.Authorization = `Bearer ${token}`
 
     rep = await api.users.checkAuth()
-    expect(rep.statusCode).to.equal(401)
-    expect(rep.data.success).to.be.false
+    rep.expect(rep.statusCode).to.equal(401)
+    rep.expect(rep.data.success).to.be.false
     // expect(rep.data.message).to.be.equal('invalid_auth_header')
   })
 })

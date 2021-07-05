@@ -1,4 +1,3 @@
-import { expect } from 'chai'
 import { createClient, Rep } from './helper'
 
 describe('users registration', function () {
@@ -11,33 +10,33 @@ describe('users registration', function () {
     let rep: Rep
 
     rep = await api.users.create(email, password)
-    expect(rep.statusCode).to.equal(201)
-    expect(rep.data.success).to.be.true
+    rep.expect(rep.statusCode).to.equal(201)
+    rep.expect(rep.data.success).to.be.true
 
     rep = await api.users.checkEmailExists(email)
-    expect(rep.data.success).to.be.true
-    expect(rep.data.exists).to.be.true
+    rep.expect(rep.data.success).to.be.true
+    rep.expect(rep.data.exists).to.be.true
   })
 
   it('should not create user on same email twice', async function () {
     let rep: Rep
 
     rep = await api.users.create(email, password)
-    expect(rep.statusCode).to.equal(201)
-    expect(rep.data.success).to.be.true
+    rep.expect(rep.statusCode).to.equal(201)
+    rep.expect(rep.data.success).to.be.true
 
     rep = await api.users.create(email, password)
-    expect(rep.statusCode).to.equal(400)
-    expect(rep.data.success).to.be.false
-    expect(rep.data.message).to.equal('email_already_used')
+    rep.expect(rep.statusCode).to.equal(400)
+    rep.expect(rep.data.success).to.be.false
+    rep.expect(rep.data.message).to.equal('email_already_used')
   })
 
   it('should be error on wrong email format', async function () {
     const wrongEmails = [12124124, true, null, { a: 1, b: 2 }, 'asfasfasfa']
     for (const email of wrongEmails) {
       // @ts-expect-error check wrong types
-      const rep = await api.users.create(email, password)
-      await expect(rep.statusCode).to.equal(400)
+      let rep = await api.users.create(email, password)
+      rep.expect(rep.statusCode).to.equal(400)
       // await expect(rep.data.success).to.be.false // todo:
     }
   })

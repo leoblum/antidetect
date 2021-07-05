@@ -24,7 +24,9 @@ import (
 const SECRET_KEY = "1234"
 
 var fingerprint FingerprintBothOS
+
 var usersColl *mongo.Collection
+var proxiesColl *mongo.Collection
 
 type User struct {
 	ID             primitive.ObjectID `json:"id,omitempty" bson:"_id"`
@@ -35,12 +37,26 @@ type User struct {
 	UpdatedAt      time.Time          `json:"updatedAt" bson:"updatedAt"`
 }
 
+type Proxy struct {
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id"`
+	TeamId    primitive.ObjectID `json:"teamId,omitempty" bson:"teamId"`
+	Name      string             `json:"name" binding:"required"`
+	Type      string             `json:"type" binding:"required,oneof=socks5 http https"`
+	Host      string             `json:"host" binding:"required,hostname"`
+	Port      int                `json:"port" binding:"required"`
+	Username  string             `json:"username,omitempty"`
+	Password  string             `json:"password,omitempty"`
+	Country   string             `json:"country"`
+	CreatedAt time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time          `json:"updatedAt" bson:"updatedAt"`
+}
+
 type UserEmail struct {
 	Email string `json:"email" binding:"required,email"`
 }
 
 type JwtPayload struct {
-	UserId    string
+	UserId    primitive.ObjectID
 	ExpiresAt int64
 }
 
@@ -125,27 +141,24 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	if count, _ := usersColl.CountDocuments(c, bson.M{"email": user.Email}); count > 0 {
+	if count, _ := usersColl.CountDocuments(context.TODO(), bson.M{"email": user.Email}); count > 0 {
 		ApiFail(c, http.StatusBadRequest, "email_already_used")
 		return
 	}
 
-	newUser := User{
-		ID:             primitive.NewObjectID(),
-		Email:          user.Email,
-		Password:       HashPassword(user.Password),
-		EmailConfirmed: false,
-		CreatedAt:      time.Now(),
-		UpdatedAt:      time.Now(),
-	}
+	user.ID = primitive.NewObjectID()
+	user.Password = HashPassword(user.Password)
+	user.EmailConfirmed = false
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
-	if _, err := usersColl.InsertOne(c, newUser); err != nil {
+	if _, err := usersColl.InsertOne(context.TODO(), user); err != nil {
 		ApiFail(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	newUser.Password = ""
-	ApiDone(c, http.StatusCreated, newUser)
+	user.Password = ""
+	ApiDone(c, http.StatusCreated, user)
 }
 
 func CheckEmailExist(c *gin.Context) {
@@ -156,7 +169,7 @@ func CheckEmailExist(c *gin.Context) {
 		return
 	}
 
-	count, _ := usersColl.CountDocuments(c, bson.M{"email": userEmail.Email})
+	count, _ := usersColl.CountDocuments(context.TODO(), bson.M{"email": userEmail.Email})
 	ApiDone(c, http.StatusOK, gin.H{"exists": count > 0})
 }
 
@@ -169,7 +182,7 @@ func ConfirmEmail(c *gin.Context) {
 		return
 	}
 
-	if err := usersColl.FindOne(c, bson.M{"email": userEmail.Email}).Decode(&foundUser); err != nil {
+	if err := usersColl.FindOne(context.TODO(), bson.M{"email": userEmail.Email}).Decode(&foundUser); err != nil {
 		ApiFail(c, http.StatusBadRequest, "user_not_found")
 		return
 	}
@@ -186,7 +199,7 @@ func ConfirmEmail(c *gin.Context) {
 		},
 	}
 
-	if _, err := usersColl.UpdateByID(c, foundUser.ID, q); err != nil {
+	if _, err := usersColl.UpdateByID(context.TODO(), foundUser.ID, q); err != nil {
 		ApiFail(c, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -202,7 +215,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	if err := usersColl.FindOne(c, bson.M{"email": user.Email}).Decode(&foundUser); err != nil {
+	if err := usersColl.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&foundUser); err != nil {
 		ApiFail(c, http.StatusUnauthorized, "user_not_found")
 		return
 	}
@@ -218,9 +231,8 @@ func LoginUser(c *gin.Context) {
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtPayload{
-		UserId: foundUser.ID.Hex(),
-		// ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
-		ExpiresAt: time.Now().Local().Unix(),
+		UserId:    foundUser.ID,
+		ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
 	}).SignedString([]byte(SECRET_KEY))
 
 	if err != nil {
@@ -252,6 +264,14 @@ func AuthMiddleware(c *gin.Context) {
 	claims := token.Claims.(*JwtPayload)
 	c.Set("JwtPayload", claims)
 	c.Next()
+}
+
+func GetJwtPayload(c *gin.Context) *JwtPayload {
+	claims, exists := c.Get("JwtPayload")
+	if !exists {
+		return &JwtPayload{}
+	}
+	return claims.(*JwtPayload)
 }
 
 func CheckToken(c *gin.Context) {
@@ -313,6 +333,44 @@ func FingerprintOptions(c *gin.Context) {
 	ApiDone(c, http.StatusOK, fingerprint)
 }
 
+func CreateProxy(c *gin.Context) {
+	var proxy Proxy
+	claims := GetJwtPayload(c)
+
+	if err := c.BindJSON(&proxy); err != nil {
+		ApiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	proxy.ID = primitive.NewObjectID()
+	proxy.TeamId = claims.UserId
+	proxy.CreatedAt = time.Now()
+	proxy.UpdatedAt = time.Now()
+
+	if _, err := proxiesColl.InsertOne(context.TODO(), proxy); err != nil {
+		ApiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ApiDone(c, http.StatusCreated, gin.H{"proxy": proxy})
+}
+
+func ProxiesList(c *gin.Context) {
+	claims := GetJwtPayload(c)
+
+	cur, err := proxiesColl.Find(context.TODO(), bson.M{"teamId": claims.UserId})
+	if err != nil {
+		return
+	}
+
+	proxies := make([]Proxy, 0)
+	if err := cur.All(context.TODO(), &proxies); err != nil {
+		log.Fatal(err)
+	}
+
+	ApiDone(c, http.StatusOK, gin.H{"proxies": proxies})
+}
+
 func main() {
 	file, err := ioutil.ReadFile("../backend/src/~fingerprints.json")
 	if err != nil {
@@ -324,6 +382,7 @@ func main() {
 
 	db := Connect()
 	usersColl = db.Collection("users")
+	proxiesColl = db.Collection("proxies")
 
 	r := gin.Default()
 
@@ -334,9 +393,14 @@ func main() {
 
 	p := r.Group("/")
 	p.Use(AuthMiddleware)
+
 	p.GET("/users/checkToken", CheckToken)
+
 	p.GET("/fingerprint", GetFingerprint)
 	p.GET("/fingerprint/options", FingerprintOptions)
+
+	p.GET("/proxies", ProxiesList)
+	p.POST("/proxies/save", CreateProxy)
 
 	r.Run("127.0.0.1:9000")
 }

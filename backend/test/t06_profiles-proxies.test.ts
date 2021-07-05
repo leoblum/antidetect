@@ -20,17 +20,19 @@ describe('profiles & proxies', function () {
     expect(doc.proxy).to.be.null
 
     rep = await api.profiles.list()
-    expect(rep.data.profiles).to.have.lengthOf(1, 'blankId.profiles')
+    rep.expect(rep.data.profiles).to.have.lengthOf(1, 'blankId.profiles')
+
     rep = await api.proxies.list()
-    expect(rep.data.proxies).to.have.lengthOf(0, 'blankId.proxies')
+    rep.expect(rep.data.proxies).to.have.lengthOf(0, 'blankId.proxies')
 
     doc = await api.fill.profile({ proxy: invalidId() })
     expect(doc.proxy).to.be.null
 
     rep = await api.profiles.list()
-    expect(rep.data.profiles).to.have.lengthOf(2, 'invalidId.profiles')
+    rep.expect(rep.data.profiles).to.have.lengthOf(2, 'invalidId.profiles')
+
     rep = await api.proxies.list()
-    expect(rep.data.proxies).to.have.lengthOf(0, 'invalidId.proxies')
+    rep.expect(rep.data.proxies).to.have.lengthOf(0, 'invalidId.proxies')
   })
 
   it('should create profile with new proxy and save to proxies list', async function () {
@@ -41,19 +43,19 @@ describe('profiles & proxies', function () {
     expect(doc).to.not.have.property('proxyCreate')
 
     rep = await api.proxies.list()
-    expect(rep.data.proxies).to.have.lengthOf(1)
-    expect(rep.data.proxies[0]._id).to.equal(doc.proxy)
+    rep.expect(rep.data.proxies).to.have.lengthOf(1)
+    rep.expect(rep.data.proxies[0]._id).to.equal(doc.proxy)
 
     const profileId = doc._id
     rep = await api.profiles.save({ proxy: PROXY }, profileId)
-    expect(rep.data.profile._id).to.be.equal(profileId)
-    expect(rep.data.proxy).to.be.not.equal(doc.proxy)
+    rep.expect(rep.data.profile._id).to.be.equal(profileId)
+    rep.expect(rep.data.proxy).to.be.not.equal(doc.proxy)
 
     rep = await api.proxies.list()
-    expect(rep.data.proxies).to.have.lengthOf(2)
+    rep.expect(rep.data.proxies).to.have.lengthOf(2)
 
     rep = await api.profiles.save({ proxy: null }, profileId)
-    expect(rep.data.profile._id).to.be.equal(profileId)
-    expect(rep.data.profile.proxy).to.be.null
+    rep.expect(rep.data.profile._id).to.be.equal(profileId)
+    rep.expect(rep.data.profile.proxy).to.be.null
   })
 })

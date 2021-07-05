@@ -1,10 +1,18 @@
 @api_url = http://127.0.0.1:9000
+@email = user@example.com
+
+### Check Email is used
+POST {{api_url}}/users/checkEmail
+
+{
+    "email": "{{email}}"
+}
 
 ###
 POST {{api_url}}/users/create
 
 {
-    "email": "user@example.com",
+    "email": "{{email}}",
     "password": "123456"
 }
 
@@ -12,27 +20,42 @@ POST {{api_url}}/users/create
 POST {{api_url}}/users/confirmEmail
 
 {
-    "email": "user@example.com"
+    "email": "{{email}}"
 }
 
-###
+### 
 # @name login
 POST {{api_url}}/users/login
 
 {
-    "email": "user@example.com",
+    "email": "{{email}}",
     "password": "123456"
 }
 
-###
+### Check Protected API is working
 @token = {{login.response.body.data.token}}
 GET {{api_url}}/users/checkToken
 Authorization: Bearer {{token}}
 
-###
+### Random Fingerprint for Win & Mac
 GET {{api_url}}/fingerprint
 Authorization: Bearer {{token}}
 
-###
+### Fingerprint Options
 GET {{api_url}}/fingerprint/options
+Authorization: Bearer {{token}}
+
+### Proxy Create
+POST {{api_url}}/proxies/save
+Authorization: Bearer {{token}}
+
+{
+    "name": "super proxy {{$randomInt 1000 9999}}",
+    "type": "https",
+    "host": "localhost",
+    "port": 8080
+}
+
+### Get Proxies For Current User
+GET {{api_url}}/proxies
 Authorization: Bearer {{token}}
