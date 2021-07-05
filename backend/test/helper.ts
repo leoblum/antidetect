@@ -11,7 +11,7 @@ import { OS, Profile, ProfileUpdate, Proxy, ProxyUpdate } from '@/types'
 chai.use(chaiAsPromised)
 
 const ObjectId = mongoose.Types.ObjectId
-const UseRemoteClient = false
+const UseRemoteClient = true
 const TestDbName = 'yanus-test'
 axios.defaults.baseURL = 'http://127.0.0.1:9000'
 axios.defaults.validateStatus = () => true
@@ -47,13 +47,14 @@ export function createClient () {
 
       const rep = await axios.request(reqOpts)
       rep.statusCode = rep.status
-      console.log(rep.status, reqOpts, rep.data)
-      // if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.data))
+      const data = rep.data.data
+      delete rep.data.data
+      rep.data = { ...rep.data, ...data }
+      // console.log(rep.status, reqOpts, rep.data)
       return rep
     } else {
       const rep = await app.inject({ ...opts, method, url, headers })
       Object.defineProperty(rep, 'data', { get: () => rep.json() })
-      // if (!('success' in rep.data)) throw new Error(JSON.stringify(rep.json()))
       return rep
     }
   }

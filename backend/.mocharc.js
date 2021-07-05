@@ -4,5 +4,6 @@ module.exports = {
   require: ['ts-node/register/transpile-only', 'tsconfig-paths/register'],
   spec: 'test/**/*.test.ts',
   recursive: true,
-  'full-trace': true
+  'full-trace': true,
+  timeout: '5s'
 }

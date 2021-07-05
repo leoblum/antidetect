@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,24 +18,33 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var usersColl *mongo.Collection
+const SECRET_KEY = "1234"
 
-type Team struct {
-	ID   primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	Name string             `json:"name"`
-}
+var usersColl *mongo.Collection
 
 type User struct {
 	ID             primitive.ObjectID `json:"id,omitempty" bson:"_id"`
-	Email          string             `json:"email" binding:"required,email"`
-	Password       string             `json:"password" binding:"required,min=6"`
-	EmailConfirmed bool               `json:"emailConfirmed"`
-	CreatedAt      time.Time          `json:"createdAt"`
-	UpdatedAt      time.Time          `json:"updatedAt"`
+	Email          string             `json:"email" bson:"email" binding:"required,email"`
+	Password       string             `json:"password,omitempty" bson:"password" binding:"required,min=6"`
+	EmailConfirmed bool               `json:"emailConfirmed" bson:"emailConfirmed"`
+	CreatedAt      time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt      time.Time          `json:"updatedAt" bson:"updatedAt"`
 }
 
 type UserEmail struct {
 	Email string `json:"email" binding:"required,email"`
+}
+
+type JwtPayload struct {
+	UserId    string
+	ExpiresAt int64
+}
+
+func (p JwtPayload) Valid() error {
+	if p.ExpiresAt < time.Now().Local().Unix() {
+		return errors.New("auth: token_expired")
+	}
+	return nil
 }
 
 func Connect() *mongo.Database {
@@ -55,7 +66,7 @@ func Connect() *mongo.Database {
 }
 
 func HashPassword(password string) string {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -64,16 +75,20 @@ func HashPassword(password string) string {
 
 func VerifyPassword(userPassword string, providedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(providedPassword), []byte(userPassword))
-	return err != nil
+	return err == nil
 }
 
 func ApiFail(c *gin.Context, httpCode int, message string) {
 	c.JSON(httpCode, gin.H{"success": false, "message": message})
 }
 
+func ApiFailWithAbort(c *gin.Context, httpCode int, message string) {
+	c.JSON(httpCode, gin.H{"success": false, "message": message})
+	c.Abort()
+}
+
 func ApiDone(c *gin.Context, httpCode int, o interface{}) {
-	data, _ := json.Marshal(o)
-	c.JSON(httpCode, gin.H{"success": true, "data": string(data)})
+	c.JSON(httpCode, gin.H{"success": true, "data": o})
 }
 
 func CreateUser(c *gin.Context) {
@@ -103,10 +118,11 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	newUser.Password = ""
 	ApiDone(c, http.StatusCreated, newUser)
 }
 
-func CheckUserEmailExist(c *gin.Context) {
+func CheckEmailExist(c *gin.Context) {
 	var userEmail UserEmail
 
 	if err := c.BindJSON(&userEmail); err != nil {
@@ -115,7 +131,105 @@ func CheckUserEmailExist(c *gin.Context) {
 	}
 
 	count, _ := usersColl.CountDocuments(c, bson.M{"email": userEmail.Email})
-	c.JSON(http.StatusOK, gin.H{"success": true, "exists": count > 0})
+	ApiDone(c, http.StatusOK, gin.H{"exists": count > 0})
+}
+
+func ConfirmEmail(c *gin.Context) {
+	var userEmail UserEmail
+	var foundUser User
+
+	if err := c.BindJSON(&userEmail); err != nil {
+		ApiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := usersColl.FindOne(c, bson.M{"email": userEmail.Email}).Decode(&foundUser); err != nil {
+		ApiFail(c, http.StatusBadRequest, "user_not_found")
+		return
+	}
+
+	if foundUser.EmailConfirmed {
+		ApiFail(c, http.StatusBadRequest, "email_already_confirmed")
+		return
+	}
+
+	q := bson.M{
+		"$set": bson.M{
+			"emailConfirmed": true,
+			"updatedAt":      time.Now(),
+		},
+	}
+
+	if _, err := usersColl.UpdateByID(c, foundUser.ID, q); err != nil {
+		ApiFail(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ApiDone(c, http.StatusOK, gin.H{})
+}
+
+func LoginUser(c *gin.Context) {
+	var user, foundUser User
+
+	if err := c.BindJSON(&user); err != nil {
+		ApiFail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := usersColl.FindOne(c, bson.M{"email": user.Email}).Decode(&foundUser); err != nil {
+		ApiFail(c, http.StatusUnauthorized, "user_not_found")
+		return
+	}
+
+	if !foundUser.EmailConfirmed {
+		ApiFail(c, http.StatusUnauthorized, "email_not_confirmed")
+		return
+	}
+
+	if !VerifyPassword(user.Password, foundUser.Password) {
+		ApiFail(c, http.StatusUnauthorized, "wrong_password")
+		return
+	}
+
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtPayload{
+		UserId: foundUser.ID.Hex(),
+		// ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+		ExpiresAt: time.Now().Local().Unix(),
+	}).SignedString([]byte(SECRET_KEY))
+
+	if err != nil {
+		panic(err)
+	}
+
+	ApiDone(c, http.StatusOK, gin.H{
+		"token": token,
+	})
+}
+
+func AuthMiddleware(c *gin.Context) {
+	header := c.Request.Header.Get("Authorization")
+	parts := strings.Split(header, " ")
+	if len(parts) != 2 {
+		ApiFailWithAbort(c, http.StatusUnauthorized, "invalid_auth_headers")
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(parts[1], &JwtPayload{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
+
+	if err != nil {
+		ApiFailWithAbort(c, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	claims := token.Claims.(*JwtPayload)
+	c.Set("JwtPayload", claims)
+	c.Next()
+}
+
+func CheckToken(c *gin.Context) {
+	ApiDone(c, http.StatusOK, gin.H{})
 }
 
 func main() {
@@ -125,7 +239,13 @@ func main() {
 	r := gin.Default()
 
 	r.POST("/users/create", CreateUser)
-	r.POST("/users/checkEmail", CheckUserEmailExist)
+	r.POST("/users/login", LoginUser)
+	r.POST("/users/checkEmail", CheckEmailExist)
+	r.POST("/users/confirmEmail", ConfirmEmail)
+
+	p := r.Group("/")
+	p.Use(AuthMiddleware)
+	p.GET("/users/checkToken", CheckToken)
 
 	r.Run("127.0.0.1:9000")
 }

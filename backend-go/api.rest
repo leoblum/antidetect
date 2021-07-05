@@ -1,0 +1,30 @@
+@api_url = http://127.0.0.1:9000
+
+###
+POST {{api_url}}/users/create
+
+{
+    "email": "user@example.com",
+    "password": "123456"
+}
+
+### 
+POST {{api_url}}/users/confirmEmail
+
+{
+    "email": "user@example.com"
+}
+
+###
+# @name login
+POST {{api_url}}/users/login
+
+{
+    "email": "user@example.com",
+    "password": "123456"
+}
+
+###
+@token = {{login.response.body.data.token}}
+GET {{api_url}}/users/checkToken
+Authorization: Bearer {{token}}
