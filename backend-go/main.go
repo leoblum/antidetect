@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -20,6 +23,7 @@ import (
 
 const SECRET_KEY = "1234"
 
+var fingerprint FingerprintBothOS
 var usersColl *mongo.Collection
 
 type User struct {
@@ -38,6 +42,28 @@ type UserEmail struct {
 type JwtPayload struct {
 	UserId    string
 	ExpiresAt int64
+}
+
+type OSFingerprintOptions struct {
+	Screen    []string `json:"screen"`
+	CPU       []int    `json:"cpu"`
+	RAM       []int    `json:"ram"`
+	Fonts     []string `json:"fonts"`
+	UserAgent []string `json:"ua"`
+	Renderer  []string `json:"renderer"`
+}
+
+type OSFingerprint struct {
+	Screen    string `json:"screen"`
+	CPU       int    `json:"cpu"`
+	RAM       int    `json:"ram"`
+	Fonts     string `json:"fonts"`
+	UserAgent string `json:"ua"`
+}
+
+type FingerprintBothOS struct {
+	Win OSFingerprintOptions `json:"win"`
+	Mac OSFingerprintOptions `json:"mac"`
 }
 
 func (p JwtPayload) Valid() error {
@@ -232,7 +258,70 @@ func CheckToken(c *gin.Context) {
 	ApiDone(c, http.StatusOK, gin.H{})
 }
 
+func randomHardware(os string) OSFingerprint {
+	var fp OSFingerprintOptions
+	if os == "win" {
+		fp = fingerprint.Win
+	}
+	if os == "mac" {
+		fp = fingerprint.Mac
+	}
+
+	return OSFingerprint{
+		Screen:    fp.Screen[rand.Intn(len(fp.Screen))],
+		CPU:       fp.CPU[rand.Intn(len(fp.CPU))],
+		RAM:       fp.RAM[rand.Intn(len(fp.RAM))],
+		UserAgent: fp.UserAgent[rand.Intn(len(fp.UserAgent))],
+	}
+}
+
+func GetFingerprint(c *gin.Context) {
+	var acceptLanguage string
+
+	// Accept-Language: en-US,en-GB;q=0.5
+	header := c.Request.Header.Get("Accept-Language")
+	langs := strings.Split(header, ",")
+	if len(langs) > 0 {
+		parts := strings.Split(langs[0], ";")
+		acceptLanguage = strings.Split(parts[0], "-")[0]
+	}
+
+	os := []string{"win", "mac"}
+
+	ApiDone(c, http.StatusOK, gin.H{
+		"fingerprint": gin.H{
+			"os":  os[rand.Intn(len(os))],
+			"win": randomHardware("win"),
+			"mac": randomHardware("mac"),
+
+			"noiseWebGl":  true,
+			"noiseCanvas": false,
+			"noiseAudio":  true,
+
+			"deviceCameras":     1,
+			"deviceMicrophones": 1,
+			"deviceSpeakers":    1,
+
+			"languages":   gin.H{"mode": "ip", "value": acceptLanguage},
+			"timezone":    gin.H{"mode": "ip"},
+			"geolocation": gin.H{"mode": "ip"},
+		},
+	})
+}
+
+func FingerprintOptions(c *gin.Context) {
+	ApiDone(c, http.StatusOK, fingerprint)
+}
+
 func main() {
+	file, err := ioutil.ReadFile("../backend/src/~fingerprints.json")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	json.Unmarshal(file, &fingerprint)
+
 	db := Connect()
 	usersColl = db.Collection("users")
 
@@ -246,6 +335,8 @@ func main() {
 	p := r.Group("/")
 	p.Use(AuthMiddleware)
 	p.GET("/users/checkToken", CheckToken)
+	p.GET("/fingerprint", GetFingerprint)
+	p.GET("/fingerprint/options", FingerprintOptions)
 
 	r.Run("127.0.0.1:9000")
 }

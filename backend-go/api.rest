@@ -28,3 +28,11 @@ POST {{api_url}}/users/login
 @token = {{login.response.body.data.token}}
 GET {{api_url}}/users/checkToken
 Authorization: Bearer {{token}}
+
+###
+GET {{api_url}}/fingerprint
+Authorization: Bearer {{token}}
+
+###
+GET {{api_url}}/fingerprint/options
+Authorization: Bearer {{token}}
